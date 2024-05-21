@@ -8,11 +8,11 @@ local state = {
 };
 local sets = {
     Idle_Priority = {
-        Main = {"Neckchopper", "Greataxe"},
+        Main = {"Centurion's Axe", "Neckchopper", "Greataxe"},
         Ammo = {"Happy Egg"},
-        Head = {"Ryl.Ftm. Bandana"},
+        Head = {"Shade Tiara", "Ryl.Ftm. Bandana"},
         Neck = "Spike Necklace",
-        Body = {"Beetle Harness", "Brass Harness"},
+        Body = {"Beetle Harness +1", "Brass Harness"},
         Hands = {"Lgn. Mittens"},
         Ear1 = "Beetle Earring +1",
         Ear2 = "Beetle Earring +1",
@@ -20,8 +20,8 @@ local sets = {
         Ring2 = {"Courage Ring"},
         Back = {"Nomad's Mantle"},
         Waist = {"Warrior's Belt +1"},
-        Legs = {"Republic Subligar", "Lgn. Subligar", "Scale Cuisses"},
-        Feet = {"Beetle Leggings", "Scale Greaves"},
+        Legs = {"Republic Subligar", "Beetle Subligar +1", "Scale Cuisses"},
+        Feet = {"Btl. Leggings +1", "Scale Greaves"},
     },
 };
 local extendedSets = {

@@ -36,6 +36,8 @@ function BGMUpdate:on_packet(event)
     if (event.id ~= self.id) then
         return
     end
+    print(chat.header('Music') .. 'Received packet with id of 0x5F, now trying to fiddle with it.')
+    -- TODO: this is busted and causes a fault.
     local pkt = ffi.cast('GP_SERV_MUSIC*', event.raw_data);
     print(chat.header('Music') .. 'Changed slot [' .. pkt.slot .. '] to [' .. pkt.musicNum ..']');
 end

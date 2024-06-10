@@ -6,17 +6,17 @@ local sets = {
 };
 
 sets.Idle_Priority = {
-    Main = {"Plain Pick", "Battleaxe +1", "Legionnaire's Axe"},
-    Sub = {"Warrior's Axe", "Battleaxe +1"},
+    Main = {"Mythril Pick +1", "Cmb.Cst. Axe", "Barbaroi Axe", "Plain Pick", "Battleaxe +1", "Legionnaire's Axe"},
+    Sub = {"Barbaroi Axe", "Warrior's Axe", "Battleaxe +1"},
     Head = {"Mrc.Cpt. Headgear", "Ryl.Ftm. Bandana"},
     Neck = {"Spike Necklace"},
     Ear1 = {"Beetle Earring +1"},
     Ear2 = {"Beetle Earring +1"},
     Body = {"Savage Separates", "Beetle Harness +1", "Brass Harness"},
-    Hands = {"Lgn. Mittens"},
+    Hands = {"Crow Bracers", "Lgn. Mittens"},
     Ring1 = {"Courage Ring"},
     Ring2 = {"Courage Ring"},
-    Back = {"Nomad's Mantle"},
+    Back = {"Jaguar Mantle", "Nomad's Mantle"},
     Waist = {"Warrior's Belt +1"},
     Legs = {"Republic Subligar", "Beetle Subligar +1"},
     Feet = {"Savage Gaiters", "Btl. Leggings +1", "Field Boots"},
@@ -29,6 +29,10 @@ sets.Charm_Priority = {
     Ring2 = {"Hope Ring"},
     Feet = {"Savage Gaiters"},
 };
+
+sets.Reward_Priority = {
+    Feet = {"Beast Gaiters"},
+}
 
 profile.Sets = sets;
 
@@ -58,6 +62,8 @@ profile.HandleAbility = function()
     local action = gData.GetAction();
     if string.match(action.Name, 'Charm') then
         gFunc.EquipSet(sets.Charm);
+    elseif string.match(action.Name, "Reward") then
+        gFunc.EquipSet(sets.Reward);
     end
 end
 

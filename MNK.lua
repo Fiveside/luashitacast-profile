@@ -20,7 +20,7 @@ local sets = {
         Ring2 = "Courage Ring",
         Back = {"Jaguar Mantle", "Nomad's Mantle"},
         Waist = {"Purple Belt", "White Belt"},
-        Legs = "Republic Subligar",
+        Legs = {"Temple Hose", "Republic Subligar"},
         Feet = {"Temple Gaiters", "Savage Gaiters", "Win. Kyahan"},
     },
 };

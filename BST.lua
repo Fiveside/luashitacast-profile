@@ -63,7 +63,7 @@ end
 
 profile.HandleAbility = function()
     local action = gData.GetAction();
-    local set = JA_sets[action];
+    local set = JA_sets[action.Name];
     if set ~= nil then
         gFunc.EquipSet(set);
     end

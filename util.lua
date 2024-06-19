@@ -54,6 +54,6 @@ function Export.create_event_name(prefix)
     return prefix .. '_' .. UUID4.getUUID();
 end
 
-function Export.
+-- function Export.
 
 return Export;

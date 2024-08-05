@@ -15,7 +15,7 @@ function Export.table_tostring(o)
     end
  end
 
-function Export.table_assign(...)
+function Export.compress_tables(...)
     local fin = {};
     local arg = {...};
     for _i, t in ipairs(arg) do
@@ -45,7 +45,7 @@ end
 function Export.extend_sets(sets, baseSets, extendedSets)
     for baseSetName, extensionTable in pairs(extendedSets) do
         for extensionName, extensionSet in pairs(extensionTable) do
-            sets[extensionName] = Export.table_assign(baseSets[baseSetName], extensionset)
+            sets[extensionName] = Export.compress_tables(baseSets[baseSetName], extensionset)
         end
     end
 end

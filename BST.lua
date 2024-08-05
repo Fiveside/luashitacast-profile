@@ -48,7 +48,7 @@ profile.Packer = {
 };
 
 profile.OnLoad = function()
-    gSettings.AllowAddSet = true;
+    gSettings.AllowAddSet = false;
 end
 
 profile.OnUnload = function()

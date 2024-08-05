@@ -45,7 +45,7 @@ profile.HandleDefault = function()
         layers:append(sets.Resting);
     end
     
-    gFunc.EquipSet(Util.compress_Tables(layers:unpack()));
+    gFunc.EquipSet(Util.compress_tables(layers:unpack()));
 end
 
 profile.HandleAbility = function()

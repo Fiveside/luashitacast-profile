@@ -1,6 +1,4 @@
-local UUID4 = require('uuid/uuid4');
-
-local Export = {};
+    local Export = {};
 
 function Export.table_tostring(o)
     if type(o) == 'table' then
@@ -48,10 +46,6 @@ function Export.extend_sets(sets, baseSets, extendedSets)
             sets[extensionName] = Export.compress_tables(baseSets[baseSetName], extensionset)
         end
     end
-end
-
-function Export.create_event_name(prefix)
-    return prefix .. '_' .. UUID4.getUUID();
 end
 
 -- function Export.

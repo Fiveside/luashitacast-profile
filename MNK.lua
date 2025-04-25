@@ -1,9 +1,6 @@
-local BGM = require('packets/bgm');
-
 local profile = {};
 local state = {
     syncedLevel = 0,
-    -- music = nil,
 }
 
 local sets = {
@@ -16,8 +13,8 @@ local sets = {
         Ear2 = {"Spike Earring", "Beetle Earring +1"},
         Body = {"Scorpion Harness", "Temple Cyclas", --[["Jujitsu Gi", ]] "Savage Separates", "Power Gi"},
         Hands = {"Temple Gloves", "Federation Tekko", "Lgn. Mittens"},
-        Ring1 = {"Courage Ring", "Bastokan Ring"},
-        Ring2 = "Courage Ring",
+        Ring1 = {"Rajas Ring", "Courage Ring", },
+        Ring2 = {"Victory Ring", "Courage Ring", "Bastokan Ring"},
         Back = {"Amemet Mantle", "Jaguar Mantle", "Nomad's Mantle"},
         Waist = {"Brown Belt", "Purple Belt"},
         Legs = {"Temple Hose", "Republic Subligar"},
@@ -46,6 +43,13 @@ local JA_sets = {
     },
 };
 
+local Multihit_WS = T{"Combo", "Raging Fists", "Asuran Fists"};
+sets.WS_Multihit_Priority = {
+    Ring1 = {"Rajas Ring"},
+    Ring2 = {"Toreador's Ring"},
+    Waist = {"Life Belt"}
+}
+
 profile.Sets = sets;
 
 profile.Packer = {
@@ -53,11 +57,9 @@ profile.Packer = {
 
 profile.OnLoad = function()
     gSettings.AllowAddSet = false;
-    -- state.music = BGM:new();
 end
 
 profile.OnUnload = function()
-    -- state.music:destroy();
 end
 
 profile.HandleCommand = function(args)
@@ -97,6 +99,11 @@ profile.HandleMidshot = function()
 end
 
 profile.HandleWeaponskill = function()
+    local action = gData.GetAction();
+    local name = action.Name;
+    if WS_MULTIHIT:contains(name) then
+        gFunc.EquipSet(sets.WS_Multihit);
+    end
 end
 
 return profile;

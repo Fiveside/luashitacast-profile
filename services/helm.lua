@@ -40,4 +40,12 @@ function Export.handleCommand(args)
     end
 end
 
+function Export.installCommand()
+    -- TODO: add /helm alias
+end
+
+function Export.uninstallCommand()
+    -- TODO: remove /helm alias
+end
+
 return Export;

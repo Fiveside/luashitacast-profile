@@ -15,12 +15,6 @@ local DUCAL_ZONES = T{
     "Upper Jeuno",
     "Lower Jeuno",
     "Port Jeuno",
-
-    -- Outlands and smaller cities
-    "Tavnazian Safehold",
-    "Selbina",
-    "Mhaura",
-    "Rabao",
 };
 
 local DUCAL_SET = {
@@ -34,13 +28,18 @@ end
 
 local lastZone = "undefined";
 local lastSet = {};
+
+-- TODO: detect if we have a ducal aketon we should use instead.
 local use_ducal_aketon = true;
 
 return function ()
     local zoneName = gData.GetEnvironment().Area
+
+    -- Fast exit if we have not zoned.
     if zoneName == lastZone then
         return lastSet;
     end
+
     lastZone = zoneName;
     if use_ducal_aketon then
         if DUCAL_ZONES:contains(zoneName) then

@@ -14,17 +14,17 @@ sets.Idle_Priority = {
     Main = {"Martial Axe", "Darksteel Tabar", "Mythril Pick +1", "Cmb.Cst. Axe", "Barbaroi Axe", "Plain Pick", "Battleaxe +1", "Legionnaire's Axe"},
     Sub = {"Barbaroi Axe", "Warrior's Axe", "Battleaxe +1"},
     Head = {"Optical Hat", "Celata", "Mrc.Cpt. Headgear", "Ryl.Ftm. Bandana"},
-    Neck = {"Spike Necklace"},
+    Neck = {"Peacock Amulet", "Spike Necklace"},
     Ear1 = {"Spike Earring", "Beetle Earring +1"},
     Ear2 = {"Beastly Earring", "Spike Earring", "Beetle Earring +1"},
     Body = {"Scorpion Harness", "Savage Separates", "Beetle Harness +1", "Brass Harness"},
     Hands = {"Beast Gloves", "Battle Gloves", "Lgn. Mittens"},
     Ring1 = {"Rajas Ring"},
     Ring2 = {"Victory Ring", "Courage Ring"},
-    Back = {"Amemet Mantle", "Jaguar Mantle", "Nomad's Mantle"},
+    Back = {"Amemet Mantle +1", "Jaguar Mantle", "Nomad's Mantle"},
     Waist = {"Ryl.Kgt. Belt", "Warrior's Belt +1"},
     Legs = {"Ryl.Kgt. Breeches", "Republic Subligar", "Beetle Subligar +1"},
-    Feet = {"Thick Sollerets", "Savage Gaiters", "Btl. Leggings +1", "Field Boots"},
+    Feet = {"Thick Sollerets", "Savage Gaiters", "Btl. Leggings +1"},
 };
 
 local WS_MULTIHIT = T{"Raging Axe", "Rampage", "Decimation"};

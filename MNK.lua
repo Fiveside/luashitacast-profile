@@ -1,3 +1,8 @@
+local getZoneSet = gFunc.LoadFile("town");
+local HELM = gFunc.LoadFile("services/helm");
+local Idle = gFunc.LoadFile("services/idle");
+local Utils = gFunc.LoadFile("util");
+
 local profile = {};
 local state = {
     syncedLevel = 0,
@@ -5,17 +10,17 @@ local state = {
 
 local sets = {
     Idle_Priority = {
-        Main = {"T.M. Hooks +1", "Tekko Kagi", "Impact Knuckles", "Lynx Baghnakhs", "Burning Cesti"},
-        Ammo = {"Happy Egg"},
-        Head = {"Temple Crown", "Mrc.Cpt. Headgear", "Mrc. Hachimaki"},
-        Neck = "Spike Necklace",
+        Main = {"T.M. Hooks +2", "Tekko Kagi", "Impact Knuckles", "Lynx Baghnakhs", "Burning Cesti"},
+        Ammo = {"Civet Sachet", "Happy Egg"},
+        Head = {"Optical Hat", "Temple Crown", "Mrc.Cpt. Headgear", "Mrc. Hachimaki"},
+        Neck = {"Peacock Amulet", "Spike Necklace"},
         Ear1 = {"Spike Earring", "Beetle Earring +1"},
         Ear2 = {"Spike Earring", "Beetle Earring +1"},
         Body = {"Scorpion Harness", "Temple Cyclas", --[["Jujitsu Gi", ]] "Savage Separates", "Power Gi"},
-        Hands = {"Temple Gloves", "Federation Tekko", "Lgn. Mittens"},
+        Hands = {"Ochiudo's Kote", "Federation Tekko", "Lgn. Mittens"},
         Ring1 = {"Rajas Ring", "Courage Ring", },
-        Ring2 = {"Victory Ring", "Courage Ring", "Bastokan Ring"},
-        Back = {"Amemet Mantle", "Jaguar Mantle", "Nomad's Mantle"},
+        Ring2 = {"Toreador's Ring", "Victory Ring", "Courage Ring", "Bastokan Ring"},
+        Back = {"Amemet Mantle +1", "Jaguar Mantle", "Nomad's Mantle"},
         Waist = {"Brown Belt", "Purple Belt"},
         Legs = {"Temple Hose", "Republic Subligar"},
         Feet = {"Temple Gaiters", "Savage Gaiters", "Win. Kyahan"},
@@ -45,9 +50,17 @@ local JA_sets = {
 
 local Multihit_WS = T{"Combo", "Raging Fists", "Asuran Fists"};
 sets.WS_Multihit_Priority = {
+    Neck = {"Peacock Amulet"},
     Ring1 = {"Rajas Ring"},
     Ring2 = {"Toreador's Ring"},
     Waist = {"Life Belt"}
+}
+
+sets.WS_Priority = {
+    Neck = {"Spike Necklace"},
+    Ring1 = {"Rajas Ring"},
+    Ring2 = {"Victory Ring", "Courage Ring"},
+    Waist = {"Brown Belt"},
 }
 
 profile.Sets = sets;
@@ -63,6 +76,7 @@ profile.OnUnload = function()
 end
 
 profile.HandleCommand = function(args)
+    HELM.handleCommand(args);
 end
 
 profile.HandleDefault = function()
@@ -72,7 +86,12 @@ profile.HandleDefault = function()
         gFunc.EvaluateLevels(sets, myLevel);
         gFunc.EvaluateLevels(JA_sets, myLevel);
     end
-    gFunc.EquipSet(sets.Idle)
+    local layers = T{};
+    layers:append(sets.Idle);
+    layers:append(getZoneSet());
+    layers:append(Idle.getSet());
+    layers:append(HELM.getSet());
+    gFunc.EquipSet(Utils.compress_tables(layers:unpack()));
 end
 
 profile.HandleAbility = function()
@@ -100,9 +119,10 @@ end
 
 profile.HandleWeaponskill = function()
     local action = gData.GetAction();
-    local name = action.Name;
-    if WS_MULTIHIT:contains(name) then
+    if Multihit_WS:contains(action.Name) then
         gFunc.EquipSet(sets.WS_Multihit);
+    else
+        gFunc.EquipSet(sets.WS);
     end
 end
 

@@ -11,13 +11,13 @@ local sets = {
 };
 
 sets.Idle_Priority = {
-    Main = {"Martial Axe", "Darksteel Tabar", "Mythril Pick +1", "Cmb.Cst. Axe", "Barbaroi Axe", "Plain Pick", "Battleaxe +1", "Legionnaire's Axe"},
-    Sub = {"Barbaroi Axe", "Warrior's Axe", "Battleaxe +1"},
-    Head = {"Optical Hat", "Celata", "Mrc.Cpt. Headgear", "Ryl.Ftm. Bandana"},
+    Main = {"Retributor", "Mythril Pick +1", "Cmb.Cst. Axe", "Barbaroi Axe", "Battleaxe +1"},
+    Sub = {"Martial Axe", "Barbaroi Axe", "Battleaxe +1"},
+    Head = {"Optical Hat", "Emperor Hairpin", "Ryl.Ftm. Bandana"},
     Neck = {"Peacock Amulet", "Spike Necklace"},
-    Ear1 = {"Spike Earring", "Beetle Earring +1"},
+    Ear1 = {"Brutal Earring", "Spike Earring", "Beetle Earring +1"},
     Ear2 = {"Beastly Earring", "Spike Earring", "Beetle Earring +1"},
-    Body = {"Scorpion Harness", "Savage Separates", "Beetle Harness +1", "Brass Harness"},
+    Body = {"Assault Jerkin", "Scorpion Harness", "Savage Separates", "Beetle Harness +1", "Brass Harness"},
     Hands = {"Beast Gloves", "Battle Gloves", "Lgn. Mittens"},
     Ring1 = {"Rajas Ring"},
     Ring2 = {"Victory Ring", "Courage Ring"},
@@ -45,7 +45,7 @@ local JA_sets = {
     },
     Reward_Priority = {
         Ammo = {"Pet Food Zeta", "Pet Fd. Epsilon", "Pet Food Delta", "Pet Fd. Gamma"},
-        Body = {"Beast Jackcoat"},
+        Body = {"Monster Jackcoat", "Beast Jackcoat"},
         Feet = {"Beast Gaiters"},
     }
 };

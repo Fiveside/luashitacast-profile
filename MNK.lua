@@ -9,21 +9,21 @@ local state = {
 }
 
 local sets = {
-    Idle_Priority = {
-        Main = {"T.M. Hooks +2", "Tekko Kagi", "Impact Knuckles", "Lynx Baghnakhs", "Burning Cesti"},
+    TP_Priority = {
+        Main = {"Destroyers", "T.M. Hooks +2", "Tekko Kagi", "Impact Knuckles", "Burning Cesti"},
         Ammo = {"Civet Sachet", "Happy Egg"},
-        Head = {"Optical Hat", "Temple Crown", "Mrc.Cpt. Headgear", "Mrc. Hachimaki"},
+        Head = {"Optical Hat", "Temple Crown", "Emperor Hairpin", "Mrc. Hachimaki"},
         Neck = {"Peacock Amulet", "Spike Necklace"},
-        Ear1 = {"Spike Earring", "Beetle Earring +1"},
-        Ear2 = {"Spike Earring", "Beetle Earring +1"},
+        Ear1 = {"Brutal Earring", "Spike Earring", "Beetle Earring +1"},
+        Ear2 = {"Ethereal Earring", "Spike Earring", "Beetle Earring +1"},
         Body = {"Scorpion Harness", "Temple Cyclas", --[["Jujitsu Gi", ]] "Savage Separates", "Power Gi"},
-        Hands = {"Ochiudo's Kote", "Federation Tekko", "Lgn. Mittens"},
+        Hands = {"Melee Gloves", --[["Ochiudo's Kote",]] "Federation Tekko", "Lgn. Mittens"},
         Ring1 = {"Rajas Ring", "Courage Ring", },
         Ring2 = {"Toreador's Ring", "Victory Ring", "Courage Ring", "Bastokan Ring"},
         Back = {"Amemet Mantle +1", "Jaguar Mantle", "Nomad's Mantle"},
         Waist = {"Brown Belt", "Purple Belt"},
-        Legs = {"Temple Hose", "Republic Subligar"},
-        Feet = {"Temple Gaiters", "Savage Gaiters", "Win. Kyahan"},
+        Legs = {"Byakko's Haidate", "Melee Hose", "Temple Hose", "Republic Subligar"},
+        Feet = {"Fuma Sune-Ate", "Temple Gaiters", "Savage Gaiters", "Win. Kyahan"},
     },
 };
 
@@ -35,7 +35,7 @@ local JA_sets = {
         --   Temple Cyclas - changes the vit multiplier from 1x to 2x
         --   Melee gloves - Adds an additional 0.6 multiplier to vit
         Body = {"Temple Cyclas"},
-        Hands = {"Savage Gauntlets"},
+        Hands = {"Melee Gloves"},
     },
     Focus_Priority = {
         Head = {"Temple Crown"},
@@ -46,6 +46,9 @@ local JA_sets = {
     Dodge_Priority = {
         Feet = {"Temple Gaiters"},
     },
+    Counterstance_Priority = {
+        Feet = {"Melee Gaiters"}
+    }
 };
 
 local Multihit_WS = T{"Combo", "Raging Fists", "Asuran Fists"};
@@ -87,7 +90,7 @@ profile.HandleDefault = function()
         gFunc.EvaluateLevels(JA_sets, myLevel);
     end
     local layers = T{};
-    layers:append(sets.Idle);
+    layers:append(sets.TP);
     layers:append(getZoneSet());
     layers:append(Idle.getSet());
     layers:append(HELM.getSet());

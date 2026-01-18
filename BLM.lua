@@ -3,21 +3,12 @@ local Util = gFunc.LoadFile("util");
 local profile = {};
 local sets = {
     Idle_Priority = {
-        Main = {"Yew wand +1", "Willow wand +1", "Maple Wand"},
-        Ammo = {"Fortune egg"},
-        Head = {"Silver hairpin"},
-        Body = {"Ducal Aketon"},
-        Ring1 = {"San d'Orian Ring"},
-        Ring2 = {"Windurstian Ring"}
-    },
-    
-    Resting_Priority = {
-        Main = {"Pilgrim's Wand"}
+        Main = {"Willow wand +1", "Maple Wand"},
     },
 
-    Carbuncle_Priority = {
-        Hands = {"Carbuncle mitts"},
-    },
+    Resting_Priority = {
+        Main = {"Pilgrim's Wand"},
+    }
 };
 local state = {
     syncedLevel = 0,

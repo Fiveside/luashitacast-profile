@@ -3,16 +3,20 @@ local Util = gFunc.LoadFile("util");
 local profile = {};
 local sets = {
     Idle_Priority = {
-        Main = {"Yew wand +1", "Willow wand +1", "Maple Wand"},
+        Main = {"Solid Wand", "Yew wand +1", "Willow wand +1", "Maple Wand"},
         Ammo = {"Fortune egg"},
-        Head = {"Silver hairpin"},
-        Body = {"Ducal Aketon"},
-        Ring1 = {"San d'Orian Ring"},
-        Ring2 = {"Windurstian Ring"}
+        -- Head = {"Silver hairpin"},
+        -- Body = {"Kingdom tunic"},-- {"Ducal Aketon"},
+        Hands = {"Mycophile cuffs"},
+        Legs = {"Seer's slacks +1"},
+        Ring1 = {"Eremite's ring", "San d'Orian Ring"},
+        Ring2 = {"Eremite's ring", "Windurstian Ring"}
     },
     
     Resting_Priority = {
-        Main = {"Pilgrim's Wand"}
+        Main = {"Pilgrim's Wand"},
+        Body = {"Seer's Tunic"},
+        Legs = {"Baron's slops"},
     },
 
     Carbuncle_Priority = {
@@ -50,6 +54,14 @@ profile.HandleDefault = function()
     local player = gData.GetPlayer();
     if (player.Status == "Resting") then
         layers:append(sets.Resting);
+    end
+
+    local pet = gData.GetPet()
+    if (pet ~= nil) then
+        local petSet = sets[pet.Name];
+        if (petSet ~= nil) then
+            layers:append(petSet);
+        end
     end
     
     gFunc.EquipSet(Util.compress_tables(layers:unpack()));

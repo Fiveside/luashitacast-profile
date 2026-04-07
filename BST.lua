@@ -22,8 +22,8 @@ sets.Idle_Priority = {
     Ring1 = {"Rajas Ring"},
     Ring2 = {"Victory Ring", "Courage Ring"},
     Back = {"Amemet Mantle +1", "Jaguar Mantle", "Nomad's Mantle"},
-    Waist = {"Ryl.Kgt. Belt", "Warrior's Belt +1"},
-    Legs = {"Ryl.Kgt. Breeches", "Republic Subligar", "Beetle Subligar +1"},
+    Waist = {"Swift Belt", "Ryl.Kgt. Belt", "Warrior's Belt +1"},
+    Legs = {"Byakko's Haidate", "Ryl.Kgt. Breeches", "Republic Subligar", "Beetle Subligar +1"},
     Feet = {"Thick Sollerets", "Savage Gaiters", "Btl. Leggings +1"},
 };
 
@@ -36,11 +36,14 @@ sets.WS_Multihit_Priority = {
 
 local JA_sets = {
     Charm_Priority = {
-        Head = {"Noble's Ribbon"},
+        Head = {"Beast Helm", "Noble's Ribbon"},
         Neck = {"Bird Whistle"},
+        Body = {"Monster Jackcoat"},
         Hands = {"Beast Gloves"};
         Ring1 = {"Hope Ring"},
         Ring2 = {"Hope Ring"},
+        Waist = {"Corsette +1"},
+        Legs = {"Beast Trousers"},
         Feet = {"Beast Gaiters", "Savage Gaiters"},
     },
     Reward_Priority = {

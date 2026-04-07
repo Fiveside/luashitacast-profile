@@ -10,18 +10,18 @@ local state = {
 
 local sets = {
     TP_Priority = {
-        Main = {"Destroyers", "T.M. Hooks +2", "Tekko Kagi", "Impact Knuckles", "Burning Cesti"},
+        Main = {"Destroyers", "Tekko Kagi", "Impact Knuckles", "Burning Cesti"},
         Ammo = {"Civet Sachet", "Happy Egg"},
         Head = {"Optical Hat", "Temple Crown", "Emperor Hairpin", "Mrc. Hachimaki"},
         Neck = {"Peacock Amulet", "Spike Necklace"},
         Ear1 = {"Brutal Earring", "Spike Earring", "Beetle Earring +1"},
         Ear2 = {"Ethereal Earring", "Spike Earring", "Beetle Earring +1"},
-        Body = {"Scorpion Harness", "Temple Cyclas", --[["Jujitsu Gi", ]] "Savage Separates", "Power Gi"},
+        Body = {"Shura Togi", "Scorpion Harness", "Temple Cyclas", --[["Jujitsu Gi", ]] "Savage Separates", "Power Gi"},
         Hands = {"Melee Gloves", --[["Ochiudo's Kote",]] "Federation Tekko", "Lgn. Mittens"},
         Ring1 = {"Rajas Ring", "Courage Ring", },
         Ring2 = {"Toreador's Ring", "Victory Ring", "Courage Ring", "Bastokan Ring"},
         Back = {"Amemet Mantle +1", "Jaguar Mantle", "Nomad's Mantle"},
-        Waist = {"Brown Belt", "Purple Belt"},
+        Waist = {"Brown Belt"},
         Legs = {"Byakko's Haidate", "Melee Hose", "Temple Hose", "Republic Subligar"},
         Feet = {"Fuma Sune-Ate", "Temple Gaiters", "Savage Gaiters", "Win. Kyahan"},
     },
@@ -34,6 +34,7 @@ local JA_sets = {
         -- Special gear: 
         --   Temple Cyclas - changes the vit multiplier from 1x to 2x
         --   Melee gloves - Adds an additional 0.6 multiplier to vit
+        Head = {"Genbu's Kabuto"},
         Body = {"Temple Cyclas"},
         Hands = {"Melee Gloves"},
     },
@@ -53,10 +54,12 @@ local JA_sets = {
 
 local Multihit_WS = T{"Combo", "Raging Fists", "Asuran Fists"};
 sets.WS_Multihit_Priority = {
+    Head = {"Genbu's Kabuto"},
     Neck = {"Peacock Amulet"},
     Ring1 = {"Rajas Ring"},
     Ring2 = {"Toreador's Ring"},
-    Waist = {"Life Belt"}
+    Waist = {"Brown Belt"},
+    Feet = {"Shura Sune-Ate"},
 }
 
 sets.WS_Priority = {
@@ -64,6 +67,7 @@ sets.WS_Priority = {
     Ring1 = {"Rajas Ring"},
     Ring2 = {"Victory Ring", "Courage Ring"},
     Waist = {"Brown Belt"},
+    Feet = {"Shura Sune-Ate"},
 }
 
 profile.Sets = sets;

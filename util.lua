@@ -1,21 +1,26 @@
-    local Export = {};
+local Export = {};
 
-function Export.table_tostring(o)
+local function table_tostring(o)
+-- function Export.table_tostring(o)
     if type(o) == 'table' then
-       local s = '{ '
-       for k,v in pairs(o) do
-          if type(k) ~= 'number' then k = '"'..k..'"' end
-          s = s .. '['..k..'] = ' .. table_tostring(v) .. ','
-       end
-       return s .. '} '
+        local s = '{ '
+        for k,v in pairs(o) do
+            if type(k) ~= 'number' then k = '"'..k..'"' end
+            s = s .. '['..k..'] = ' .. table_tostring(v) .. ','
+        end
+        return s .. '} '
     else
-       return tostring(o)
+        return tostring(o)
     end
- end
+end
+
+Export.table_tostring = table_tostring;
 
 function Export.compress_tables(...)
     local fin = {};
+    -- print("aaaaa")
     local arg = {...};
+    -- print("compress: " .. Export.table_tostring(arg));
     for _i, t in ipairs(arg) do
         for k, v in pairs(t) do
             fin[k] = v

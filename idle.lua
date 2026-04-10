@@ -22,7 +22,7 @@ end
 
 local ITEM_SETS = T{
     ["President. Hairpin"] = T{
-        set = T{ Head = PRESIDENTIAL_HAIRPIN },
+        set = T{ Head = "President. Hairpin" },
         condition = includeHairpin,
     },
     -- Not yet acquired.
@@ -53,20 +53,16 @@ end
 
 local function buildGearSet()
     local player = gData.GetPlayer();
-    local Conditions = {
-        PRESIDENTIAL_HAIRPIN = includeHairpin(),
-        GARDEN_BANGLES = includeBangles(),
-    };
 
     local sets = {}
-    for itemName, itemCondition in ipairs(Conditions) do
-        local includeCondition = x[1];
-        local item = ITEM_INFO[itemName];
-        if includeCondition and item.jobs:contains(player.MainJob) and item.level <= player.MainJobLevelSync then
+    for itemName, item in pairs(ITEM_SETS) do
+        local itemInfo = ITEM_INFO[itemName];
+        if item.condition() and itemInfo.jobs:contains(player.MainJob) and itemInfo.level <= player.MainJobSync then
             sets[#sets + 1] = item.set
         end
     end
-    return Utils.compress_tables(sets:unpack());
+    print(Utils.table_tostring(sets))
+    return Utils.compress_tables(table.unpack(sets));
 end
 
 

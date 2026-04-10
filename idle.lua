@@ -26,10 +26,10 @@ local ITEM_SETS = T{
         condition = includeHairpin,
     },
     -- Not yet acquired.
-    ["Garden Bangles"] = T{ 
-        set = T{ Hands = GARDEN_BANGLES },
-        condition = includeBangles
-    },
+    -- ["Garden Bangles"] = T{ 
+    --     set = T{ Hands = GARDEN_BANGLES },
+    --     condition = includeBangles
+    -- },
 };
 
 local ITEM_INFO = T{};
@@ -50,9 +50,6 @@ do
         ITEM_INFO[itemName] = T{ jobs = jobs, level = item.Level };
     end
 end
-
-
-
 
 local function buildGearSet()
     local player = gData.GetPlayer();

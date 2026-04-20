@@ -61,7 +61,6 @@ local function buildGearSet()
             sets[#sets + 1] = item.set
         end
     end
-    print(Utils.table_tostring(sets))
     return Utils.compress_tables(table.unpack(sets));
 end
 

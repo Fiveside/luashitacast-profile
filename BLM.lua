@@ -1,18 +1,21 @@
 local Utils = gFunc.LoadFile("util");
 local getZoneSet = gFunc.LoadFile("town");
+local Idle = gFunc.LoadFile("idle");
+
+---@alias GearSet
 
 local profile = {};
 local sets = T{};
 sets.Idle = T{
     -- Main = {"Solid Wand", "Yew Wand +1", "Willow wand +1", "Maple Wand"},
     -- Sub = {"Solid wand", "Yew Wand +1"},
-    Head = "Displaced",
+    -- Head = "Displaced",
     -- Body = "Black Cloak",
     Body = "Sorcerer's Coat",
 }
     
 sets.Resting_Priority = T{
-    Main = {"Dark Staff", "Pilgrim's Wand"},
+    Main = {"Pluto's Staff", "Pilgrim's Wand"},
     Body = {"Errant Hpl.", "Black cloak", "Seer's Tunic"},
     Legs = {"Baron's slops"},
 }
@@ -31,6 +34,23 @@ sets.DarkMagic = Utils.compress_tables(sets.ElementalMagic, T{
     Main = "Dark staff",
     Legs = "Wizard's tonban",
 });
+
+
+-- A map from an element to the appropriate staff
+local ELEMENT_STAFF = T{
+    Thunder = "Jupiter's staff",
+    Fire = 'Fire staff',
+    Ice = "Aquilo's staff",
+    Wind = 'Wind staff',
+    Water = 'Water staff',
+    Earth = 'Earth staff',
+    Dark = "Pluto's staff",
+};
+
+-- A map from an element to the appropriate obi.
+local ELEMENT_OBI = T{
+    Ice = "Hyorin Obi",
+};
 
 local state = {
     syncedLevel = 0,
@@ -111,7 +131,7 @@ profile.HandleMidcast = function()
     elseif (element == 'Earth') then
         staff = 'Earth staff';
     elseif (element == 'Dark') then
-        staff = 'Dark staff';
+        staff = "Pluto's staff";
     end
 
     if (staff ~= nil) then
@@ -146,73 +166,160 @@ end
 profile.HandleWeaponskill = function()
 end
 
-local DOWNCAST_MAP = T{
-    ['Thunder IV'] = 'Thunder III',
-    ['Thunder III'] = 'Thunder II',
-    ['Thunder II'] = 'Thunder',
+-- local DOWNCAST_MAP = T{
+--     ['Thunder IV'] = 'Thunder III',
+--     ['Thunder III'] = 'Thunder II',
+--     ['Thunder II'] = 'Thunder',
 
-    ['Blizzard IV'] = 'Blizzard III',
-    ['Blizzard III'] = 'Blizzard II',
-    ['Blizzard II'] = 'Blizzard',
+--     ['Blizzard IV'] = 'Blizzard III',
+--     ['Blizzard III'] = 'Blizzard II',
+--     ['Blizzard II'] = 'Blizzard',
 
-    ['Fire IV'] = 'Fire III',
-    ['Fire III'] = 'Fire II',
-    ['Fire II'] = 'Fire',
+--     ['Fire IV'] = 'Fire III',
+--     ['Fire III'] = 'Fire II',
+--     ['Fire II'] = 'Fire',
 
-}
+-- }
 
-function canCast(spell)
-    -- local spell = AshitaCore:GetResourceManager():GetSpellByName(spellName);
-    -- if (spell == nil) then
-    --     return false;
-    -- end
-    local player = AshitaCore:GetMemoryManager():GetPlayer();
-    local mainJobLevelReq = spell.LevelRequired[player:GetMainJob() + 1];
-    if  (mainJobLevelReq == -1 or mainJobLevelReq > player:GetMainJobLevel()) then
-        return false;
-    end
+-- function canCast(spell)
+--     -- local spell = AshitaCore:GetResourceManager():GetSpellByName(spellName);
+--     -- if (spell == nil) then
+--     --     return false;
+--     -- end
+--     local player = AshitaCore:GetMemoryManager():GetPlayer();
+--     local mainJobLevelReq = spell.LevelRequired[player:GetMainJob() + 1];
+--     if  (mainJobLevelReq == -1 or mainJobLevelReq > player:GetMainJobLevel()) then
+--         return false;
+--     end
 
-    -- TODO: Check to see if the player knows the spell.
-    -- TODO: Check to see if the player's subjob knows the spell.
-    -- TODO: Spells that come from Job Points (not sure if I wanna bother?)
-    return true;
-end
+--     -- TODO: Check to see if the player knows the spell.
+--     -- TODO: Check to see if the player's subjob knows the spell.
+--     -- TODO: Spells that come from Job Points (not sure if I wanna bother?)
+--     return true;
+-- end
 
-function downCast(spellName)
-    local rm = AshitaCore:GetResourceManager();
-    local player = AshitaCore:GetMemoryManager():GetPlayer();
-    local spell = rm:GetSpellByName(spellName, 0);
-    local mainJobLevelReq = spell.LevelRequired[player:GetMainJob() + 1];
-    -- local subJobLevelReq = spell.LevelRequired[player.GetSubJobLevel() + 1];
+-- function downCast(spellName)
+--     local rm = AshitaCore:GetResourceManager();
+--     local player = AshitaCore:GetMemoryManager():GetPlayer();
+--     local spell = rm:GetSpellByName(spellName, 0);
+--     local mainJobLevelReq = spell.LevelRequired[player:GetMainJob() + 1];
+--     -- local subJobLevelReq = spell.LevelRequired[player.GetSubJobLevel() + 1];
     
-    print("asdf " .. mainJobLevelReq .. " " .. player:GetMainJobLevel());
-    while true do
-        if canCast(spell) then
-            AshitaCore:GetChatManager():QueueCommand(1, '/echo /ma "' .. spellName .. '" <t>')
-            return;
-        else
-            spellName = DOWNCAST_MAP[spellName];
-            if (spellName == nil) then
-                print("Error: No candidate");
-                return;
-            end
-        end
+--     print("asdf " .. mainJobLevelReq .. " " .. player:GetMainJobLevel());
+--     while true do
+--         if canCast(spell) then
+--             AshitaCore:GetChatManager():QueueCommand(1, '/echo /ma "' .. spellName .. '" <t>')
+--             return;
+--         else
+--             spellName = DOWNCAST_MAP[spellName];
+--             if (spellName == nil) then
+--                 print("Error: No candidate");
+--                 return;
+--             end
+--         end
+--     end
+--     -- if (mainJobLevelReq > -1 and mainJobLevelReq < player:GetMainJobLevel()) then
+--     --     -- do the thing!
+--     --     print("TRying ".. spellName)
+--     -- else
+--     --     print("nah")
+--     -- end
+-- end
+
+
+
+function getElementalStaffSet()
+    local action = gFunc.GetAction()
+    local element = action.Element
+    local staff = ELEMENT_STAFF[element];
+    if staff ~= nil then
+        return { Main = staff };
     end
-    -- if (mainJobLevelReq > -1 and mainJobLevelReq < player:GetMainJobLevel()) then
-    --     -- do the thing!
-    --     print("TRying ".. spellName)
-    -- else
-    --     print("nah")
-    -- end
+    return {};
 end
 
-local ELEMENT_STAFF = T{
-    Thunder = "Thunder staff",
-    Ice = "Aquilo's staff"
-}
+---@alias Element
+---| '"Thunder"'
+---| '"Ice"'
+---| '"Fire"'
+---| '"Wind"'
+---| '"Water"'
+---| '"Earth"'
+---| '"Dark"'
+---| '"Light"'
 
-function getElementalStaffSet(element)
 
+-- Maps an element with the element it is weak to
+---@type { [Element]: Element}
+local ELEMENTAL_WEAKNESS = T{
+    Thunder = "Earth",
+    Ice = "Fire",
+    Fire = "Water",
+    Wind = "Ice",
+    Water = "Thunder",
+    Earth = "Wind",
+    Dark = "Light",
+    Light = "Dark",
+};
+
+--[[
+    Spells gain the following potency for affinities:
+    10% for magic of the day
+    10% for magic matching single weather
+    20% for magic matching single weather and day
+    25% for magic matching double weather
+    35% for magic matching double weather and day
+]]
+
+
+---Calculate and return the multiplier for the current spell based on day and weather
+---@param element Element Element of the spell being cast.
+---@param dayElement Element Element of the current day.
+---@param weatherElement Element Element of any extreme weather phenomenon.
+---@param weatherx2 boolean True if we're experiencing double weather.
+---@return integer score The multiplier
+function getElementEnvBonus(element, dayElement, weatherElement, weatherx2)
+    local score = 0;
+
+    -- Add day bonus/penalty.
+    if element == dayElement then
+        score = score + 0.1;
+    elseif ELEMENTAL_WEAKNESS[dayElement] == element then
+        score = score - 0.1;
+    end
+
+    -- double weather gives +25%
+    local weatherBonus = 0.1
+    if weatherx2 then
+        weatherBonus = 0.25
+    end
+
+    if element == weatherElement then
+        score = score + weatherBonus;
+    elseif ELEMENTAL_WEAKNESS[element] == weatherElement then
+        score = score + (weatherBonus * -1);
+    end
+
+    return score;
+end
+
+
+function getSpellEnvSet()
+    local action = gFunc.GetAction();
+    local env = gData.GetEnvironment();
+
+    local envMult = getElementEnvBonus(action.Element, env.DayElement, env.WeatherElement, env.Weather:endswith('x2'));
+
+    local set = {};
+    if ELEMENT_STAFF[action.Element] ~= nil then
+        set.Main = ELEMENT_STAFF[action.Element];
+        set.Sub = "displaced";
+    end
+
+    if envMult > 0 and ELEMENT_OBI[action.Element] ~= nil then
+        set.Waist = ELEMENT_OBI[action.Element];
+    end
+    return set;
 end
 
 function getDrainSet()

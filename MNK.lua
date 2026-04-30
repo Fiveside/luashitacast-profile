@@ -8,19 +8,19 @@ local state = {
     syncedLevel = 0,
 }
 
-local sets = T{};
+local sets = T {};
 
-sets.Idle = T{
+sets.Idle = T {
     Body = "Melee Cyclas",
 }
 
-sets.TP = T{
+sets.TP = T {
     Main = "Destroyers",
     Ammo = "Civet Sachet",
-    -- Head = "Optical Hat", 
+    -- Head = "Optical Hat",
     Head = "Melee Crown",
-    Neck = "Faith Torque", 
-    Ear1 = "Brutal Earring", 
+    Neck = "Faith Torque",
+    Ear1 = "Brutal Earring",
     Ear2 = "Ethereal Earring",
     Body = "Shura Togi",
     Hands = "Melee Gloves",
@@ -33,7 +33,7 @@ sets.TP = T{
 };
 
 -- Basically high evasion and counter.
-sets.Tanking = T{
+sets.Tanking = T {
     Main = "Destroyers",
     Ammo = "Civet Sachet",
     Head = "Optical Hat",
@@ -47,28 +47,28 @@ sets.Tanking = T{
 -- The name of the set should be JA_<Jobability>_Priority with appropriate capitalization.
 sets.JA_Chakra_Priority = {
     -- Chakra is based on Vit, so this should be a high vit set.
-    -- Special gear: 
+    -- Special gear:
     --   Temple Cyclas - changes the vit multiplier from 1x to 2x
     --   Melee gloves - Adds an additional 0.6 multiplier to vit
-    Head = {"Genbu's Kabuto"},
+    Head = { "Genbu's Kabuto" },
 
-    Body = {"Temple Cyclas"},
-    Hands = {"Melee Gloves"},
+    Body = { "Temple Cyclas" },
+    Hands = { "Melee Gloves" },
 };
 sets.JA_Focus_Priority = {
-    Head = {"Temple Crown"},
+    Head = { "Temple Crown" },
 };
 sets.JA_Boost_Priority = {
-    Hands = {"Temple Gloves"},
+    Hands = { "Temple Gloves" },
 };
 sets.JA_Dodge_Priority = {
-    Feet = {"Temple Gaiters"},
+    Feet = { "Temple Gaiters" },
 };
 sets.JA_Counterstance_Priority = {
-    Feet = {"Melee Gaiters"}
+    Feet = { "Melee Gaiters" }
 };
 
-sets["WS_Asuran Fists"] = T{
+sets["WS_Asuran Fists"] = T {
     Head = "Genbu's Kabuto",
     Neck = "Faith Torque",
     Ring1 = "Rajas Ring",
@@ -79,7 +79,7 @@ sets["WS_Asuran Fists"] = T{
 }
 
 -- Modifiers: STR 50%, VIT 50%
-sets["WS_Dragon Kick"] = T{
+sets["WS_Dragon Kick"] = T {
     Head = "Genbu's Kabuto",
     Neck = "Faith Torque",
     Ring1 = "Rajas Ring",
@@ -115,7 +115,7 @@ profile.HandleDefault = function()
         gFunc.EvaluateLevels(sets, myLevel);
     end
 
-    local layers = T{};
+    local layers = T {};
     local player = gData.GetPlayer();
     if player.Status == "Engaged" then
         layers:append(sets.TP);
@@ -123,7 +123,7 @@ profile.HandleDefault = function()
     else
         layers:append(sets.Idle);
     end
-    
+
     -- layers:append(sets.TP);
     layers:append(getZoneSet());
     layers:append(Idle.getSet());

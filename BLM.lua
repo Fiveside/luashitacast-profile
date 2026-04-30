@@ -12,37 +12,60 @@ sets.Idle = T{
     -- Head = "Displaced",
     -- Body = "Black Cloak",
     Body = "Sorcerer's Coat",
-}
-    
+};
+  
 sets.Resting_Priority = T{
     Main = {"Pluto's Staff", "Pilgrim's Wand"},
     Body = {"Errant Hpl.", "Black cloak", "Seer's Tunic"},
     Legs = {"Baron's slops"},
-}
-    
-sets.ElementalMagic = T{
+};
+
+sets.MagicAttack = T{
     Head = "Wizard's Petasos",
     Body = "Igqira weskit",
     -- Body = "Black Cotehardie",
     -- Body = "Black Cloak",
     -- Legs = "Seer's slacks +1",
     Legs = "Errant slops",
-}
+};
 
-sets.DarkMagic = Utils.compress_tables(sets.ElementalMagic, T{
+sets.ElementalMagic = Utils.compress_tables(sets.MagicAttack, T{
+    Body = "Sorcerer's Coat",
+    Hands = "Wizard's Gloves",
+});
+
+sets.EnfeeblingMagic = Utils.compress_tables(sets.MagicAttack, T{
+
+});
+
+sets.DarkMagic = Utils.compress_tables(sets.MagicAttack, T{
     -- Body = "Black Cotehardie",
     Main = "Dark staff",
     Legs = "Wizard's tonban",
 });
 
 
+---Specific gear along with functions that return true when they it should be equipped
+---Equip happens during midcast
+local ConditionalGear = T{
+    ["Sorcerer's Tonban"] = function ()
+        local action = gData.GetAction()
+        local env = gData.GetEnvironment()
+        return action.Element == env.DayElement;
+    end,
+    -- ["Diabolos' Ring"] = function()
+    --     local player = 
+    -- end,
+};
+
+
 -- A map from an element to the appropriate staff
 local ELEMENT_STAFF = T{
     Thunder = "Jupiter's staff",
-    Fire = 'Fire staff',
+    Fire = "Vulcan's staff",
     Ice = "Aquilo's staff",
     Wind = 'Wind staff',
-    Water = 'Water staff',
+    Water = "Neptune's staff",
     Earth = 'Earth staff',
     Dark = "Pluto's staff",
 };
@@ -112,27 +135,28 @@ profile.HandleMidcast = function()
     if action.Skill == 'Dark Magic' then
         layers:append(sets.DarkMagic)
     elseif action.Skill == 'Elemental Magic' then
-        layers:append(sets.ElementalMagic)
+        layers:append(sets.MagicAttack)
     end
 
     local element = gData.GetAction().Element;
     local staff = nil;
     -- print("Action[" .. action.Id  .. "]: " .. action.Name .. ' ' .. action.Skill .. ' / ' .. element);
-    if (element == 'Thunder') then
-        staff = "Jupiter's staff";
-    elseif (element == 'Fire') then
-        staff = 'Fire staff';
-    elseif (element == 'Ice') then
-        staff = "Aquilo's staff";
-    elseif (element == 'Wind') then
-        staff = 'Wind staff';
-    elseif (element == 'Water') then
-        staff = 'Water staff';
-    elseif (element == 'Earth') then
-        staff = 'Earth staff';
-    elseif (element == 'Dark') then
-        staff = "Pluto's staff";
-    end
+    -- if (element == 'Thunder') then
+    --     staff = "Jupiter's staff";
+    -- elseif (element == 'Fire') then
+    --     staff = "Vulcan's staff";
+    -- elseif (element == 'Ice') then
+    --     staff = "Aquilo's staff";
+    -- elseif (element == 'Wind') then
+    --     staff = 'Wind staff';
+    -- elseif (element == 'Water') then
+    --     staff = "Neptune's staff";
+    -- elseif (element == 'Earth') then
+    --     staff = 'Earth staff';
+    -- elseif (element == 'Dark') then
+    --     staff = "Pluto's staff";
+    -- end
+    local staff = ELEMENT_STAFF[element];
 
     if (staff ~= nil) then
         layers:append(T{ Main = staff })

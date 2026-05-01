@@ -68,9 +68,11 @@ sets.JA_Counterstance_Priority = {
     Feet = { "Melee Gaiters" }
 };
 
+-- Modifiers: STR 10%, VIT 10%
 sets["WS_Asuran Fists"] = T {
     Head = "Genbu's Kabuto",
     Neck = "Faith Torque",
+    Body = "Kirin's Osode",
     Ring1 = "Rajas Ring",
     Ring2 = "Toreador's Ring",
     Waist = "Brown Belt",
@@ -82,12 +84,22 @@ sets["WS_Asuran Fists"] = T {
 sets["WS_Dragon Kick"] = T {
     Head = "Genbu's Kabuto",
     Neck = "Faith Torque",
+    Body = "Kirin's Osode",
     Ring1 = "Rajas Ring",
     Ring2 = "Victory Ring",
     Waist = "Brown Belt",
     legs = "Shura Haidate",
     Feet = "Dune Boots",
 }
+
+-- Modifiers: STR: 20%, DEX: 20%
+sets["WS_Raging Fists"] = sets["WS_Asuran Fists"];
+sets["WS_Raging Fists"].Legs = "Byakko's Haidate";
+
+-- Modifiers: STR: 50%, VIT: 20%
+sets["WS_Howling Fist"] = sets["WS_Dragon Kick"];
+sets["WS_Howling Fist"].Feet = "Shura Sune-Ate";
+
 
 sets.WS_Raging_Fists = Utils.compress_tables(sets.WS_Asuran_Fists);
 sets.WS_Combo = Utils.compress_tables(sets.WS_Asuran_Fists);
@@ -119,12 +131,10 @@ profile.HandleDefault = function()
     local player = gData.GetPlayer();
     if player.Status == "Engaged" then
         layers:append(sets.TP);
-        -- layers:append(sets.Tanking);
     else
         layers:append(sets.Idle);
     end
 
-    -- layers:append(sets.TP);
     layers:append(getZoneSet());
     layers:append(Idle.getSet());
     layers:append(HELM.getSet());

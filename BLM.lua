@@ -5,22 +5,22 @@ local Idle = gFunc.LoadFile("idle");
 ---@alias GearSet
 
 local profile = {};
-local sets = T{};
-sets.Idle = T{
+local sets = T {};
+sets.Idle = T {
     -- Main = {"Solid Wand", "Yew Wand +1", "Willow wand +1", "Maple Wand"},
     -- Sub = {"Solid wand", "Yew Wand +1"},
     -- Head = "Displaced",
     -- Body = "Black Cloak",
     Body = "Sorcerer's Coat",
 };
-  
-sets.Resting_Priority = T{
-    Main = {"Pluto's Staff", "Pilgrim's Wand"},
-    Body = {"Errant Hpl.", "Black cloak", "Seer's Tunic"},
-    Legs = {"Baron's slops"},
+
+sets.Resting_Priority = T {
+    Main = { "Pluto's Staff", "Pilgrim's Wand" },
+    Body = { "Errant Hpl.", "Black cloak", "Seer's Tunic" },
+    Legs = { "Baron's slops" },
 };
 
-sets.MagicAttack = T{
+sets.MagicAttack = T {
     Head = "Wizard's Petasos",
     Body = "Igqira weskit",
     -- Body = "Black Cotehardie",
@@ -29,38 +29,23 @@ sets.MagicAttack = T{
     Legs = "Errant slops",
 };
 
-sets.ElementalMagic = Utils.compress_tables(sets.MagicAttack, T{
+sets.ElementalMagic = Utils.compress_tables(sets.MagicAttack, T {
     Body = "Sorcerer's Coat",
     Hands = "Wizard's Gloves",
 });
 
-sets.EnfeeblingMagic = Utils.compress_tables(sets.MagicAttack, T{
+sets.EnfeeblingMagic = Utils.compress_tables(sets.MagicAttack, T {
 
 });
 
-sets.DarkMagic = Utils.compress_tables(sets.MagicAttack, T{
+sets.DarkMagic = Utils.compress_tables(sets.MagicAttack, T {
     -- Body = "Black Cotehardie",
     Main = "Dark staff",
     Legs = "Wizard's tonban",
 });
 
-
----Specific gear along with functions that return true when they it should be equipped
----Equip happens during midcast
-local ConditionalGear = T{
-    ["Sorcerer's Tonban"] = function ()
-        local action = gData.GetAction()
-        local env = gData.GetEnvironment()
-        return action.Element == env.DayElement;
-    end,
-    -- ["Diabolos' Ring"] = function()
-    --     local player = 
-    -- end,
-};
-
-
 -- A map from an element to the appropriate staff
-local ELEMENT_STAFF = T{
+local ELEMENT_STAFF = T {
     Thunder = "Jupiter's staff",
     Fire = "Vulcan's staff",
     Ice = "Aquilo's staff",
@@ -70,8 +55,40 @@ local ELEMENT_STAFF = T{
     Dark = "Pluto's staff",
 };
 
+
+---Specific gear along with functions that return true when they it should be equipped
+---Equip happens during midcast
+local CONDITIONAL_GEAR = T {
+    [T { Head = "Sorcerer's Tonban" }] = function()
+        local action = gData.GetAction()
+        local env = gData.GetEnvironment()
+        return action.Element == env.DayElement;
+    end,
+    -- ["Diabolos' Ring"] = function()
+    --     local player =
+    -- end,
+
+    [T { Neck = "Uggalepih Pendant" }] = function()
+        local action = gData.GetAction();
+        local me = gData.GetPlayer();
+
+        -- The mp threshold calculation conditions are actually somewhat intricate, but
+        -- a straight 50% check covers 99.9% of cases.  Good enough.
+        return me.MPP < 50 and action.Skill == 'ElementalMagic';
+    end,
+
+    [T { Main = "Diabolos's Pole" }] = function()
+        local actionName = gData.GetAction().Name;
+        if actionName ~= 'Drain' and actionName ~= 'Aspir' then
+            return false;
+        end
+        local weather = gData.GetEnvironment();
+        return weather:startswith('Dark');
+    end
+};
+
 -- A map from an element to the appropriate obi.
-local ELEMENT_OBI = T{
+local ELEMENT_OBI = T {
     Ice = "Hyorin Obi",
 };
 
@@ -105,15 +122,15 @@ profile.HandleDefault = function()
         gFunc.EvaluateLevels(sets, myLevel);
         -- gFunc.EvaluateLevels(JA_sets, myLevel);
     end
-    local layers = T{};
+    local layers = T {};
     layers:append(sets.Idle);
     layers:append(getZoneSet());
-    
+
     local player = gData.GetPlayer();
     if (player.Status == "Resting") then
         layers:append(sets.Resting);
     end
-    
+
     gFunc.EquipSet(Utils.compress_tables(layers:unpack()));
 end
 
@@ -127,7 +144,7 @@ profile.HandlePrecast = function()
 end
 
 profile.HandleMidcast = function()
-    local layers = T{};
+    local layers = T {};
     local action = gData.GetAction();
     local me = gData.GetPlayer();
     local env = gData.GetEnvironment();
@@ -139,41 +156,29 @@ profile.HandleMidcast = function()
     end
 
     local element = gData.GetAction().Element;
-    local staff = nil;
-    -- print("Action[" .. action.Id  .. "]: " .. action.Name .. ' ' .. action.Skill .. ' / ' .. element);
-    -- if (element == 'Thunder') then
-    --     staff = "Jupiter's staff";
-    -- elseif (element == 'Fire') then
-    --     staff = "Vulcan's staff";
-    -- elseif (element == 'Ice') then
-    --     staff = "Aquilo's staff";
-    -- elseif (element == 'Wind') then
-    --     staff = 'Wind staff';
-    -- elseif (element == 'Water') then
-    --     staff = "Neptune's staff";
-    -- elseif (element == 'Earth') then
-    --     staff = 'Earth staff';
-    -- elseif (element == 'Dark') then
-    --     staff = "Pluto's staff";
-    -- end
     local staff = ELEMENT_STAFF[element];
 
     if (staff ~= nil) then
-        layers:append(T{ Main = staff })
+        layers:append(T { Main = staff })
     end
 
-    if action.Name == 'Drain' or action.Name == 'Aspir' then
-        layers:append(getDrainSet());
-    end
+    -- if action.Name == 'Drain' or action.Name == 'Aspir' then
+    --     layers:append(getDrainSet());
+    -- end
 
-    if action.Element == env.DayElement then
-        layers:append({ Legs = "Sorcerer's Tonban" })
-    end
+    -- if action.Element == env.DayElement then
+    --     layers:append({ Legs = "Sorcerer's Tonban" })
+    -- end
 
-    if me.MPP < 50 then
-        layers:append({ Neck = "Uggalepih Pendant" })
-    else
-        layers:append({ Neck = "Philomath Stole" })
+    -- if me.MPP < 50 then
+    --     layers:append({ Neck = "Uggalepih Pendant" })
+    -- else
+    --     layers:append({ Neck = "Philomath Stole" })
+    -- end
+    for conditionalSet, condition in pairs(CONDITIONAL_GEAR) do
+        if condition() then
+            layers:append(conditionalSet)
+        end
     end
 
     if (#layers > 0) then
@@ -228,7 +233,7 @@ end
 --     local spell = rm:GetSpellByName(spellName, 0);
 --     local mainJobLevelReq = spell.LevelRequired[player:GetMainJob() + 1];
 --     -- local subJobLevelReq = spell.LevelRequired[player.GetSubJobLevel() + 1];
-    
+
 --     print("asdf " .. mainJobLevelReq .. " " .. player:GetMainJobLevel());
 --     while true do
 --         if canCast(spell) then
@@ -275,7 +280,7 @@ end
 
 -- Maps an element with the element it is weak to
 ---@type { [Element]: Element}
-local ELEMENTAL_WEAKNESS = T{
+local ELEMENTAL_WEAKNESS = T {
     Thunder = "Earth",
     Ice = "Fire",
     Fire = "Water",
@@ -327,7 +332,6 @@ function getElementEnvBonus(element, dayElement, weatherElement, weatherx2)
     return score;
 end
 
-
 function getSpellEnvSet()
     local action = gFunc.GetAction();
     local env = gData.GetEnvironment();
@@ -346,16 +350,16 @@ function getSpellEnvSet()
     return set;
 end
 
-function getDrainSet()
-    local env = gData.GetEnvironment()
-    local weather = env.Weather
-    if weather == 'Dark' or weather == 'Dark x2' then
-        return {
-            Main = "Diabolos's Pole"
-        }
-    else
-        return {}
-    end
-end
+-- function getDrainSet()
+--     local env = gData.GetEnvironment()
+--     local weather = env.Weather
+--     if weather == 'Dark' or weather == 'Dark x2' then
+--         return {
+--             Main = "Diabolos's Pole"
+--         }
+--     else
+--         return {}
+--     end
+-- end
 
 return profile;

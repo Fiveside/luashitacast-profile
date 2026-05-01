@@ -18,6 +18,7 @@ sets.Resting_Priority = T {
     Legs = { "Baron's slops" },
 };
 
+-- This set should be considered the default set.
 sets.MagicAttack = T {
     Head = "Wizard's Petasos",
     Body = "Igqira weskit",
@@ -62,9 +63,15 @@ local CONDITIONAL_GEAR = T {
         local env = gData.GetEnvironment()
         return action.Element == env.DayElement;
     end,
-    -- ["Diabolos' Ring"] = function()
-    --     local player =
-    -- end,
+
+    [T { Ring = "Diabolos's Ring" }] = function()
+        -- The ring adds -15% mp, which sucks.  So only do this if our mp is already low.
+        local me = gData.GetPlayer();
+        local mpWithinRange = me.MPP < 85;
+        local isDarksday = gData.GetEnvironment().DayElement == 'Dark';
+        local isDarkMagic = gData.GetAction().Skill == 'Dark Magic';
+        return isDarksday and isDarkMagic and mpWithinRange;
+    end,
 
     [T { Neck = "Uggalepih Pendant" }] = function()
         local action = gData.GetAction();
@@ -144,8 +151,8 @@ end
 profile.HandleMidcast = function()
     local layers = T {};
     local action = gData.GetAction();
-    local me = gData.GetPlayer();
-    local env = gData.GetEnvironment();
+    -- local me = gData.GetPlayer();
+    -- local env = gData.GetEnvironment();
 
     if action.Skill == 'Dark Magic' then
         layers:append(sets.DarkMagic)
@@ -153,12 +160,13 @@ profile.HandleMidcast = function()
         layers:append(sets.MagicAttack)
     end
 
-    local element = gData.GetAction().Element;
-    local staff = ELEMENT_STAFF[element];
+    -- local element = gData.GetAction().Element;
+    -- local staff = ELEMENT_STAFF[element];
 
-    if (staff ~= nil) then
-        layers:append(T { Main = staff })
-    end
+    -- if (staff ~= nil) then
+    --     layers:append(T { Main = staff })
+    -- end
+    layers:append(getSpellEnvSet());
 
     -- if action.Name == 'Drain' or action.Name == 'Aspir' then
     --     layers:append(getDrainSet());

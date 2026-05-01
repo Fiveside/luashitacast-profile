@@ -1,6 +1,7 @@
 local Utils = gFunc.LoadFile("util");
 local getZoneSet = gFunc.LoadFile("town");
 local Idle = gFunc.LoadFile("idle");
+local BattlePacket = gFunc.LoadFile("battle_packet");
 
 local profile = {};
 local sets = T {};
@@ -107,9 +108,16 @@ profile.Packer = {
 
 profile.OnLoad = function()
     gSettings.AllowAddSet = false;
+
+    ashita.events.register("incomming_packet", "lac_profile_packet_handler_0x28", function(e)
+        if BattlePacket.is_possible_skillchain_event(e) then
+            print("Detected possible SC");
+        end
+    end);
 end
 
 profile.OnUnload = function()
+    ashita.events.unregister("incomming_packet", "lac_profile_packet_handler_0x28");
 end
 
 profile.HandleCommand = function(args)

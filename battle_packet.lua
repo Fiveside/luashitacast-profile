@@ -42,6 +42,10 @@ local Bit = require('bit')
 
 local Export = {};
 
+---Creates a bit reader for reading packed bits (Big Endian).
+---@param data table A list of bytes to read
+---@param startingOffset integer? Optional offset to start at
+---@return fun(numBits: integer): integer # pass the number of bits to read and it returns the bits read as an integer.
 function NewPackedBitreader(data, startingOffset)
     local bitOffset = startingOffset or 0;
     local read = function(numBits)
@@ -52,10 +56,16 @@ function NewPackedBitreader(data, startingOffset)
     return read;
 end
 
+---Returns true if the detected ashita packet_in event is a BattlePacket
+---@param e any The ashita event
+---@return boolean # True if the event is a battle packet
 function Export.is_battle_event(e)
     return e.id == 0x28
 end
 
+---Short circuiting function for discarding most of the packets that do not contain skillchains
+---@param e any The ashita event
+---@return boolean True if this event can still contain skillchains
 function Export.is_possible_skillchain_event(e)
     if not Export.is_battle_event(e) then
         return false;

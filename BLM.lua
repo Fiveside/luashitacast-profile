@@ -110,9 +110,12 @@ profile.OnLoad = function()
     gSettings.AllowAddSet = false;
 
     ashita.events.register("packet_in", "lac_profile_packet_handler_0x28", function(e)
-        if BattlePacket.is_possible_skillchain_event(e) then
-            print("Detected possible SC");
+        if not BattlePacket.is_possible_skillchain_event(e) then
+            return;
         end
+
+        -- todo: detect skillchain and equip sorc gloves if we're in the middle of casting a burst on the target.
+        local pkt = BattlePacket.parse_incomming_event(e);
     end);
 end
 

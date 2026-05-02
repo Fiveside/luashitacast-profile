@@ -42,6 +42,17 @@ local Bit = require('bit')
 
 local Export = {};
 
+function NewPackedBitreader(data, startingOffset)
+    startingOffset = startingOffset or 0;
+    local bitOffset = 0
+    local read = function(numBits)
+        local data = ashita.bits.unpack_be(data, bitOffset, numBits);
+        bitOffset = bitOffset + numBits;
+        return data;
+    end;
+    return read;
+end
+
 function Export.is_battle_event(e)
     return e.id == 0x28
 end
@@ -52,6 +63,10 @@ function Export.is_possible_skillchain_event(e)
     end
     local data = e.data
 
+    -- Start the reader after the first 5 bytes common to each packet.
+    -- Then skip another 42 bits to get to the cmd_no.
+    local readBits = NewPackedBitreader(e.data_raw, 40 + 42);
+
     -- targets starts at 78 bits, each target is variable size.
     -- This function's purpose is to skip extra processing.
     -- We hit diminishing returns here trying to figure out if a
@@ -60,7 +75,7 @@ function Export.is_possible_skillchain_event(e)
 
     -- skip 42 bits, read 4.
     -- skip 40, read 1 byte, mask: 0011 1100
-    local cmd_no = bit.band(bit.rshift(data[8 + 1], 2), 0x7)
+    local cmd_no = readBits(4);
 
     -- 3: weaponskill finish
     -- 4: magic finish (blu shenannigans)
@@ -75,22 +90,24 @@ end
 ---@param e any The Ashita incomming_packet event.
 ---@return BattlePacket
 function Export.parse_incomming_event(e)
-    local cursor = Bitreader:new(e.data_raw, 0);
+    -- Start the reader after the first 5 bytes common to each packet.
+    local readBits = NewPackedBitreader(e.data_raw, 40);
+    -- local cursor = Bitreader:new(e.data_raw, 0);
 
     local res = {};
-    res.m_uID = cursor:read(32);
-    res.trg_sum = cursor:read(6);
-    res.res_sum = cursor:read(4);
-    res.cmd_no = cursor:read(4);
-    res.cmd_arg = cursor:read(32);
+    res.m_uID = readBits(32);
+    res.trg_sum = readBits(6);
+    res.res_sum = readBits(4);
+    res.cmd_no = readBits(4);
+    res.cmd_arg = readBits(32);
     local targets = {};
     res.targets = targets;
     ---@cast res BattlePacket
 
     for _i = 1, res.trg_sum, 1 do
         local target = {};
-        target.m_uID = cursor:read(32);
-        target.result_sum = cursor:read(4);
+        target.m_uID = readBits(32);
+        target.result_sum = readBits(4);
         local results = {};
         target.results = results
         ---@cast target BattlePacketTarget
@@ -108,29 +125,29 @@ function Export.parse_incomming_event(e)
                 react_value = 0,
                 react_message = 0,
             };
-            result.miss = cursor:read(3);
-            result.kind = cursor:read(2);
-            result.sub_kind = cursor:read(12);
-            result.info = cursor:read(5);
-            result.scale = cursor:read(5);
-            result.value = cursor:read(17);
-            result.message = cursor:read(10);
-            result.bit = cursor:read(31);
+            result.miss = readBits(3);
+            result.kind = readBits(2);
+            result.sub_kind = readBits(12);
+            result.info = readBits(5);
+            result.scale = readBits(5);
+            result.value = readBits(17);
+            result.message = readBits(10);
+            result.bit = readBits(31);
 
-            result.has_proc = cursor:read(1);
+            result.has_proc = readBits(1);
             if result.has_proc > 1 then
-                result.proc_kind = cursor:read(6);
-                result.proc_info = cursor:read(4);
-                result.proc_value = cursor:read(17);
-                result.proc_message = cursor:read(10);
+                result.proc_kind = readBits(6);
+                result.proc_info = readBits(4);
+                result.proc_value = readBits(17);
+                result.proc_message = readBits(10);
             end
 
-            result.has_react = cursor:read(1);
+            result.has_react = readBits(1);
             if result.has_react > 1 then
-                result.react_kind = cursor:read(6);
-                result.react_info = cursor:read(4);
-                result.react_value = cursor:read(14);
-                result.react_message = cursor:read(10);
+                result.react_kind = readBits(6);
+                result.react_info = readBits(4);
+                result.react_value = readBits(14);
+                result.react_message = readBits(10);
             end
 
             ---@cast result BattlePacketTargetResult

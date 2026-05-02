@@ -109,7 +109,7 @@ profile.Packer = {
 profile.OnLoad = function()
     gSettings.AllowAddSet = false;
 
-    ashita.events.register("incomming_packet", "lac_profile_packet_handler_0x28", function(e)
+    ashita.events.register("packet_in", "lac_profile_packet_handler_0x28", function(e)
         if BattlePacket.is_possible_skillchain_event(e) then
             print("Detected possible SC");
         end
@@ -117,7 +117,7 @@ profile.OnLoad = function()
 end
 
 profile.OnUnload = function()
-    ashita.events.unregister("incomming_packet", "lac_profile_packet_handler_0x28");
+    ashita.events.unregister("packet_in", "lac_profile_packet_handler_0x28");
 end
 
 profile.HandleCommand = function(args)

@@ -43,8 +43,7 @@ local Bit = require('bit')
 local Export = {};
 
 function NewPackedBitreader(data, startingOffset)
-    startingOffset = startingOffset or 0;
-    local bitOffset = 0
+    local bitOffset = startingOffset or 0;
     local read = function(numBits)
         local data = ashita.bits.unpack_be(data, bitOffset, numBits);
         bitOffset = bitOffset + numBits;
@@ -61,7 +60,6 @@ function Export.is_possible_skillchain_event(e)
     if not Export.is_battle_event(e) then
         return false;
     end
-    local data = e.data
 
     -- Start the reader after the first 5 bytes common to each packet.
     -- Then skip another 42 bits to get to the cmd_no.
@@ -71,7 +69,7 @@ function Export.is_possible_skillchain_event(e)
     -- This function's purpose is to skip extra processing.
     -- We hit diminishing returns here trying to figure out if a
     -- skillchain is present, so just check the cmd_no.
-    -- This already rules out a lot of
+    -- This already rules out a lot of packets.
 
     -- skip 42 bits, read 4.
     -- skip 40, read 1 byte, mask: 0011 1100
@@ -92,7 +90,6 @@ end
 function Export.parse_incomming_event(e)
     -- Start the reader after the first 5 bytes common to each packet.
     local readBits = NewPackedBitreader(e.data_raw, 40);
-    -- local cursor = Bitreader:new(e.data_raw, 0);
 
     local res = {};
     res.m_uID = readBits(32);

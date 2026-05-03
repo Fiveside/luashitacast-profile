@@ -26,6 +26,7 @@ sets.MagicAttack = T {
     -- Body = "Black Cotehardie",
     -- Body = "Black Cloak",
     -- Legs = "Seer's slacks +1",
+    Waist = "Penitent's Rope",
     Legs = "Errant slops",
 };
 
@@ -88,8 +89,8 @@ local CONDITIONAL_GEAR = T {
         if actionName ~= 'Drain' and actionName ~= 'Aspir' then
             return false;
         end
-        local weather = gData.GetEnvironment();
-        return weather:startswith('Dark');
+        local weather = gData.GetEnvironment().Weather;
+        return weather == 'Dark' or weather == 'Dark x2';
     end
 };
 
@@ -350,7 +351,7 @@ function getElementEnvBonus(element, dayElement, weatherElement, weatherx2)
 end
 
 function getSpellEnvSet()
-    local action = gFunc.GetAction();
+    local action = gData.GetAction();
     local env = gData.GetEnvironment();
 
     local envMult = getElementEnvBonus(action.Element, env.DayElement, env.WeatherElement, env.Weather:endswith('x2'));

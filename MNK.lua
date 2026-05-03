@@ -93,11 +93,11 @@ sets["WS_Dragon Kick"] = T {
 }
 
 -- Modifiers: STR: 20%, DEX: 20%
-sets["WS_Raging Fists"] = sets["WS_Asuran Fists"];
+sets["WS_Raging Fists"] = sets["WS_Asuran Fists"]:copy(true);
 sets["WS_Raging Fists"].Legs = "Byakko's Haidate";
 
 -- Modifiers: STR: 50%, VIT: 20%
-sets["WS_Howling Fist"] = sets["WS_Dragon Kick"];
+sets["WS_Howling Fist"] = sets["WS_Dragon Kick"]:copy(true);
 sets["WS_Howling Fist"].Feet = "Shura Sune-Ate";
 
 

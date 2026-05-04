@@ -22,12 +22,20 @@ sets.Resting_Priority = T {
 -- This set should be considered the default set.
 sets.MagicAttack = T {
     Head = "Wizard's Petasos",
+    Neck = "Philomath Stole",
+    Ear1 = "Moldavite Earring",
+    Ear2 = "Morion Earring",
     Body = "Igqira weskit",
+    Hands = "Wizard's gloves",
+    Ring1 = "Genius Ring",
+    Ring2 = "Genius Ring",
     -- Body = "Black Cotehardie",
     -- Body = "Black Cloak",
     -- Legs = "Seer's slacks +1",
+    Back = "Red Cape +1",
     Waist = "Penitent's Rope",
     Legs = "Errant slops",
+    Feet = "Rostrum Pumps",
 };
 
 sets.ElementalMagic = Utils.compress_tables(sets.MagicAttack, T {
@@ -60,7 +68,7 @@ local ELEMENT_STAFF = T {
 ---Specific gear along with functions that return true when they it should be equipped
 ---Equip happens during midcast
 local CONDITIONAL_GEAR = T {
-    [T { Head = "Sorcerer's Tonban" }] = function()
+    [T { Legs = "Sorcerer's Tonban" }] = function()
         local action = gData.GetAction()
         local env = gData.GetEnvironment()
         return action.Element == env.DayElement;
@@ -180,19 +188,6 @@ profile.HandleMidcast = function()
     -- end
     layers:append(getSpellEnvSet());
 
-    -- if action.Name == 'Drain' or action.Name == 'Aspir' then
-    --     layers:append(getDrainSet());
-    -- end
-
-    -- if action.Element == env.DayElement then
-    --     layers:append({ Legs = "Sorcerer's Tonban" })
-    -- end
-
-    -- if me.MPP < 50 then
-    --     layers:append({ Neck = "Uggalepih Pendant" })
-    -- else
-    --     layers:append({ Neck = "Philomath Stole" })
-    -- end
     for conditionalSet, condition in pairs(CONDITIONAL_GEAR) do
         if condition() then
             layers:append(conditionalSet)
@@ -367,17 +362,5 @@ function getSpellEnvSet()
     end
     return set;
 end
-
--- function getDrainSet()
---     local env = gData.GetEnvironment()
---     local weather = env.Weather
---     if weather == 'Dark' or weather == 'Dark x2' then
---         return {
---             Main = "Diabolos's Pole"
---         }
---     else
---         return {}
---     end
--- end
 
 return profile;

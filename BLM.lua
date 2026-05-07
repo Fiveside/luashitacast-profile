@@ -74,7 +74,7 @@ local CONDITIONAL_GEAR = T {
         return action.Element == env.DayElement;
     end,
 
-    [T { Ring = "Diabolos's Ring" }] = function()
+    [T { Ring2 = "Diabolos's Ring" }] = function()
         -- The ring adds -15% mp, which sucks.  So only do this if our mp is already low.
         local me = gData.GetPlayer();
         local mpWithinRange = me.MPP < 85;
@@ -105,6 +105,12 @@ local CONDITIONAL_GEAR = T {
 -- A map from an element to the appropriate obi.
 local ELEMENT_OBI = T {
     Ice = "Hyorin Obi",
+};
+
+-- A list of spells that we should ignore the active set for
+-- Instead, these will use the ElementalMagic set.
+local FORCED_ELEMENTAL_SPELLS = T {
+    "Burn", "Frost", "Choke", "Rasp", "Shock", "Drown",
 };
 
 local state = {

@@ -104,7 +104,17 @@ local CONDITIONAL_GEAR = T {
         end
         local weather = gData.GetEnvironment().Weather;
         return weather == 'Dark' or weather == 'Dark x2';
-    end
+    end,
+
+    [T { Feet = "Dream Boots +1" }] = function()
+        local actionName = gData.GetAction().Name;
+        return actionName == 'Sneak';
+    end,
+
+    [T { Feet = "Dream Boots +1" }] = function()
+        local actionName = gData.GetAction().Name;
+        return actionName == 'Invisible';
+    end,
 };
 
 -- A map from an element to the appropriate obi.

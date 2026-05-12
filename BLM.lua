@@ -31,7 +31,7 @@ sets.MagicAttack = T {
     Ring2 = "Genius Ring",
     -- Body = "Black Cotehardie",
     -- Body = "Black Cloak",
-    -- Legs = "Seer's slacks +1",
+    -- Legs = "Seer's Slacks +1",
     Back = "Red Cape +1",
     Waist = "Penitent's Rope",
     Legs = "Errant slops",
@@ -44,7 +44,7 @@ sets.ElementalMagic = Utils.compress_tables(sets.MagicAttack, T {
 });
 
 sets.EnfeeblingMagic = Utils.compress_tables(sets.MagicAttack, T {
-
+    Body = "Wizard's Coat",
 });
 
 sets.DarkMagic = Utils.compress_tables(sets.MagicAttack, T {
@@ -52,6 +52,11 @@ sets.DarkMagic = Utils.compress_tables(sets.MagicAttack, T {
     Main = "Dark staff",
     Legs = "Wizard's tonban",
 });
+
+-- A list of gear that only gets equipped while the magic burst window is open on the target
+sets.MagicBurst = T {
+
+};
 
 -- A map from an element to the appropriate staff
 local ELEMENT_STAFF = T {
@@ -105,6 +110,7 @@ local CONDITIONAL_GEAR = T {
 -- A map from an element to the appropriate obi.
 local ELEMENT_OBI = T {
     Ice = "Hyorin Obi",
+    Dark = "Anrin Obi",
 };
 
 -- A list of spells that we should ignore the active set for
@@ -184,6 +190,8 @@ profile.HandleMidcast = function()
         layers:append(sets.DarkMagic)
     elseif action.Skill == 'Elemental Magic' then
         layers:append(sets.MagicAttack)
+    elseif action.Skill == 'Enfeebling Magic' then
+        layers:append(sets.EnfeeblingMagic)
     end
 
     -- local element = gData.GetAction().Element;

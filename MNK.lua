@@ -17,8 +17,8 @@ sets.Idle = T {
 sets.TP = T {
     Main = "Destroyers",
     Ammo = "Civet Sachet",
-    -- Head = "Optical Hat",
-    Head = "Melee Crown",
+    Head = "Optical Hat",
+    -- Head = "Melee Crown",
     Neck = "Faith Torque",
     Ear1 = "Brutal Earring",
     Ear2 = "Ethereal Earring",
@@ -33,16 +33,13 @@ sets.TP = T {
 };
 
 -- Basically high evasion and counter.
-sets.Tanking = T {
+sets.Tanking = Utils.compress_tables(sets.TP, T {
     Main = "Destroyers",
     Ammo = "Civet Sachet",
     Head = "Optical Hat",
     Body = "Scorpion Harness",
-    Back = "Amemet Mantle +1",
-    Waist = "Brown Belt",
     Legs = "Temple Hose",
-    Feet = "Fuma Sune-Ate",
-};
+});
 
 -- The name of the set should be JA_<Jobability>_Priority with appropriate capitalization.
 sets.JA_Chakra_Priority = {
@@ -51,8 +48,8 @@ sets.JA_Chakra_Priority = {
     --   Temple Cyclas - changes the vit multiplier from 1x to 2x
     --   Melee gloves - Adds an additional 0.6 multiplier to vit
     Head = { "Genbu's Kabuto" },
-
     Body = { "Temple Cyclas" },
+    Waist = { "Warrior's Belt +1" },
     Hands = { "Melee Gloves" },
 };
 sets.JA_Focus_Priority = {
@@ -94,6 +91,7 @@ sets["WS_Dragon Kick"] = T {
 
 -- Modifiers: STR: 20%, DEX: 20%
 sets["WS_Raging Fists"] = sets["WS_Asuran Fists"]:copy(true);
+sets["WS_Raging Fists"].Head = "Melee Crown";
 sets["WS_Raging Fists"].Legs = "Byakko's Haidate";
 
 -- Modifiers: STR: 50%, VIT: 20%
@@ -131,6 +129,7 @@ profile.HandleDefault = function()
     local player = gData.GetPlayer();
     if player.Status == "Engaged" then
         layers:append(sets.TP);
+        -- layers:append(sets.Tanking);
     else
         layers:append(sets.Idle);
     end

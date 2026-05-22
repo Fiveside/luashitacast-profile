@@ -6,11 +6,14 @@ local Idle = gFunc.LoadFile("idle");
 local profile = {};
 local state = {
     syncedLevel = 0,
+    idleRegen = nil,
 };
 local sets = {
 };
 
-sets.Idle_Priority = {
+sets.Idle = T{};
+
+sets.TP_Priority = {
     Main = {"Retributor", "Mythril Pick +1", "Cmb.Cst. Axe", "Barbaroi Axe", "Battleaxe +1"},
     Sub = {"Martial Axe", "Barbaroi Axe", "Battleaxe +1"},
     Head = {"Optical Hat", "Emperor Hairpin", "Ryl.Ftm. Bandana"},
@@ -61,6 +64,7 @@ profile.Packer = {
 profile.OnLoad = function()
     gSettings.AllowAddSet = false;
     -- ashita.events.register("packet_in", "toz_lac_profile_handler", HandleInboundPacket);
+    state.idleRegen = Idle.IdleRegen:new();
 end
 
 profile.OnUnload = function()
@@ -77,11 +81,19 @@ profile.HandleDefault = function()
         state.syncedLevel = myLevel;
         gFunc.EvaluateLevels(sets, myLevel);
         gFunc.EvaluateLevels(JA_sets, myLevel);
+        state.idleRegen:refresh();
     end
     local layers = T{};
-    layers:append(sets.Idle);
+
+    local player = gData.GetPlayer();
+    if player.Status == "Engaged" then
+        layers:append(sets.TP);
+    else
+        layers:append(sets.Idle);
+    end
+
+    layers:append(state.idleRegen:getSet());
     layers:append(getZoneSet());
-    layers:append(Idle.getSet());
     layers:append(HELM.getSet());
     -- print(string.format("Heads: %s -> %s", layers:map(function(t) return t.Head; end):join(','), Utils.compress_tables(layers:unpack()).Head));
     gFunc.EquipSet(Utils.compress_tables(layers:unpack()));
@@ -117,17 +129,5 @@ profile.HandleWeaponskill = function()
         gFunc.EquipSet(sets.WS_Multihit);
     end
 end
-
--- local IsZoning = false;
-
--- function HandleInboundPacket(event)
---     -- Send lockstyle event once on zone.
---     if (event.id == 0xB) then
---         IsZoning = true;
---     end
---     if (event.id == 0x1D) and IsZoning then
---         IsZoning = false;
---     end
--- end
 
 return profile;

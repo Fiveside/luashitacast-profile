@@ -5,14 +5,13 @@ local Utils = gFunc.LoadFile("util");
 
 local profile = {};
 local state = {
-    syncedLevel = 0,
+    currentLevel = 0,
+    idleRegen = nil,
 }
 
 local sets = T {};
 
-sets.Idle = T {
-    Body = "Melee Cyclas",
-}
+sets.Idle = T {};
 
 sets.TP = T {
     Main = "Destroyers",
@@ -27,14 +26,13 @@ sets.TP = T {
     Ring1 = "Rajas Ring",
     Ring2 = "Toreador's Ring",
     Back = "Amemet Mantle +1",
-    Waist = "Brown Belt",
+    Waist = "Black Belt",
     Legs = "Byakko's Haidate",
     Feet = "Fuma Sune-Ate",
 };
 
 -- Basically high evasion and counter.
 sets.Tanking = Utils.compress_tables(sets.TP, T {
-    Main = "Destroyers",
     Ammo = "Civet Sachet",
     Head = "Optical Hat",
     Body = "Scorpion Harness",
@@ -72,7 +70,7 @@ sets["WS_Asuran Fists"] = T {
     Body = "Kirin's Osode",
     Ring1 = "Rajas Ring",
     Ring2 = "Toreador's Ring",
-    Waist = "Brown Belt",
+    Waist = "Black Belt",
     legs = "Shura Haidate",
     Feet = "Shura Sune-Ate",
 }
@@ -84,23 +82,28 @@ sets["WS_Dragon Kick"] = T {
     Body = "Kirin's Osode",
     Ring1 = "Rajas Ring",
     Ring2 = "Victory Ring",
-    Waist = "Brown Belt",
+    Waist = "Black Belt",
     legs = "Shura Haidate",
     Feet = "Dune Boots",
 }
 
 -- Modifiers: STR: 20%, DEX: 20%
-sets["WS_Raging Fists"] = sets["WS_Asuran Fists"]:copy(true);
-sets["WS_Raging Fists"].Head = "Melee Crown";
-sets["WS_Raging Fists"].Legs = "Byakko's Haidate";
+sets["WS_Raging Fists"] = Utils.compress_tables(sets["WS_Asuran Fists"], T {
+    Head = "Melee Crown",
+    Legs = "Byakko's Haidate",
+});
 
 -- Modifiers: STR: 50%, VIT: 20%
-sets["WS_Howling Fist"] = sets["WS_Dragon Kick"]:copy(true);
-sets["WS_Howling Fist"].Feet = "Shura Sune-Ate";
+sets["WS_Howling Fist"] = Utils.compress_tables(sets["WS_Dragon Kick"], T {
+    Feet = "Shura Sune-Ate",
+});
 
 
-sets.WS_Raging_Fists = Utils.compress_tables(sets.WS_Asuran_Fists);
 sets.WS_Combo = Utils.compress_tables(sets.WS_Asuran_Fists);
+
+sets.IdleRegen = T {
+    Body = "Melee Cyclas",
+};
 
 profile.Sets = sets;
 
@@ -109,6 +112,8 @@ profile.Packer = {
 
 profile.OnLoad = function()
     gSettings.AllowAddSet = false;
+    state.idleRegen = Idle.IdleRegen:new(sets.IdleRegen);
+    state.currentLevel = 0;
 end
 
 profile.OnUnload = function()
@@ -123,6 +128,7 @@ profile.HandleDefault = function()
     if (myLevel ~= state.syncedLevel) then
         state.syncedLevel = myLevel
         gFunc.EvaluateLevels(sets, myLevel);
+        state.idleRegen:refresh();
     end
 
     local layers = T {};
@@ -134,8 +140,8 @@ profile.HandleDefault = function()
         layers:append(sets.Idle);
     end
 
+    layers:append(state.idleRegen:getSet());
     layers:append(getZoneSet());
-    layers:append(Idle.getSet());
     layers:append(HELM.getSet());
     gFunc.EquipSet(Utils.compress_tables(layers:unpack()));
 end

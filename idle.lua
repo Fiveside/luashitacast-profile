@@ -3,74 +3,112 @@ local Conquest = gFunc.LoadFile("lib/conquest");
 local Enums = gFunc.LoadFile("enums");
 local bit = require('bit');
 local Utils = gFunc.LoadFile("util")
+local XI = gFunc.LoadFile("xi");
 
 
 
 local function includeBangles()
-    -- Returns tue if circumstances allow the
-    -- Garden Bangles to trigger regen
+    -- Regen on garden bangles only works during the daytime.
     local gameTime = gData.GetEnvironment().Time;
     return gameTime > 8.0 and gameTime < 18.0;
 end
 
 local function includeHairpin()
-    -- Hairpin should be enabled if we are NOT
-    -- in a zone controlled by our city state.
-    return not Conquest.GetInsideControl()
+    -- Hairpin should be enabled if we are in a zone considered
+    -- "outside own nation's control".
+
+    -- Note that XI considers "not inside control" and "outside control" to be
+    -- two different conditions. This may need to be updated when playing in ToAU zones.
+
+    local isValidZone = not Conquest.GetInsideControl();
+
+    -- The auto-regen proc on the hairpin only works
+    -- if we have signet
+    local hasSignet = XI.getMyBuffsByName()['Signet'] ~= nil;
+
+    return isValidZone and hasSignet;
 end
 
 
-local ITEM_SETS = T{
-    ["President. Hairpin"] = T{
-        set = T{ Head = "President. Hairpin" },
-        condition = includeHairpin,
-    },
-    -- Not yet acquired.
-    -- ["Garden Bangles"] = T{ 
-    --     set = T{ Hands = GARDEN_BANGLES },
-    --     condition = includeBangles
-    -- },
+-- local ITEM_SETS = T{
+--     ["President. Hairpin"] = T{
+--         set = T{ Head = "President. Hairpin" },
+--         condition = includeHairpin,
+--     },
+--     -- Not yet acquired.
+--     ["Garden Bangles"] = T{
+--         set = T{ Hands = "Garden Bangles" },
+--         condition = includeBangles
+--     },
+-- };
+
+local ITEM_SETS = T {
+    [T { Head = "President. Hairpin" }] = includeHairpin,
+    [T { Hands = "Garden Bangles" }] = includeBangles,
 };
 
-local ITEM_INFO = T{};
 
--- Set up item information
-do
-    local mem = AshitaCore:GetMemoryManager();
-    local res = AshitaCore:GetResourceManager();
+local ITEM_INFO = T {};
 
-    for itemName, _ in pairs(ITEM_SETS) do
-        local item = res:GetItemByName(itemName, Enums.LanguageId.English);
-        local jobs = T{};
-        for job, mask in pairs(Enums.JobMask) do
-            if bit.band(item.Jobs, mask) > 0 then
-                jobs:append(job);
-            end
+local EquipConditional = T {};
+
+---Creates a new special equipment manager.
+---@param defaultSets any
+---@return unknown
+function EquipConditional:new(defaultSets)
+    defaultSets = defaultSets or T {};
+    local obj = T {
+        activeSets = T {},
+        defaultSets = defaultSets,
+    };
+    setmetatable(obj, { __index = self });
+    obj:refresh();
+    return obj;
+end
+
+function EquipConditional:refresh()
+    -- Get the default list of sets, prune sets that we can't equip
+    self.activeSets = T {};
+    local me = gData.GetPlayer();
+    local myJob = me.MainJob;
+    local myLevel = me.MainJobSync;
+
+    for set, condition in pairs(self.defaultSets) do
+        local items = set:values():map(function(name) return XI.getEquipmentDetails(name) end);
+        local includeSet = items:map(function(item)
+            return item.jobs:contains(myJob) and item.level <= myLevel and item.isReady
+        end):all();
+        if includeSet then
+            self.activeSets[set] = condition;
         end
-        ITEM_INFO[itemName] = T{ jobs = jobs, level = item.Level };
     end
 end
 
-local function buildGearSet()
-    local player = gData.GetPlayer();
-
-    local sets = {}
-    for itemName, item in pairs(ITEM_SETS) do
-        local itemInfo = ITEM_INFO[itemName];
-        if item.condition() and itemInfo.jobs:contains(player.MainJob) and itemInfo.level <= player.MainJobSync then
-            sets[#sets + 1] = item.set
+function EquipConditional:getSet()
+    local res = T {};
+    for set, condition in pairs(self.activeSets) do
+        if condition() then
+            res:merge(set, true)
         end
     end
-    return Utils.compress_tables(table.unpack(sets));
+    return res;
 end
 
+local IdleRegen = T {}
+setmetatable(IdleRegen, { __index = EquipConditional });
 
-local Export = {};
-local state = {
-    lastTickEnabled = false,
-};
+function IdleRegen:new(customSet)
+    -- Merge in global regen stuff
+    customSet = customSet or T {};
+    local sets = Utils.compress_tables(ITEM_SETS, {[customSet] = function () return true; end});
 
-local function shouldEnable()
+    local obj = EquipConditional:new(sets);
+    obj.lastTickEnabled = false;
+    setmetatable(obj, { __index = self });
+    return obj;
+end
+
+local function shouldEnable(lastTickEnabled)
     -- Enable the regen set if
     -- - We are not in combat
     -- - We are not casting
@@ -88,19 +126,26 @@ local function shouldEnable()
     if player.HPP < 95 then
         return true;
     end
-    if player.HPP < 100 and state.lastTickEnabled then
+    if player.HPP < 100 and lastTickEnabled then
         return true;
     end
     return false;
 end
 
-function Export.getSet()
-    local enabled = shouldEnable();
-    state.lastTickEnabled = enabled;
-    if not enabled then
-        return {};
+function IdleRegen:getSet()
+    -- Only build the set list if we're idle.
+    if shouldEnable(self.lastTickEnabled) then
+        self.lastTickEnabled = true;
+        return EquipConditional.getSet(self);
+    else
+        self.lastTickEnabled = false;
+        return T {};
     end
-    return buildGearSet();
 end
+
+local Export = {};
+
+Export.EquipConditional = EquipConditional;
+Export.IdleRegen = IdleRegen;
 
 return Export;

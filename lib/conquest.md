@@ -5,3 +5,4 @@ to fix bugs.  At the time of last update, a stable copy of the file can be found
 
 https://github.com/yzyii/luashitacast/blob/master/common/conquest.lua
 
+Last update: May 22, 2026

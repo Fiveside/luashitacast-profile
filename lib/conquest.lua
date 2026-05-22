@@ -65,6 +65,7 @@ local regionMap = T{
     [150] = 'Norvallen', --Monastic Cavern
     [151] = 'Aragoneu', --Castle Oztroja
     [152] = 'Aragoneu', --Altar Room
+    [153] = 'Li\'Telor', --Boyahda Tree
     [154] = 'Li\'Telor', --Dragon's Aery
     [157] = 'Qufim', --Middle Delkfutt's Tower
     [158] = 'Qufim', --Upper Delkfutt's Tower
@@ -117,7 +118,7 @@ local regionMap = T{
     [250] = 'Elshimo Lowlands', --Kazham
     [251] = 'Li\'Telor', --Hall of the Gods
     [252] = 'Elshimo Lowlands', --Norg
-};
+}
 
 --These can be changed, and determine what the output will be from the functions when called.
 --It is not recommended for you to change them unless necessary.
@@ -126,10 +127,17 @@ local controllerNames = T{
     [2] = 'Bastok',
     [3] = 'Windurst',
     [4] = 'Beastmen',
-};
+}
 
 --Any zone listed here will always report this conquest.
 local fixedControl = T{
+    [33] = controllerNames[4], --Al'Taieu
+    [34] = controllerNames[4], --Grand Palace of Hu'Xzoi 
+    [35] = controllerNames[4], --The Garden of Ru'Hmet
+    [36] = controllerNames[4], --Empyreal Paradox
+    [37] = controllerNames[4], --Temenos
+    [38] = controllerNames[4], --Apollyon
+
     [39] = controllerNames[4], --Dynamis - Valkurm
     [40] = controllerNames[4], --Dynamis - Buburimu
     [41] = controllerNames[4], --Dynamis - Qufim
@@ -155,8 +163,7 @@ local fixedControl = T{
     [240] = controllerNames[4], --Port Windurst
     [241] = controllerNames[4], --Windurst Woods
     [242] = controllerNames[4], --Heavens Tower
-
-};
+}
 
 --This data should not be changed unless it is found to be inaccurate or custom regions are added.
 local packetData = T{
@@ -179,106 +186,106 @@ local packetData = T{
     { offset=0x5D, name='Tu\'Lia' },
     { offset=0x61, name='Movalpolos' },
     { offset=0x65, name='Tavnazian Archipelago' },
-};
+}
 
-local regionControllers = {};
+local regionControllers = {}
 
 local function LookupControl(zone)
-    local region = regionMap[zone];
+    local region = regionMap[zone]
     if region == nil then
-        local fixed = fixedControl[zone];
+        local fixed = fixedControl[zone]
         if fixed == nil then
-            return 'N/A';
+            return 'N/A'
         else
-            return fixed;
+            return fixed
         end
     end
-    local control = regionControllers[region];
+    local control = regionControllers[region]
     if control == nil then
-        return 'Unknown';
+        return 'Unknown'
     else
-        return control;
+        return control
     end
 end
 
-local chat = require('chat');
-local currentNation = 'Unknown';
-local currentZone = AshitaCore:GetMemoryManager():GetParty():GetMemberZone(0);
-local currentControl = LookupControl(currentZone);
-local daysUntilConquest = -1;
-local packetTime  = (currentZone > 0) and 0 or 999999999;
+local chat = require('chat')
+local currentNation = 'Unknown'
+local currentZone = AshitaCore:GetMemoryManager():GetParty():GetMemberZone(0)
+local currentControl = LookupControl(currentZone)
+local daysUntilConquest = -1
+local packetTime  = (currentZone > 0) and 0 or 999999999
 
 ashita.events.register('packet_out', 'LAC_Conquest_Module_HandleOutgoingPacket', function (e)
     if (e.id == 0x15) and (os.clock() > packetTime) then
         if (daysUntilConquest == -1) and (currentControl ~= 'N/A') then
-            local packet = struct.pack('L', 0);
-            AshitaCore:GetPacketManager():AddOutgoingPacket(0x5A, packet:totable());
-            print(chat.header('Conquest') .. chat.message('Sending packet to request conquest information.'));
-            packetTime = os.clock() + 10;
+            local packet = struct.pack('L', 0)
+            AshitaCore:GetPacketManager():AddOutgoingPacket(0x5A, packet:totable())
+            print(chat.header('Conquest') .. chat.message('Sending packet to request conquest information.'))
+            packetTime = os.clock() + 10
         elseif (currentNation == 'Unknown') then
-            local packet = struct.pack('LL', 0, 0);
-            AshitaCore:GetPacketManager():AddOutgoingPacket(0x61, packet:totable());
-            print(chat.header('Conquest') .. chat.message('Sending packet to request current nation.'));
-            packetTime = os.clock() + 10;
+            local packet = struct.pack('LL', 0, 0)
+            AshitaCore:GetPacketManager():AddOutgoingPacket(0x61, packet:totable())
+            print(chat.header('Conquest') .. chat.message('Sending packet to request current nation.'))
+            packetTime = os.clock() + 10
         end
     end
-end);
+end)
 
 ashita.events.register('packet_in', 'LAC_Conquest_Module_HandleIncomingPacket', function (e)
     if (e.id == 0x00A) then
-        currentZone = struct.unpack('H', e.data, 0x30 + 1);
-        currentControl = LookupControl(currentZone);
-        packetTime = os.clock() + 15;
+        currentZone = struct.unpack('H', e.data, 0x30 + 1)
+        currentControl = LookupControl(currentZone)
+        packetTime = os.clock() + 15
     elseif (e.id == 0x5E) then
-        local days = struct.unpack('B', e.data, 0x8C + 1);
+        local days = struct.unpack('B', e.data, 0x8C + 1)
         if (days > daysUntilConquest) then
             for _,region in ipairs(packetData) do
-                local controller = struct.unpack('B', e.data, region.offset + 1);
-                regionControllers[region.name] = controllerNames[controller];
+                local controller = struct.unpack('B', e.data, region.offset + 1)
+                regionControllers[region.name] = controllerNames[controller]
             end
 
-            print(chat.header('Conquest') .. chat.message('Updated conquest information.'));
+            print(chat.header('Conquest') .. chat.message('Updated conquest information.'))
         end
-        
-        packetTime = os.clock() + 1;
-        daysUntilConquest = days;
-        currentControl = LookupControl(currentZone);
+
+        packetTime = os.clock() + 1
+        daysUntilConquest = days
+        currentControl = LookupControl(currentZone)
     elseif (e.id == 0x61) then
-        local nationIndex = struct.unpack('B', e.data, 0x50 + 1);
-        local newNation = controllerNames[nationIndex + 1];
+        local nationIndex = struct.unpack('B', e.data, 0x50 + 1)
+        local newNation = controllerNames[nationIndex + 1]
         if (newNation ~= currentNation) then
-            currentNation = newNation;
-            print(chat.header('Conquest') .. chat.message('Updated player nation.'));
+            currentNation = newNation
+            print(chat.header('Conquest') .. chat.message('Updated player nation.'))
         end
     end
-end);
+end)
 
 
 
-local lib = {};
+local lib = {}
 
 function lib:GetCurrentControl()
-    return currentControl;
+    return currentControl
 end
 
 function lib:GetCurrentNation()
-    return currentNation;
+    return currentNation
 end
 
 function lib:GetZoneControl(zone)
-    return LookupControl(zone);
+    return LookupControl(zone)
 end
 
 function lib:GetInsideControl()
-    return (currentControl == currentNation);
+    return (currentControl == currentNation)
 end
 
 function lib:GetOutsideControl()
     if (currentControl == 'Unknown') then
-        return false;
+        return false
     end
-    
-    return (currentControl ~= currentNation);
+
+    return (currentControl ~= currentNation)
 end
 
-return lib;
+return lib

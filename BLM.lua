@@ -19,6 +19,13 @@ sets.Resting_Priority = T {
     Legs = { "Baron's slops" },
 };
 
+-- This set is the base set overridden by other more specialized sets
+-- This should mainly include haste gear to reduce cooldown timers.
+-- Really this only applys to spells targeting the player.
+sets.Midcast = T {
+    Waist = "Swift Belt",
+};
+
 -- This set should be considered the default set.
 sets.MagicAttack = T {
     Head = "Wizard's Petasos",
@@ -111,7 +118,7 @@ local CONDITIONAL_GEAR = T {
         return actionName == 'Sneak';
     end,
 
-    [T { Feet = "Dream Boots +1" }] = function()
+    [T { Hands = "Dream Mittens +1" }] = function()
         local actionName = gData.GetAction().Name;
         return actionName == 'Invisible';
     end,
@@ -193,23 +200,26 @@ end
 profile.HandleMidcast = function()
     local layers = T {};
     local action = gData.GetAction();
+    local target = gData.GetActionTarget();
+    local me = gData.GetPlayer();
     -- local me = gData.GetPlayer();
     -- local env = gData.GetEnvironment();
 
-    if action.Skill == 'Dark Magic' then
-        layers:append(sets.DarkMagic)
-    elseif action.Skill == 'Elemental Magic' then
-        layers:append(sets.MagicAttack)
-    elseif action.Skill == 'Enfeebling Magic' then
-        layers:append(sets.EnfeeblingMagic)
+    layers:append(sets.Midcast);
+
+    -- Apply different specialty sets if we're casting on something other than ourself.
+    if target.Name ~= me.Name and target.Type ~= 'PC' then
+        if FORCED_ELEMENTAL_SPELLS:contains(action.Name) then
+            layers:append(sets.ElementalMagic);
+        elseif action.Skill == 'Dark Magic' then
+            layers:append(sets.DarkMagic)
+        elseif action.Skill == 'Elemental Magic' then
+            layers:append(sets.MagicAttack)
+        elseif action.Skill == 'Enfeebling Magic' then
+            layers:append(sets.EnfeeblingMagic)
+        end
     end
 
-    -- local element = gData.GetAction().Element;
-    -- local staff = ELEMENT_STAFF[element];
-
-    -- if (staff ~= nil) then
-    --     layers:append(T { Main = staff })
-    -- end
     layers:append(getSpellEnvSet());
 
     for conditionalSet, condition in pairs(CONDITIONAL_GEAR) do

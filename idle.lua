@@ -18,37 +18,21 @@ local function includeHairpin()
     -- "outside own nation's control".
 
     -- Note that XI considers "not inside control" and "outside control" to be
-    -- two different conditions. This may need to be updated when playing in ToAU zones.
-
+    -- two different conditions. Unsure if LSB emulates this detail.
+    -- This may need to be updated when playing in ToAU zones.
     local isValidZone = not Conquest.GetInsideControl();
 
-    -- The auto-regen proc on the hairpin only works
-    -- if we have signet
+    -- The auto-regen on the hairpin only procs if we have signet.
     local hasSignet = XI.getMyBuffsByName()['Signet'] ~= nil;
 
     return isValidZone and hasSignet;
 end
-
-
--- local ITEM_SETS = T{
---     ["President. Hairpin"] = T{
---         set = T{ Head = "President. Hairpin" },
---         condition = includeHairpin,
---     },
---     -- Not yet acquired.
---     ["Garden Bangles"] = T{
---         set = T{ Hands = "Garden Bangles" },
---         condition = includeBangles
---     },
--- };
 
 local ITEM_SETS = T {
     [T { Head = "President. Hairpin" }] = includeHairpin,
     [T { Hands = "Garden Bangles" }] = includeBangles,
 };
 
-
-local ITEM_INFO = T {};
 
 local EquipConditional = T {};
 

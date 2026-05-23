@@ -55,7 +55,6 @@ sets.EnfeeblingMagic = Utils.compress_tables(sets.MagicAttack, T {
 });
 
 sets.DarkMagic = Utils.compress_tables(sets.MagicAttack, T {
-    -- Body = "Black Cotehardie",
     Main = "Dark staff",
     Legs = "Wizard's tonban",
 });
@@ -76,6 +75,11 @@ local ELEMENT_STAFF = T {
     Dark = "Pluto's staff",
 };
 
+-- A map from an element to the appropriate obi.
+local ELEMENT_OBI = T {
+    Ice = "Hyorin Obi",
+    Dark = "Anrin Obi",
+};
 
 ---Specific gear along with functions that return true when they it should be equipped
 ---Equip happens during midcast
@@ -124,12 +128,6 @@ local CONDITIONAL_GEAR = T {
     end,
 };
 
--- A map from an element to the appropriate obi.
-local ELEMENT_OBI = T {
-    Ice = "Hyorin Obi",
-    Dark = "Anrin Obi",
-};
-
 -- A list of spells that we should ignore the active set for
 -- Instead, these will use the ElementalMagic set.
 local FORCED_ELEMENTAL_SPELLS = T {
@@ -162,11 +160,6 @@ profile.OnUnload = function()
 end
 
 profile.HandleCommand = function(args)
-    -- print(T(args):slice(2, #args-1):join('|'))
-    if args[1] == 'stepdown' then
-        local spellName = T(args):slice(2, #args - 1):join(" ");
-        downCast(spellName)
-    end
 end
 
 profile.HandleDefault = function()
@@ -228,9 +221,7 @@ profile.HandleMidcast = function()
         end
     end
 
-    if (#layers > 0) then
-        gFunc.EquipSet(Utils.compress_tables(layers:unpack()));
-    end
+    gFunc.EquipSet(Utils.compress_tables(layers:unpack()));
 end
 
 profile.HandlePreshot = function()
@@ -242,77 +233,6 @@ end
 profile.HandleWeaponskill = function()
 end
 
--- local DOWNCAST_MAP = T{
---     ['Thunder IV'] = 'Thunder III',
---     ['Thunder III'] = 'Thunder II',
---     ['Thunder II'] = 'Thunder',
-
---     ['Blizzard IV'] = 'Blizzard III',
---     ['Blizzard III'] = 'Blizzard II',
---     ['Blizzard II'] = 'Blizzard',
-
---     ['Fire IV'] = 'Fire III',
---     ['Fire III'] = 'Fire II',
---     ['Fire II'] = 'Fire',
-
--- }
-
--- function canCast(spell)
---     -- local spell = AshitaCore:GetResourceManager():GetSpellByName(spellName);
---     -- if (spell == nil) then
---     --     return false;
---     -- end
---     local player = AshitaCore:GetMemoryManager():GetPlayer();
---     local mainJobLevelReq = spell.LevelRequired[player:GetMainJob() + 1];
---     if  (mainJobLevelReq == -1 or mainJobLevelReq > player:GetMainJobLevel()) then
---         return false;
---     end
-
---     -- TODO: Check to see if the player knows the spell.
---     -- TODO: Check to see if the player's subjob knows the spell.
---     -- TODO: Spells that come from Job Points (not sure if I wanna bother?)
---     return true;
--- end
-
--- function downCast(spellName)
---     local rm = AshitaCore:GetResourceManager();
---     local player = AshitaCore:GetMemoryManager():GetPlayer();
---     local spell = rm:GetSpellByName(spellName, 0);
---     local mainJobLevelReq = spell.LevelRequired[player:GetMainJob() + 1];
---     -- local subJobLevelReq = spell.LevelRequired[player.GetSubJobLevel() + 1];
-
---     print("asdf " .. mainJobLevelReq .. " " .. player:GetMainJobLevel());
---     while true do
---         if canCast(spell) then
---             AshitaCore:GetChatManager():QueueCommand(1, '/echo /ma "' .. spellName .. '" <t>')
---             return;
---         else
---             spellName = DOWNCAST_MAP[spellName];
---             if (spellName == nil) then
---                 print("Error: No candidate");
---                 return;
---             end
---         end
---     end
---     -- if (mainJobLevelReq > -1 and mainJobLevelReq < player:GetMainJobLevel()) then
---     --     -- do the thing!
---     --     print("TRying ".. spellName)
---     -- else
---     --     print("nah")
---     -- end
--- end
-
-
-
-function getElementalStaffSet()
-    local action = gFunc.GetAction()
-    local element = action.Element
-    local staff = ELEMENT_STAFF[element];
-    if staff ~= nil then
-        return { Main = staff };
-    end
-    return {};
-end
 
 ---@alias Element
 ---| '"Thunder"'
@@ -379,6 +299,8 @@ function getElementEnvBonus(element, dayElement, weatherElement, weatherx2)
     return score;
 end
 
+---Returns a set with staff and obi appropriate for the current cast
+---@return table The gear set in question
 function getSpellEnvSet()
     local action = gData.GetAction();
     local env = gData.GetEnvironment();

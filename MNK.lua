@@ -15,14 +15,14 @@ sets.Idle = T {};
 
 sets.TP = T {
     Main = "Destroyers",
-    Ammo = "Civet Sachet",
-    Head = "Optical Hat",
+    Ammo = "Tiphia Sting",
+    Head = "Shr.Znr.Kabuto",
     -- Head = "Melee Crown",
     Neck = "Faith Torque",
     Ear1 = "Brutal Earring",
     Ear2 = "Ethereal Earring",
     Body = "Shura Togi",
-    Hands = "Melee Gloves",
+    Hands = "Mel. Gloves +1",
     Ring1 = "Rajas Ring",
     Ring2 = "Toreador's Ring",
     Back = "Amemet Mantle +1",
@@ -33,7 +33,7 @@ sets.TP = T {
 
 -- Basically high evasion and counter.
 sets.Tanking = Utils.compress_tables(sets.TP, T {
-    Ammo = "Civet Sachet",
+    Ammo = "Tiphia Sting",
     Head = "Optical Hat",
     Body = "Scorpion Harness",
     Legs = "Temple Hose",
@@ -48,7 +48,9 @@ sets.JA_Chakra_Priority = {
     Head = { "Genbu's Kabuto" },
     Body = { "Temple Cyclas" },
     Waist = { "Warrior's Belt +1" },
-    Hands = { "Melee Gloves" },
+    Hands = { "Mel. Gloves +1" },
+    Ring1 = { "Soil Ring" },
+    Ring2 = { "Soil Ring" },
 };
 sets.JA_Focus_Priority = {
     Head = { "Temple Crown" },
@@ -65,9 +67,9 @@ sets.JA_Counterstance_Priority = {
 
 -- Modifiers: STR 10%, VIT 10%
 sets["WS_Asuran Fists"] = T {
-    Head = "Genbu's Kabuto",
+    Head = "Shr.Znr.Kabuto",
     Neck = "Faith Torque",
-    Body = "Kirin's Osode",
+    Body = "Shura Togi",
     Ring1 = "Rajas Ring",
     Ring2 = "Toreador's Ring",
     Waist = "Black Belt",

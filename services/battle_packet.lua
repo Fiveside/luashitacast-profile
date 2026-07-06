@@ -59,15 +59,15 @@ end
 ---Returns true if the detected ashita packet_in event is a BattlePacket
 ---@param e any The ashita event
 ---@return boolean # True if the event is a battle packet
-function Export.is_battle_event(e)
+function Export.isBattleEvent(e)
     return e.id == 0x28
 end
 
 ---Short circuiting function for discarding most of the packets that do not contain skillchains
 ---@param e any The ashita event
 ---@return boolean True if this event can still contain skillchains
-function Export.is_possible_skillchain_event(e)
-    if not Export.is_battle_event(e) then
+function Export.isPossibleSkillchainEvent(e)
+    if not Export.isBattleEvent(e) then
         return false;
     end
 
@@ -97,7 +97,7 @@ end
 ---Parses a raw battle packet into a lua table. No additional processing.
 ---@param e any The Ashita incomming_packet event.
 ---@return BattlePacket
-function Export.parse_incomming_event(e)
+function Export.parseIncomingEvent(e)
     -- Start the reader after the first 5 bytes common to each packet.
     local readBits = NewPackedBitreader(e.data_raw, 40);
 

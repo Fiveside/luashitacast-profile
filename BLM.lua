@@ -1,18 +1,19 @@
+
+---@module 'types'
+
 local Utils = gFunc.LoadFile("util");
 local getZoneSet = gFunc.LoadFile("town");
 local Idle = gFunc.LoadFile("idle");
-local BattlePacket = gFunc.LoadFile("battle_packet");
+local Events = gFunc.LoadFile("services/events");
+local Skillchains = gFunc.LoadFile("services/skillchain");
 
 local profile = {};
 local sets = T {};
 sets.Idle = T {
-    -- Main = {"Solid Wand", "Yew Wand +1", "Willow wand +1", "Maple Wand"},
-    -- Sub = {"Solid wand", "Yew Wand +1"},
-    -- Head = "Displaced",
-    -- Body = "Black Cloak",
     Body = "Sorcerer's Coat",
 };
 
+---@type PriorityGearSet
 sets.Resting_Priority = T {
     Main = { "Pluto's Staff", "Pilgrim's Wand" },
     Body = { "Errant Hpl.", "Black cloak", "Seer's Tunic" },
@@ -22,20 +23,23 @@ sets.Resting_Priority = T {
 -- This set is the base set overridden by other more specialized sets
 -- This should mainly include haste gear to reduce cooldown timers.
 -- Really this only applys to spells targeting the player.
+---@type GearSet
 sets.Midcast = T {
     Waist = "Swift Belt",
 };
 
 -- This set should be considered the default set.
+---@type GearSet
 sets.MagicAttack = T {
+    Ammo = "Phtm. Tathlum",
     Head = "Wizard's Petasos",
     Neck = "Philomath Stole",
     Ear1 = "Moldavite Earring",
     Ear2 = "Morion Earring",
     Body = "Igqira weskit",
     Hands = "Wizard's gloves",
-    Ring1 = "Genius Ring",
-    Ring2 = "Genius Ring",
+    Ring1 = "Snow Ring",
+    Ring2 = "Snow Ring",
     -- Body = "Black Cotehardie",
     -- Body = "Black Cloak",
     -- Legs = "Seer's Slacks +1",
@@ -45,23 +49,45 @@ sets.MagicAttack = T {
     Feet = "Rostrum Pumps",
 };
 
+---@type GearSet
 sets.ElementalMagic = Utils.compress_tables(sets.MagicAttack, T {
     Body = "Sorcerer's Coat",
     Hands = "Wizard's Gloves",
+    Back = "Merciful Cape",
 });
 
+---@type GearSet
 sets.EnfeeblingMagic = Utils.compress_tables(sets.MagicAttack, T {
     Body = "Wizard's Coat",
 });
 
+---@type GearSet
 sets.DarkMagic = Utils.compress_tables(sets.MagicAttack, T {
     Main = "Dark staff",
+    Hands = "Sorcerer's Gloves",
     Legs = "Wizard's tonban",
+    Back = "Merciful Cape",
+});
+
+---@type GearSet
+sets.EnhancingMagic = Utils.compress_tables(sets.MagicAttack, T {
+    Back = "Merciful Cape",
 });
 
 -- A list of gear that only gets equipped while the magic burst window is open on the target
+---@type GearSet
 sets.MagicBurst = T {
+    Hands = "Sorcerer's Gloves",
+};
 
+-- Specific gear for job actions, spells, and weapon skills
+---@type GearSet
+sets.MA_Sneak = T {
+    Feet = "Dream Boots +1",
+};
+
+sets.MA_Invisible = T {
+    Hands = "Dream Mittens +1"
 };
 
 -- A map from an element to the appropriate staff
@@ -69,7 +95,7 @@ local ELEMENT_STAFF = T {
     Thunder = "Jupiter's staff",
     Fire = "Vulcan's staff",
     Ice = "Aquilo's staff",
-    Wind = 'Wind staff',
+    Wind = "Auster's staff",
     Water = "Neptune's staff",
     Earth = 'Earth staff',
     Dark = "Pluto's staff",
@@ -105,7 +131,9 @@ local CONDITIONAL_GEAR = T {
 
         -- The mp threshold calculation conditions are actually somewhat intricate, but
         -- a straight 50% check covers 99.9% of cases.  Good enough.
-        return me.MPP < 50 and action.Skill == 'ElementalMagic';
+        -- Include drain and aspir since those use magic attack
+        local isDarkAttack = action.Name == 'Drain' or action.Name == 'Aspir';
+        return me.MPP < 50 and (action.Skill == 'ElementalMagic' or isDarkAttack);
     end,
 
     [T { Main = "Diabolos's Pole" }] = function()
@@ -117,15 +145,6 @@ local CONDITIONAL_GEAR = T {
         return weather == 'Dark' or weather == 'Dark x2';
     end,
 
-    [T { Feet = "Dream Boots +1" }] = function()
-        local actionName = gData.GetAction().Name;
-        return actionName == 'Sneak';
-    end,
-
-    [T { Hands = "Dream Mittens +1" }] = function()
-        local actionName = gData.GetAction().Name;
-        return actionName == 'Invisible';
-    end,
 };
 
 -- A list of spells that we should ignore the active set for
@@ -135,7 +154,14 @@ local FORCED_ELEMENTAL_SPELLS = T {
 };
 
 local state = {
+    -- to redo _Priority sets
     syncedLevel = 0,
+
+    -- Used to handle magic burst switching
+    currentSpell = nil,
+    currentTargetId = nil,
+
+    events = nil;
 };
 profile.Sets = sets;
 
@@ -145,18 +171,15 @@ profile.Packer = {
 profile.OnLoad = function()
     gSettings.AllowAddSet = false;
 
-    ashita.events.register("packet_in", "lac_profile_packet_handler_0x28", function(e)
-        if not BattlePacket.is_possible_skillchain_event(e) then
-            return;
-        end
-
-        -- todo: detect skillchain and equip sorc gloves if we're in the middle of casting a burst on the target.
-        local pkt = BattlePacket.parse_incomming_event(e);
-    end);
+    state.events = Events.new();
+    state.events:install();
+    Skillchains.install(state.events);
+    
+    state.events:on(Events.MAGIC_BURST_WINDOW_OPEN, onMagicBurstWindowOpen);
 end
 
 profile.OnUnload = function()
-    ashita.events.unregister("packet_in", "lac_profile_packet_handler_0x28");
+    state.events:uninstall();
 end
 
 profile.HandleCommand = function(args)
@@ -201,6 +224,7 @@ profile.HandleMidcast = function()
     layers:append(sets.Midcast);
 
     -- Apply different specialty sets if we're casting on something other than ourself.
+    -- This 
     if target.Name ~= me.Name and target.Type ~= 'PC' then
         if FORCED_ELEMENTAL_SPELLS:contains(action.Name) then
             layers:append(sets.ElementalMagic);
@@ -213,12 +237,26 @@ profile.HandleMidcast = function()
         end
     end
 
+    -- Staff and Obi set.
     layers:append(getSpellEnvSet());
 
+    -- Sets with complex activation conditions.
     for conditionalSet, condition in pairs(CONDITIONAL_GEAR) do
         if condition() then
             layers:append(conditionalSet)
         end
+    end
+
+    -- Sets that only apply to one spell.
+    local spellSpecificSet = sets['MA_' .. action.Name];
+    if spellSpecificSet ~= nil then
+        layers:append(spellSpecificSet);
+    end
+
+    -- If a burst window is open, equip that set too.
+    local window = Skillchains.getActiveBurstWindow(gData.GetActionTarget().Id);
+    if window ~= nil and window.elements:contains(action.Element) then
+        layers:append(sets.MagicBurst);
     end
 
     gFunc.EquipSet(Utils.compress_tables(layers:unpack()));
@@ -317,6 +355,18 @@ function getSpellEnvSet()
         set.Waist = ELEMENT_OBI[action.Element];
     end
     return set;
+end
+
+function onMagicBurstWindowOpen(events, who, chain, elements)
+    local action = gData.GetAction();
+    local target = gData.GetActionTarget();
+    if action == nil then
+        return;
+    end
+
+    if target.Id == who and elements:contains(action.Element) then
+        gFunc.EquipSet(sets.MagicBurst);
+    end
 end
 
 return profile;

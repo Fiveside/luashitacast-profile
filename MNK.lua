@@ -2,6 +2,7 @@ local getZoneSet = gFunc.LoadFile("town");
 local HELM = gFunc.LoadFile("services/helm");
 local Idle = gFunc.LoadFile("idle");
 local Utils = gFunc.LoadFile("util");
+local Xi = gFunc.LoadFile('xi');
 
 local profile = {};
 local state = {
@@ -100,8 +101,7 @@ sets["WS_Howling Fist"] = Utils.compress_tables(sets["WS_Dragon Kick"], T {
     Feet = "Shura Sune-Ate",
 });
 
-
-sets.WS_Combo = Utils.compress_tables(sets.WS_Asuran_Fists);
+sets.WS_Combo = Utils.compress_tables(sets["WS_Asuran Fists"]);
 
 sets.IdleRegen = T {
     Body = "Melee Cyclas",
@@ -145,7 +145,9 @@ profile.HandleDefault = function()
     layers:append(state.idleRegen:getSet());
     layers:append(getZoneSet());
     layers:append(HELM.getSet());
-    gFunc.EquipSet(Utils.compress_tables(layers:unpack()));
+    local final = Utils.compress_tables(layers:unpack());
+
+    return gFunc.Equipset(Xi.excludeUsableEquippedItems(final));
 end
 
 profile.HandleAbility = function()

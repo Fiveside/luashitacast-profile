@@ -16,11 +16,41 @@
 ---| '"Legs"'
 ---| '"Feet"'
 
----@alias GearSet
----| { [GearSlot]: string }
+---@class (exact) GearSet
+---@field Main string?
+---@field Sub string?
+---@field Range string?
+---@field Ammo string?
+---@field Head string?
+---@field Neck string?
+---@field Ear1 string?
+---@field Ear2 string?
+---@field Body string?
+---@field Hands string?
+---@field Ring1 string?
+---@field Ring2 string?
+---@field Back string?
+---@field Waist string?
+---@field Legs string?
+---@field Feet string?
 
----@alias PriorityGearSet
----| { [GearSlot]: string[] }
+---@class (exact) PriorityGearSet
+---@field Main string[]?
+---@field Sub string[]?
+---@field Range string[]?
+---@field Ammo string[]?
+---@field Head string[]?
+---@field Neck string[]?
+---@field Ear1 string[]?
+---@field Ear2 string[]?
+---@field Body string[]?
+---@field Hands string[]?
+---@field Ring1 string[]?
+---@field Ring2 string[]?
+---@field Back string[]?
+---@field Waist string[]?
+---@field Legs string[]?
+---@field Feet string[]?
 
 -- Because for some reason, we don't have the definition for T in the official ashita
 -- type files

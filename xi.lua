@@ -2,15 +2,18 @@
 -- Constants pulled from https://github.com/AshitaXI/Ashita-v4beta/blob/main/plugins/sdk/ffxi/enums.h
 
 local bit = require('bit');
+local ItemData = require('ffxi/itemdata');
 
 local Export = {}
 
+---@enum LanguageId
 Export.LanguageId = {
     Default = 0,
     Japanese = 1,
     English = 2,
 }
 
+---@enum JobMask
 Export.JobMask = {
     None  = 0x00000000,
     WAR   = 0x00000002,
@@ -47,6 +50,56 @@ Export.JobMask = {
 
     AllJobs = 0x007FFFFE,
 }
+
+---@enum EquipmentSlot
+Export.EquipmentSlot = {
+    Main = 0,
+    Sub = 1,
+    Range = 2,
+    Ammo = 3,
+    Head = 4,
+    Body = 5,
+    Hands = 6,
+    Legs = 7,
+    Feet = 8,
+    Neck = 9,
+    Waist = 10,
+    Ear1 = 11,
+    Ear2 = 12,
+    Ring1 = 13,
+    Ring2 = 14,
+    Back = 15,
+
+    -- Max = 16,
+};
+
+Export.EquipmentSlotMask = {
+    None  = 0x0000,
+    Main  = 0x0001,
+    Sub   = 0x0002,
+    Range = 0x0004,
+    Ammo  = 0x0008,
+    Head  = 0x0010,
+    Body  = 0x0020,
+    Hands = 0x0040,
+    Legs  = 0x0080,
+    Feet  = 0x0100,
+    Neck  = 0x0200,
+    Waist = 0x0400,
+    LEar  = 0x0800,
+    REar  = 0x1000,
+    LRing = 0x2000,
+    RRing = 0x4000,
+    Back  = 0x8000,
+
+    -- Slot Groups
+    Ears  = bit.bor(0x0800, 0x1000), -- LEar | REar
+    Rings = bit.bor(0x2000, 0x4000), -- LRing | RRing
+
+    -- All Slots
+    All = 0xFFFF,
+}
+
 
 ---Returns a table of strings for all current buffs
 ---@return table<string, number>;
@@ -133,6 +186,80 @@ function Export.equipmentIsReady(itemName)
         end
     end
     return false;
+end
+
+---Looks through equipped items to see if we're currently wearing something that can be
+---used like an item.  If we find one, then we return the list of slots that item
+---is occupying so that gearswap logic can ignore swapping these in the default handler
+---@return GearSlot[]
+function Export.getEquipedExclusionList()
+    -- Get currently equipped items.
+    local inv = AshitaCore:GetMemoryManager():GetInventory();
+    local res = AshitaCore:GetResourceManager();
+
+    -- Slots that have time items ready for use.
+    local timeSlots = {};
+    for slotName, slotId in pairs(Export.EquipmentSlot) do
+        local eqItem = inv:GetEquippedItem(slotId);
+        if eqItem ~= nil then
+            -- .Index is a uint16 who's upper 8 are the container id and lower 8 are the index in the container
+            local containerId = bit.rshift(bit.band(eqItem.Index, 0xFF00), 8);
+            local containerIndex = bit.band(eqItem.Index, 0xFF);
+
+            -- We just pulled the location of this item above, skip nil check.
+            local item = inv:GetContainerItem(containerId, containerIndex);
+            ---@cast item -?
+            local rItem = res:GetItemById(item.Id);
+            ---@cast rItem -?
+
+            local timeData = ItemData.parse_timer_info(item, rItem, true);
+
+            -- timeData is empty object if there isn't good timer info on the item
+            if timeData.max_charges ~= nil then
+                -- Checking if the time to use this item is within the default cooldown
+                -- that comes from freshly equipping the item.
+                if rItem.CastDelay >= timeData.use_delay then
+                    table.insert(timeSlots, slotName);
+                end
+            end
+        end
+    end
+
+    -- If we have slots with timer data, then also add all empty slots so that we
+    -- don't accidentally unequip items that occupy multiple slots (like Mandragora Suit);
+    if #timeSlots > 0 then
+        for slotName, slotId in pairs(Export.EquipmentSlot) do
+            if inv:GetEquippedItem(slotId).Index == 0 then
+                table.insert(timeSlots, slotName);
+            end
+        end
+    end
+
+    return timeSlots;
+end
+
+---Takes a gearset and returns one without entries in it that could conflict with usable items we
+---currently have equipped.
+---@param gs GearSet
+---@return GearSet
+function Export.excludeUsableEquippedItems(gs)
+    local exclusionList = Export.getEquipedExclusionList();
+
+    local result = T(gs):copy();
+    for _, slotName in ipairs(exclusionList) do
+        result[slotName] = nil;
+    end
+    return result;
+end
+
+---Returns true if its currently daytime and "Daytime" conditional gear is active.
+---False does signal that "Nighttime" conditional gear is active.
+---@return boolean
+function Export.isDaytime()
+    -- TODO: we could probably do this ourselves so we don't rely on LAC here, but this
+    -- function's implementation is pretty messy.
+    local gameTime = gData.GetEnvironment().Time;
+    return gameTime > 8.0 and gameTime < 18.0;
 end
 
 return Export;

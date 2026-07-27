@@ -4,8 +4,24 @@
 local Utils = gFunc.LoadFile("util");
 local getZoneSet = gFunc.LoadFile("town");
 local Idle = gFunc.LoadFile("idle");
-local Events = gFunc.LoadFile("services/events");
-local Skillchains = gFunc.LoadFile("services/skillchain");
+local Common = gFunc.LoadFile("common");
+
+-- A map from an element to the appropriate staff
+local ELEMENT_STAFF = T {
+    Thunder = "Jupiter's staff",
+    Fire = "Vulcan's staff",
+    Ice = "Aquilo's staff",
+    Wind = "Auster's staff",
+    Water = "Neptune's staff",
+    Earth = 'Earth staff',
+    Dark = "Pluto's staff",
+};
+
+-- A map from an element to the appropriate obi.
+local ELEMENT_OBI = T {
+    Ice = "Hyorin Obi",
+    Dark = "Anrin Obi",
+};
 
 local profile = {};
 local sets = T {};
@@ -15,10 +31,15 @@ sets.Idle = T {
 
 ---@type PriorityGearSet
 sets.Resting_Priority = T {
-    Main = { "Pluto's Staff", "Pilgrim's Wand" },
-    Body = { "Errant Hpl.", "Black cloak", "Seer's Tunic" },
+    Main = { ELEMENT_STAFF.Dark, "Pilgrim's Wand" },
+    Body = { "Errant Hpl.", "Seer's Tunic" },
     Legs = { "Baron's slops" },
+    Ear1 = { "Relaxing Earring" },
 };
+
+sets.Precast = T {
+    Ear1 = "Loquac. Earring",
+}
 
 -- This set is the base set overridden by other more specialized sets
 -- This should mainly include haste gear to reduce cooldown timers.
@@ -37,16 +58,20 @@ sets.MagicAttack = T {
     Ear1 = "Moldavite Earring",
     Ear2 = "Morion Earring",
     Body = "Igqira weskit",
-    Hands = "Wizard's gloves",
+    -- Body = "Black Cotehardie",
+    -- Hands = "Wizard's gloves",
+    Hands = "Zenith Mitts",
     Ring1 = "Snow Ring",
     Ring2 = "Snow Ring",
-    -- Body = "Black Cotehardie",
-    -- Body = "Black Cloak",
-    -- Legs = "Seer's Slacks +1",
+    -- Ring1 = "Kshama Ring No.5",
+    -- Ring2 = "Windurstian Ring",
     Back = "Red Cape +1",
     Waist = "Penitent's Rope",
     Legs = "Errant slops",
+    -- Legs = "Seer's Slacks +1",
+    -- Legs = "Wizard's Tonban",
     Feet = "Rostrum Pumps",
+    -- Feet = "Wizard's Sabots",
 };
 
 ---@type GearSet
@@ -63,9 +88,9 @@ sets.EnfeeblingMagic = Utils.compress_tables(sets.MagicAttack, T {
 
 ---@type GearSet
 sets.DarkMagic = Utils.compress_tables(sets.MagicAttack, T {
-    Main = "Dark staff",
+    Main = ELEMENT_STAFF.Dark,
     Hands = "Sorcerer's Gloves",
-    Legs = "Wizard's tonban",
+    Legs = "Wizard's Tonban",
     Back = "Merciful Cape",
 });
 
@@ -81,31 +106,7 @@ sets.MagicBurst = T {
 };
 
 -- Specific gear for job actions, spells, and weapon skills
----@type GearSet
-sets.MA_Sneak = T {
-    Feet = "Dream Boots +1",
-};
-
-sets.MA_Invisible = T {
-    Hands = "Dream Mittens +1"
-};
-
--- A map from an element to the appropriate staff
-local ELEMENT_STAFF = T {
-    Thunder = "Jupiter's staff",
-    Fire = "Vulcan's staff",
-    Ice = "Aquilo's staff",
-    Wind = "Auster's staff",
-    Water = "Neptune's staff",
-    Earth = 'Earth staff',
-    Dark = "Pluto's staff",
-};
-
--- A map from an element to the appropriate obi.
-local ELEMENT_OBI = T {
-    Ice = "Hyorin Obi",
-    Dark = "Anrin Obi",
-};
+Common.applyCommonMagicSets(sets);
 
 ---Specific gear along with functions that return true when they it should be equipped
 ---Equip happens during midcast
@@ -161,7 +162,6 @@ local state = {
     currentSpell = nil,
     currentTargetId = nil,
 
-    events = nil;
 };
 profile.Sets = sets;
 
@@ -170,16 +170,9 @@ profile.Packer = {
 
 profile.OnLoad = function()
     gSettings.AllowAddSet = false;
-
-    state.events = Events.new();
-    state.events:install();
-    Skillchains.install(state.events);
-    
-    state.events:on(Events.MAGIC_BURST_WINDOW_OPEN, onMagicBurstWindowOpen);
 end
 
 profile.OnUnload = function()
-    state.events:uninstall();
 end
 
 profile.HandleCommand = function(args)
@@ -190,7 +183,6 @@ profile.HandleDefault = function()
     if (myLevel ~= state.syncedLevel) then
         state.syncedLevel = myLevel;
         gFunc.EvaluateLevels(sets, myLevel);
-        -- gFunc.EvaluateLevels(JA_sets, myLevel);
     end
     local layers = T {};
     layers:append(sets.Idle);
@@ -211,6 +203,7 @@ profile.HandleItem = function()
 end
 
 profile.HandlePrecast = function()
+    gFunc.EquipSet(sets.Precast);
 end
 
 profile.HandleMidcast = function()
@@ -254,10 +247,10 @@ profile.HandleMidcast = function()
     end
 
     -- If a burst window is open, equip that set too.
-    local window = Skillchains.getActiveBurstWindow(gData.GetActionTarget().Id);
-    if window ~= nil and window.elements:contains(action.Element) then
-        layers:append(sets.MagicBurst);
-    end
+    -- local window = Skillchains.getActiveBurstWindow(gData.GetActionTarget().Id);
+    -- if window ~= nil and window.elements:contains(action.Element) then
+    --     layers:append(sets.MagicBurst);
+    -- end
 
     gFunc.EquipSet(Utils.compress_tables(layers:unpack()));
 end
@@ -307,30 +300,28 @@ local ELEMENTAL_WEAKNESS = T {
 
 
 ---Calculate and return the multiplier for the current spell based on day and weather
----@param element Element Element of the spell being cast.
----@param dayElement Element Element of the current day.
----@param weatherElement Element Element of any extreme weather phenomenon.
----@param weatherx2 boolean True if we're experiencing double weather.
----@return integer score The multiplier
 function getElementEnvBonus(element, dayElement, weatherElement, weatherx2)
+    local action = gData.GetAction();
+    local env = gData.GetEnvironment();
+
     local score = 0;
 
     -- Add day bonus/penalty.
-    if element == dayElement then
+    if action.Element == env.DayElement then
         score = score + 0.1;
-    elseif ELEMENTAL_WEAKNESS[dayElement] == element then
+    elseif ELEMENTAL_WEAKNESS[env.DayElement] == action.Element then
         score = score - 0.1;
     end
 
     -- double weather gives +25%
     local weatherBonus = 0.1
-    if weatherx2 then
+    if env.Weather:endswith("x2") then
         weatherBonus = 0.25
     end
 
-    if element == weatherElement then
+    if action.Element == env.WeatherElement then
         score = score + weatherBonus;
-    elseif ELEMENTAL_WEAKNESS[element] == weatherElement then
+    elseif ELEMENTAL_WEAKNESS[action.Element] == env.WeatherElement then
         score = score + (weatherBonus * -1);
     end
 
@@ -341,9 +332,8 @@ end
 ---@return table The gear set in question
 function getSpellEnvSet()
     local action = gData.GetAction();
-    local env = gData.GetEnvironment();
 
-    local envMult = getElementEnvBonus(action.Element, env.DayElement, env.WeatherElement, env.Weather:endswith('x2'));
+    local envMult = getElementEnvBonus();
 
     local set = {};
     if ELEMENT_STAFF[action.Element] ~= nil then
@@ -355,18 +345,6 @@ function getSpellEnvSet()
         set.Waist = ELEMENT_OBI[action.Element];
     end
     return set;
-end
-
-function onMagicBurstWindowOpen(events, who, chain, elements)
-    local action = gData.GetAction();
-    local target = gData.GetActionTarget();
-    if action == nil then
-        return;
-    end
-
-    if target.Id == who and elements:contains(action.Element) then
-        gFunc.EquipSet(sets.MagicBurst);
-    end
 end
 
 return profile;

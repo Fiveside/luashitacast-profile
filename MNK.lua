@@ -40,6 +40,11 @@ sets.Tanking = Utils.compress_tables(sets.TP, T {
     Legs = "Temple Hose",
 });
 
+sets.HundredFists = Utils.compress_tables(sets.TP, T {
+    Legs = "Shura Haidate",
+    Feet = "Shura Sune-Ate",
+});
+
 -- The name of the set should be JA_<Jobability>_Priority with appropriate capitalization.
 sets.JA_Chakra_Priority = {
     -- Chakra is based on Vit, so this should be a high vit set.
@@ -133,11 +138,17 @@ profile.HandleDefault = function()
         state.idleRegen:refresh();
     end
 
+    
     local layers = T {};
     local player = gData.GetPlayer();
     if player.Status == "Engaged" then
         layers:append(sets.TP);
         -- layers:append(sets.Tanking);
+
+        local buffs = Xi.getMyBuffsByName();
+        if buffs['Hundred Fists'] ~= nil then
+            
+        end
     else
         layers:append(sets.Idle);
     end
@@ -147,7 +158,7 @@ profile.HandleDefault = function()
     layers:append(HELM.getSet());
     local final = Utils.compress_tables(layers:unpack());
 
-    return gFunc.Equipset(Xi.excludeUsableEquippedItems(final));
+    return gFunc.EquipSet(Xi.excludeUsableEquippedItems(final));
 end
 
 profile.HandleAbility = function()

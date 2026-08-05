@@ -1,6 +1,5 @@
 -- Equips items that allows you to regen while not in combat, up to 95% max hp.
 local Conquest = gFunc.LoadFile("lib/conquest");
-local Enums = gFunc.LoadFile("enums");
 local bit = require('bit');
 local Utils = gFunc.LoadFile("util")
 local XI = gFunc.LoadFile("xi");

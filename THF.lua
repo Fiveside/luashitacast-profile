@@ -22,7 +22,7 @@ sets.TP_Priority = T{
     Sub = {"Demon's Knife +1", "Marauder's Knife"},
     Range = {"Rogetsurin"},
 
-    Head = {"Emperor Hairpin"},
+    Head = {"Voyager Sallet", "Emperor Hairpin"},
     Neck = {"Peacock Amulet"},
     Ear1 = {"Spike Earring"},
     Ear2 = {"Spike Earring"},
@@ -34,9 +34,16 @@ sets.TP_Priority = T{
 
     Back = {"Amemet Mantle +1", "Jaguar Mantle"},
     Waist = {"Swift Belt"},
-    Legs = {"Rogue's Culottes"},
-    Feet = {"Leaping Bootsd"},
+    Legs = {"Republic Subligar"},
+    Feet = {"Leaping Boots"},
 }
+
+sets.Evasion_Priority = Utils.compress_tables(sets.TP_Priority, T{
+    Head = {"Emperor Hairpin"},
+    Ear1 = {"displaced"},
+    Ear2 = {"empty"},
+    Body = {"Scorpion Harness"},
+});
 
 -----------------------------
 -- Job Ability specific sets
@@ -123,7 +130,8 @@ profile.HandleDefault = function()
     local layers = T{};
     local player = gData.GetPlayer();
     if player.Status == 'Engaged' then
-        layers:append(sets.TP);
+        -- layers:append(sets.TP);
+        layers:append(sets.Evasion);
     end
 
     layers:append(getZoneSet());

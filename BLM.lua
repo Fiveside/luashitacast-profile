@@ -5,6 +5,7 @@ local Utils = gFunc.LoadFile("util");
 local getZoneSet = gFunc.LoadFile("town");
 local Idle = gFunc.LoadFile("idle");
 local Common = gFunc.LoadFile("common");
+local Bursts = gFunc.LoadFile("bursts");
 
 -- A map from an element to the appropriate staff
 local ELEMENT_STAFF = T {
@@ -89,7 +90,7 @@ sets.EnfeeblingMagic = Utils.compress_tables(sets.MagicAttack, T {
 ---@type GearSet
 sets.DarkMagic = Utils.compress_tables(sets.MagicAttack, T {
     Main = ELEMENT_STAFF.Dark,
-    Hands = "Sorcerer's Gloves",
+    Hands = "Src. Gloves +1",
     Legs = "Wizard's Tonban",
     Back = "Merciful Cape",
 });
@@ -102,7 +103,7 @@ sets.EnhancingMagic = Utils.compress_tables(sets.MagicAttack, T {
 -- A list of gear that only gets equipped while the magic burst window is open on the target
 ---@type GearSet
 sets.MagicBurst = T {
-    Hands = "Sorcerer's Gloves",
+    Hands = "Src. Gloves +1",
 };
 
 -- Specific gear for job actions, spells, and weapon skills
@@ -170,9 +171,16 @@ profile.Packer = {
 
 profile.OnLoad = function()
     gSettings.AllowAddSet = false;
+    Bursts.onProfileLoad();
+    ashita.events.register('packet_in', 'lac_profile_packet_in', function(pkt)
+        Bursts.onPacketIn(pkt);
+    end)
+    Bursts.onSkillchain(onSkillchain);
 end
 
 profile.OnUnload = function()
+    ashita.events.unregister('packet_in', 'lac_profile_packet_in');
+    Bursts.onProfileUnload();
 end
 
 profile.HandleCommand = function(args)
@@ -239,20 +247,38 @@ profile.HandleMidcast = function()
             layers:append(conditionalSet)
         end
     end
-
+    
     -- Sets that only apply to one spell.
     local spellSpecificSet = sets['MA_' .. action.Name];
     if spellSpecificSet ~= nil then
         layers:append(spellSpecificSet);
     end
-
+    
     -- If a burst window is open, equip that set too.
-    -- local window = Skillchains.getActiveBurstWindow(gData.GetActionTarget().Id);
-    -- if window ~= nil and window.elements:contains(action.Element) then
-    --     layers:append(sets.MagicBurst);
-    -- end
+    local chain = Bursts.getSkillchain(gData.GetActionTarget().Id);
+    if chain ~= nil and chain.Elements:contains(action.Element) then
+        layers:append(sets.MagicBurst);
+    end
 
     gFunc.EquipSet(Utils.compress_tables(layers:unpack()));
+end
+
+function onSkillchain(targetId, chainInfo)
+    -- This is called when a skillchain appears nearby
+    local action = gData.GetAction();
+    local target = gData.GetActionTarget();
+    if action == nil or target == nil then
+        return;
+    end
+    if target.Id ~= targetId then
+        return;
+    end
+
+    -- we are currently casting on the target that the skillchain occurred on.
+    -- perform emergency gear swap outside of normal midcast callback.
+    if chainInfo.Elements:contains(action.Element) then
+        gFunc.EquipSet(sets.MagicBurst);
+    end
 end
 
 profile.HandlePreshot = function()

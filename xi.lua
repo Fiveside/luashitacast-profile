@@ -206,20 +206,20 @@ function Export.getEquipedExclusionList()
             local containerId = bit.rshift(bit.band(eqItem.Index, 0xFF00), 8);
             local containerIndex = bit.band(eqItem.Index, 0xFF);
 
-            -- We just pulled the location of this item above, skip nil check.
+            -- These can be nil if we're zoning and inventory hasn't loaded yet.
             local item = inv:GetContainerItem(containerId, containerIndex);
-            ---@cast item -?
             local rItem = res:GetItemById(item.Id);
-            ---@cast rItem -?
 
-            local timeData = ItemData.parse_timer_info(item, rItem, true);
+            if item ~= nil and rItem ~= nil then
+                local timeData = ItemData.parse_timer_info(item, rItem, true);
 
-            -- timeData is empty object if there isn't good timer info on the item
-            if timeData.max_charges ~= nil then
-                -- Checking if the time to use this item is within the default cooldown
-                -- that comes from freshly equipping the item.
-                if rItem.CastDelay >= timeData.use_delay then
-                    table.insert(timeSlots, slotName);
+                -- timeData is empty object if there isn't good timer info on the item
+                if timeData.max_charges ~= nil then
+                    -- Checking if the time to use this item is within the default cooldown
+                    -- that comes from freshly equipping the item.
+                    if rItem.CastDelay >= timeData.use_delay then
+                        table.insert(timeSlots, slotName);
+                    end
                 end
             end
         end

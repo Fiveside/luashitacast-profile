@@ -103,7 +103,7 @@ local function onPacketIn(pkt)
     local targetMath = 40 + 46 + 32
     local targetId = ashita.bits.unpack_be(pkt.data_raw, targetMath, 32);
 
-    local hasProcMath = 40 + 44 + 32 + 32 + 4 + 3 + 2 + 12 + 5 + 5 + 17 + 10 + 31
+    local hasProcMath = 40 + 46 + 32 + 32 + 4 + 3 + 2 + 12 + 5 + 5 + 17 + 10 + 31
     local hasProc = ashita.bits.unpack_be(pkt.data_raw, hasProcMath, 1);
     if hasProc == 0 then
         return;

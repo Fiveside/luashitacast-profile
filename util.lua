@@ -18,9 +18,7 @@ Export.table_tostring = table_tostring;
 
 function Export.compress_tables(...)
     local fin = {};
-    -- print("aaaaa")
     local arg = {...};
-    -- print("compress: " .. Export.table_tostring(arg));
     for _i, t in ipairs(arg) do
         for k, v in pairs(t) do
             fin[k] = v
@@ -53,6 +51,13 @@ function Export.extend_sets(sets, baseSets, extendedSets)
     end
 end
 
--- function Export.
+local PERFORMANCE_FREQUENCY = ashita.time.query_performance_frequency().quad_part;
+
+--- A timestamp with approximately millisecond resolution.  Not tied to wall time.
+---@return number
+function Export.now()
+    local pc = ashita.time.query_performance_counter().quad_part;
+    return (pc * 1000) / PERFORMANCE_FREQUENCY;
+end
 
 return Export;

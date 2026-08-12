@@ -262,4 +262,90 @@ function Export.isDaytime()
     return gameTime > 8.0 and gameTime < 18.0;
 end
 
+
+---@alias ContainerDefinition {id: integer, name: string}
+
+-- Ordered this way because it appears in the UI this way.
+---@type ContainerDefinition[]
+local CONTAINER_LIST = T {
+    { id = 3,  name = "Temporary" },
+    { id = 0,  name = "Inventory" },
+    { id = 1,  name = "Safe" },
+    { id = 9,  name = "Safe2" },
+    { id = 2,  name = "Storage" },
+    { id = 4,  name = "Locker" },
+    { id = 5,  name = "Satchel" },
+    { id = 6,  name = "Sack" },
+    { id = 7,  name = "Case" },
+    { id = 8,  name = "Wardrobe" },
+    { id = 10, name = "Wardrobe2" },
+    { id = 11, name = "Wardrobe3" },
+    { id = 12, name = "Wardrobe4" },
+    { id = 13, name = "Wardrobe5" },
+    { id = 14, name = "Wardrobe6" },
+    { id = 15, name = "Wardrobe7" },
+    { id = 16, name = "Wardrobe8" },
+};
+
+---@type table<integer, string>
+local CONTAINERS = T{};
+do
+    for _, c in ipairs(CONTAINER_LIST) do
+        CONTAINERS[c.id] = c.name
+    end
+end
+
+---An iterator for an inventory container's contents
+---@param containerId integer
+---@param index integer
+---@return integer?, item_t?
+local function containerIterator(containerId, index)
+    local inventory = AshitaCore:GetMemoryManager():GetInventory();
+
+    for i = index, inventory:GetContainerCountMax(containerId) do
+        local inventoryItem = inventory:GetContainerItem(containerId, index);
+        if inventoryItem ~= nil and inventoryItem.Id > 0 then
+            return i+1, inventoryItem
+        end
+    end
+end
+
+---An iterator for the entire inventory's contents
+---@param containers ContainerDefinition[]
+---@param index {container: integer, index: integer}
+---@return {container: integer, index: integer}?, {item: item_t, location: integer}?
+local function inventoryIterator(containers, index)
+    local itemIndex = index.index;
+    for cindex = index.container, #containers do
+        local containerId = containers[cindex].id;
+        local iid, item = containerIterator(containerId, itemIndex)
+        if iid ~= nil then
+            return {container=cindex, index=iid}, {item=item, location=containerId};
+        end
+        -- Reset item index for the next container
+        itemIndex = 1;
+    end
+end
+
+Export.InventoryContainers = CONTAINERS;
+Export.InventoryContainerList = CONTAINER_LIST;
+Export.debug = inventoryIterator;
+
+---An iterator over all items in our inventory
+---@return fun(): ContainerDefinition?, {item: item_t, location: integer}? iterator function
+---@return ContainerDefinition[] invariant
+---@return {id: integer, name: string} starting index
+function Export.listEntireInventory()
+    return inventoryIterator, CONTAINER_LIST, {container = 1, index = 1}
+end
+
+---An iterator over all items in a container
+---@param containerId integer
+---@return fun(integer, integer): integer?, item_t? iterator function
+---@return integer invariant
+---@return integer starting index
+function Export.listContainer(containerId)
+    return containerIterator, containerId, 1
+end
+
 return Export;

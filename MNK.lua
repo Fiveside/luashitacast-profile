@@ -3,6 +3,7 @@ local HELM = gFunc.LoadFile("services/helm");
 local Idle = gFunc.LoadFile("idle");
 local Utils = gFunc.LoadFile("util");
 local Xi = gFunc.LoadFile('xi');
+local Ui = gFunc.LoadFile('ui');
 
 local profile = {};
 local state = {
@@ -34,10 +35,13 @@ sets.TP = T {
 
 -- Basically high evasion and counter.
 sets.Tanking = Utils.compress_tables(sets.TP, T {
-    Ammo = "Tiphia Sting",
     Head = "Optical Hat",
     Body = "Scorpion Harness",
     Legs = "Temple Hose",
+});
+
+sets.Evasion = Utils.compress_tables(sets.Tanking, T{
+    Ammo = "Civet Satchet",
 });
 
 sets.HundredFists = Utils.compress_tables(sets.TP, T {
@@ -121,13 +125,16 @@ profile.OnLoad = function()
     gSettings.AllowAddSet = false;
     state.idleRegen = Idle.IdleRegen:new(sets.IdleRegen);
     state.currentLevel = 0;
+    Ui.onProfileLoad();
 end
 
 profile.OnUnload = function()
+    Ui.onProfileUnload();
 end
 
 profile.HandleCommand = function(args)
     HELM.handleCommand(args);
+    Ui.onSlashCommand(args);
 end
 
 profile.HandleDefault = function()

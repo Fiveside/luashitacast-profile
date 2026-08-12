@@ -1,4 +1,5 @@
 -- Detect if a target has a skillchain on it
+local Utils = gFunc.LoadFile('util');
 
 local COMMAND_TYPES = T { 3, 4, 6, 11, 13 };
 
@@ -26,15 +27,6 @@ local SKILLCHAINS = T {
 }
 
 
-local PERFORMANCE_FREQUENCY = ashita.time.query_performance_frequency().quad_part;
-
---- A timestamp with approximately millisecond resolution.
----@return number
-local function now()
-    local pc = ashita.time.query_performance_counter().quad_part;
-    return (pc * 1000) / PERFORMANCE_FREQUENCY;
-end
-
 ---@type table<integer, {time: integer, chain: SkillchainInfo}>
 local TARGET_STATE = T{};
 
@@ -44,7 +36,7 @@ local SKILLCHAIN_CALLBACKS = T{};
 local function onSkillchain(targetId, chainId)
     local chainInfo = SKILLCHAINS[chainId];
     TARGET_STATE[targetId] = {
-        time = now(),
+        time = Utils.now(),
         chain = chainInfo,
     };
 
@@ -56,7 +48,7 @@ local function onSkillchain(targetId, chainId)
 end
 
 local function housekeeping()
-    local now = now();
+    local now = Utils.now();
     for targetId, state in pairs(TARGET_STATE) do
         if now < state.time + 10000 then -- Is it always 10 seconds per mb window?
             TARGET_STATE[targetId] = nil;

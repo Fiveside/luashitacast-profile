@@ -2,6 +2,7 @@
 local getZoneSet = gFunc.LoadFile("town");
 local Utils = gFunc.LoadFile("util");
 local Xi = gFunc.LoadFile('xi');
+local Idle = gFunc.LoadFile('idle');
 
 
 local profile = {};
@@ -14,13 +15,14 @@ profile.Packer = {
 
 local state = T{
     syncedLevel = 0,
+    idleRegen = nil,
 };
 
 ---@type PriorityGearSet
 sets.TP_Priority = T{
     Main = {"Demon's Knife +1", "Beetle Knife +1"},
     Sub = {"Demon's Knife +1", "Marauder's Knife"},
-    Range = {"Rogetsurin"},
+    Range = {"Thug's Zamburak"},
 
     Head = {"Voyager Sallet", "Emperor Hairpin"},
     Neck = {"Peacock Amulet"},
@@ -112,6 +114,7 @@ sets["WS_Evisceration"] = T{
 
 profile.OnLoad = function()
     gSettings.AllowAddSet = true;
+    state.idleRegen = Idle.IdleRegen:new();
 end
 
 profile.OnUnload = function()
@@ -130,10 +133,11 @@ profile.HandleDefault = function()
     local layers = T{};
     local player = gData.GetPlayer();
     if player.Status == 'Engaged' then
-        -- layers:append(sets.TP);
-        layers:append(sets.Evasion);
+        layers:append(sets.TP);
+        -- layers:append(sets.Evasion);
     end
 
+    layers:append(state.idleRegen:getSet());
     layers:append(getZoneSet());
     local final = Utils.compress_tables(table.unpack(layers));
     gFunc.EquipSet(Xi.excludeUsableEquippedItems(final));

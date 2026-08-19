@@ -217,7 +217,13 @@ function Export.getEquipedExclusionList()
                 if timeData.max_charges ~= nil then
                     -- Checking if the time to use this item is within the default cooldown
                     -- that comes from freshly equipping the item.
-                    if rItem.CastDelay >= timeData.use_delay then
+                    local isFreshEquipped = rItem.CastDelay >= timeData.use_delay;
+
+                    -- Checking for items that have zero charges, because they're always ready
+                    -- to use
+                    local hasCharges = timeData.remaining_charges > 0;
+
+                    if isFreshEquipped and hasCharges then
                         table.insert(timeSlots, slotName);
                     end
                 end

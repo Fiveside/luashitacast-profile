@@ -9,6 +9,9 @@ local profile = {};
 local state = {
     currentLevel = 0,
     idleRegen = nil,
+
+    ---@type SetSelector
+    combatSelector = nil,
 }
 
 local sets = T {};
@@ -125,7 +128,19 @@ profile.OnLoad = function()
     gSettings.AllowAddSet = false;
     state.idleRegen = Idle.IdleRegen:new(sets.IdleRegen);
     state.currentLevel = 0;
-    Ui.onProfileLoad();
+    state.combatSelector = Utils.SetSelector.new('Combat', 'p', sets);
+
+    state.combatSelector:addSet("TP", "TP")
+    state.combatSelector:addSet("Tanking", "Tanking")
+
+    -- Default to TP set
+    state.combatSelector:use("TP");
+
+    Ui.onProfileLoad({
+        selectors = {
+            state.combatSelector
+        }
+    });
 end
 
 profile.OnUnload = function()
@@ -149,17 +164,17 @@ profile.HandleDefault = function()
     local layers = T {};
     local player = gData.GetPlayer();
     if player.Status == "Engaged" then
-        layers:append(sets.TP);
+        -- layers:append(sets.TP);
         -- layers:append(sets.Tanking);
-
+        
         local buffs = Xi.getMyBuffsByName();
         if buffs['Hundred Fists'] ~= nil then
-            
         end
     else
         layers:append(sets.Idle);
     end
-
+    
+    layers:append(state.combatSelector:getSet())
     layers:append(state.idleRegen:getSet());
     layers:append(getZoneSet());
     layers:append(HELM.getSet());

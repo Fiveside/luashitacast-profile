@@ -13,40 +13,74 @@ Export.LanguageId = {
     English = 2,
 }
 
+-- Export.Job = {
+--     None = 0,
+--     WAR  = 1,
+--     MNK  = 2,
+--     WHM  = 3,
+--     BLM  = 4,
+--     RDM  = 5,
+--     THF  = 6,
+--     PLD  = 7,
+--     DRK  = 8,
+--     BST  = 9,
+--     BRD  = 10,
+--     RNG  = 11,
+--     SAM  = 12,
+--     NIN  = 13,
+--     DRG  = 14,
+--     SMN  = 15,
+--     BLU  = 16,
+--     COR  = 17,
+--     PUP  = 18,
+--     DNC  = 19,
+--     SCH  = 20,
+--     GEO  = 21,
+--     RUN  = 22,
+--     MON  = 23, -- Used during Monstrosity.
+-- };
+
+-- Export.JobId = {};
+-- do
+--     for job, id in pairs(Export.Job) do
+--         Export.JobId[id] = job;
+--     end
+-- end
+
 ---@enum JobMask
 Export.JobMask = {
-    None  = 0x00000000,
-    WAR   = 0x00000002,
-    MNK   = 0x00000004,
-    WHM   = 0x00000008,
-    BLM   = 0x00000010,
-    RDM   = 0x00000020,
-    THF   = 0x00000040,
-    PLD   = 0x00000080,
-    DRK   = 0x00000100,
-    BST   = 0x00000200,
-    BRD   = 0x00000400,
-    RNG   = 0x00000800,
-    SAM   = 0x00001000,
-    NIN   = 0x00002000,
-    DRG   = 0x00004000,
-    SMN   = 0x00008000,
-    BLU   = 0x00010000,
-    COR   = 0x00020000,
-    PUP   = 0x00040000,
-    DNC   = 0x00080000,
-    SCH   = 0x00100000,
-    GEO   = 0x00200000,
-    RUN   = 0x00400000,
-    MON   = 0x00800000,
-    JOB24 = 0x01000000,
-    JOB25 = 0x02000000,
-    JOB26 = 0x04000000,
-    JOB27 = 0x08000000,
-    JOB28 = 0x10000000,
-    JOB29 = 0x20000000,
-    JOB30 = 0x40000000,
-    JOB31 = 0x80000000,
+    None    = 0x00000000,
+    WAR     = 0x00000002,
+    MNK     = 0x00000004,
+    WHM     = 0x00000008,
+    BLM     = 0x00000010,
+    RDM     = 0x00000020,
+    THF     = 0x00000040,
+    PLD     = 0x00000080,
+    DRK     = 0x00000100,
+    BST     = 0x00000200,
+    BRD     = 0x00000400,
+    RNG     = 0x00000800,
+    SAM     = 0x00001000,
+    NIN     = 0x00002000,
+    DRG     = 0x00004000,
+    SMN     = 0x00008000,
+    BLU     = 0x00010000,
+    COR     = 0x00020000,
+    PUP     = 0x00040000,
+    DNC     = 0x00080000,
+    SCH     = 0x00100000,
+    GEO     = 0x00200000,
+    RUN     = 0x00400000,
+    MON     = 0x00800000,
+    JOB24   = 0x01000000,
+    JOB25   = 0x02000000,
+    JOB26   = 0x04000000,
+    JOB27   = 0x08000000,
+    JOB28   = 0x10000000,
+    JOB29   = 0x20000000,
+    JOB30   = 0x40000000,
+    JOB31   = 0x80000000,
 
     AllJobs = 0x007FFFFE,
 }
@@ -97,9 +131,27 @@ Export.EquipmentSlotMask = {
     Rings = bit.bor(0x2000, 0x4000), -- LRing | RRing
 
     -- All Slots
-    All = 0xFFFF,
+    All   = 0xFFFF,
 }
 
+Export.Skillchains = T {
+    [1] = T { Name = "Light", Elements = T { "Light", "Thunder", "Fire", "Wind" } },
+    [2] = T { Name = "Darkness", Elements = T { "Dark", "Ice", "Water", "Earth" } },
+    [3] = T { Name = "Gravitation", Elements = T { "Dark", "Earth" } },
+    [4] = T { Name = "Fragmentation", Elements = T { "Fire", "Wind" } },
+    [5] = T { Name = "Distortion", Elements = T { "Ice", "Water" } },
+    [6] = T { Name = "Fusion", Elements = T { "Light", "Fire" } },
+    [7] = T { Name = "Compression", Elements = T { "Dark" } },
+    [8] = T { Name = "Liquefaction", Elements = T { "Fire" } },
+    [9] = T { Name = "Induration", Elements = T { "Ice" } },
+    [10] = T { Name = "Reverberation", Elements = T { "Water" } },
+    [11] = T { Name = "Transfixion", Elements = T { "Light" } },
+    [12] = T { Name = "Scission", Elements = T { "Earth" } },
+    [13] = T { Name = "Detonation", Elements = T { "Wind" } },
+    [14] = T { Name = "Impaction", Elements = T { "Thunder" } },
+    [15] = T { Name = "Radiance", Elements = T { "Light", "Thunder", "Fire", "Wind" } },
+    [16] = T { Name = "Umbra", Elements = T { "Dark", "Ice", "Water", "Earth" } },
+};
 
 ---Returns a table of strings for all current buffs
 ---@return table<string, number>;
@@ -107,8 +159,8 @@ function Export.getMyBuffsByName()
     local rm = AshitaCore:GetResourceManager();
     local dm = AshitaCore:GetMemoryManager();
 
-    local buffs = T{};
-    for buffSlot, buffId in ipairs(dm:GetPlayer():GetBuffs())do
+    local buffs = T {};
+    for buffSlot, buffId in ipairs(dm:GetPlayer():GetBuffs()) do
         if buffId ~= nil and buffId >= 0 then
             local name = rm:GetString('buffs.names', buffId, Export.LanguageId.English);
             if name ~= nil then
@@ -121,7 +173,7 @@ function Export.getMyBuffsByName()
     return buffs;
 end
 
-local EQUIPPABLE_BAGS = T{
+local EQUIPPABLE_BAGS = T {
     0,  -- Inventory
     8,  -- Wardrobe 1
     10, -- Wardrobe 2
@@ -139,9 +191,9 @@ local EQUIPPABLE_BAGS = T{
 function Export.getEquipmentDetails(itemName)
     local mem = AshitaCore:GetMemoryManager();
     local res = AshitaCore:GetResourceManager();
-    
+
     local item = res:GetItemByName(itemName, Export.LanguageId.English);
-    local jobs = T{};
+    local jobs = T {};
     for job, mask in pairs(Export.JobMask) do
         if bit.band(item.Jobs, mask) > 0 then
             jobs:append(job);
@@ -161,7 +213,7 @@ function Export.getEquipmentDetails(itemName)
         end
     end
 
-    return T{
+    return T {
         name = item.Name,
         level = item.Level,
         jobs = jobs,
@@ -268,7 +320,6 @@ function Export.isDaytime()
     return gameTime > 8.0 and gameTime < 18.0;
 end
 
-
 ---@alias ContainerDefinition {id: integer, name: string}
 
 -- Ordered this way because it appears in the UI this way.
@@ -294,7 +345,7 @@ local CONTAINER_LIST = T {
 };
 
 ---@type table<integer, string>
-local CONTAINERS = T{};
+local CONTAINERS = T {};
 do
     for _, c in ipairs(CONTAINER_LIST) do
         CONTAINERS[c.id] = c.name
@@ -311,7 +362,7 @@ local function containerIterator(containerId, index)
     for i = index, inventory:GetContainerCountMax(containerId) do
         local inventoryItem = inventory:GetContainerItem(containerId, index);
         if inventoryItem ~= nil and inventoryItem.Id > 0 then
-            return i+1, inventoryItem
+            return i + 1, inventoryItem
         end
     end
 end
@@ -326,7 +377,7 @@ local function inventoryIterator(containers, index)
         local containerId = containers[cindex].id;
         local iid, item = containerIterator(containerId, itemIndex)
         if iid ~= nil then
-            return {container=cindex, index=iid}, {item=item, location=containerId};
+            return { container = cindex, index = iid }, { item = item, location = containerId };
         end
         -- Reset item index for the next container
         itemIndex = 1;
@@ -342,7 +393,7 @@ Export.debug = inventoryIterator;
 ---@return ContainerDefinition[] invariant
 ---@return {id: integer, name: string} starting index
 function Export.listEntireInventory()
-    return inventoryIterator, CONTAINER_LIST, {container = 1, index = 1}
+    return inventoryIterator, CONTAINER_LIST, { container = 1, index = 1 }
 end
 
 ---An iterator over all items in a container

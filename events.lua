@@ -1,72 +1,222 @@
 -- Allows users to register callbacks to some formalized events.
 
-local Utils = gFunc.LoadFile('util');
+local xi = gFunc.LoadFile('xi');
+local utils = gFunc.LoadFile('util');
+local encoding = require('encoding');
+require('common');
 
-local Export = {};
+---@class IncommingPacket
+---@field id integer Type of packet
+---@field size integer Size in bytes of the packet.
+---@field data number[] Packet data.
+---@field data_raw number[] Packet data as a raw pointer (for use with FFI)
+---@field data_modified number[] Packet data.  Modify this if you intend to change the packet.
+---@field data_modified_raw number[] Modified packet data as a raw pointer (for use with FFI)
+---@field injected boolean True if another addon injected this packet.
+---@field blocked boolean Set to true to prevent the client from processing this packet
 
-local HANDLERS = T{};
 
-function Export.on(eventName, callback)
-    HANDLERS[eventName] = HANDLERS[eventName] or T{};
-    table.insert(HANDLERS[eventName], callback);
+---@class EventEmitter
+local EventEmitter = {};
+function EventEmitter.new()
+    local this = {
+        handlers = {},
+        onceHandlers = {},
+    };
+    return setmetatable(this, {__index=EventEmitter});
 end
 
-function Export.trigger(eventName, ...)
-    local callbacks = HANDLERS[eventName];
-    if callbacks == nil then 
-        return;
+function EventEmitter:on(callback)
+    self.handlers[callback] = callback;
+end
+
+function EventEmitter:once(callback)
+    self.once[callback] = callback;
+end
+
+function EventEmitter:trigger(...)
+    for cb in pairs(self.onceHandlers) do
+        cb(...);
     end
-    for _, cb in ipairs(callbacks) do
+    self.onceHandlers = {};
+    for cb in pairs(self.handlers) do
         cb(...);
     end
 end
 
+-- ---@class TimedEventEmitter
+-- local TimedEventEmitter = {};
+-- function TimedEventEmitter.new()
+--     local this = {
+--         handlers = {}
+--     }
+--     return setmetatable(this, {__index=TimedEventEmitter});
+-- end
+
+-- local perfFreq = ashita.time.query_performance_frequency().quad_part;
+-- local function nowTimestamp()
+--     local now = ashita.time.query_performance_counter().quad_part;
+--     return (now*1000)/perfFreq;
+-- end
+
+-- function TimedEventEmitter:after(time, callback)
+--     table.insert(self.handlers, {
+--         timestamp = nowTimestamp()+time,
+--         callback = callback,
+--     })
+-- end
+
+-- function TimedEventEmitter:tick()
+--     local now = nowTimestamp();
+--     for i = #self.handlers, 1, -1 do
+--         local handler = self.handlers[i];
+--         if handler.timestamp < now then
+--             handler.callback()
+--             table.remove(self.handlers, i);
+--         end
+--     end
+-- end
+
 ----------------------
--- Main job level change
+-- Packet In
+----------------------
+local packetIn = EventEmitter.new();
+local function installPacketIn()
+    ashita.events.register("packet_in", "lac_events_packet_in", function(pkt)
+        packetIn:trigger(pkt);
+    end)
+end
+
+local function uninstallPacketIn()
+    ashita.events.unregister("packet_in", "lac_events_packet_in");
+end
+
+----------------------
+-- Game Tick
+----------------------
+local render = EventEmitter.new();
+-- local timer = TimedEventEmitter.new();
+local function installGameTick()
+    ashita.events.register('d3d_present', 'lac_events_d3d_present', function()
+        -- timer:tick();
+        render:trigger();
+    end)
+end
+local function uninstallGameTick()
+    ashita.events.unregister('d3d_present', 'lac_events_d3d_present');
+end
+
+----------------------
+-- Job or Level Change
 ----------------------
 
+local mainJobChange = EventEmitter.new();
+local subJobChange = EventEmitter.new();
 
-local lastJobLevel = 0;
-local MainJobLevelChange = {
-    init = function()
-        return {
-            lastJobLevel = 0,
-        }
-    end,
-    onDefault = function(state)
-        local mainJobLevel = AshitaCore:GetMemoryManager():GetPlayer():GetMainJobLevel();
-        if state.lastJobLevel ~= nil and state.lastJobLevel == mainJobLevel then
-            return;
+local lastStats = {
+    mainJob = nil,
+    mainLevel = nil,
+    subJob = nil,
+    subLevel = nil,
+};
+packetIn:on(function(pkt)
+    ---@cast pkt IncommingPacket
+    if pkt.id == 0x061 then
+        local resources = AshitaCore:GetResourceManager();
+        local jobOffsets = 32+64;
+        local mjob = ashita.bits.unpack_be(pkt.data_raw, jobOffsets, 8)
+        local mjobLevel = ashita.bits.unpack_be(pkt.data_raw, jobOffsets+8, 8)
+        local sjob = ashita.bits.unpack_be(pkt.data_raw, jobOffsets+16, 8)
+        local sjobLevel = ashita.bits.unpack_be(pkt.data_raw, jobOffsets+24, 8);
+        -- local jobChanged = false;
+        if mjob ~= lastStats.mainJob or mjobLevel ~= lastStats.mainLevel then
+            local jobName = resources:GetString('jobs.names_abbr', mjob):trimend('\x00');
+            lastStats.mainJob = mjob;
+            lastStats.mainLevel = mjobLevel;
+            mainJobChange:trigger(utils.ShiftJIS_To_UTF8(jobName), mjobLevel);
         end
-        state.lastJobLevel = mainJobLevel;
-        Export.trigger("levelChange", mainJobLevel);
-    end,
-}
+        if sjob ~= lastStats.subJob or sjobLevel ~= lastStats.subLevel then
+            local jobName = resources:GetString('jobs.names_abbr', sjob):trimend('\x00')
+            lastStats.subJob = sjob;
+            lastStats.subLevel = sjobLevel;
+            subJobChange:trigger(utils.ShiftJIS_To_UTF8(jobName), sjobLevel);
+        end
+    end
+end)
 
 
-------------------------
--- Using modules
-------------------------
+----------------------
+-- Zone Change
+----------------------
 
-local ACTIVE_MODULES = {
-    MainJobLevelChange,
-}
+local zoneChange = EventEmitter.new();
+local lastZone;
+packetIn:on(function(pkt)
+    ---@cast pkt IncommingPacket
+    if pkt.id == 0x00A then
+        zoneChange:trigger();
+    end
+end);
 
-local MODULE_STATES = {
-}
+
+---------------------
+-- Combat Action
+---------------------
+
+local skillchain = EventEmitter.new();
+local skillchainCombatTypes = T { 3, 4, 6, 11, 13 }
+packetIn:on(function(pkt)
+    ---@cast pkt IncommingPacket
+    if pkt.id ~= 0x028 then return; end
+
+    -- https://github.com/LandSandBoat/server/blob/base/src/map/packets/s2c/0x028_battle2.cpp
+    -- We
+
+    -- Need to pull target id, cmd_no, has_proc, and proc_kind
+    local cmdMath = 40 + 32 + 10
+    local cmd = ashita.bits.unpack_be(pkt.data_raw, cmdMath, 4);
+    if not skillchainCombatTypes:contains(cmd) then
+        return;
+    end
+
+    local targetMath = cmdMath + 4 + 32 + 32;
+    local targetId = ashita.bits.unpack_be(pkt.data_raw, targetMath, 32);
+
+    local hasProcMath = targetMath + 32 + 4 + 3 + 2 + 12 + 5 + 5 + 17 + 10 + 31;
+    local hasProc = ashita.bits.unpack_be(pkt.data_raw, hasProcMath, 1);
+    if hasProc == 0 then
+        return;
+    end
+
+    local procMath = hasProcMath + 1
+    local proc = ashita.bits.unpack_be(pkt.data_raw, procMath, 6);
+    if proc == 0 then
+        return;
+    end
+
+    local sc = xi.Skillchains[proc];
+    skillchain:trigger(targetId, sc)
+end);
+
+
+local Export = {
+    packetIn = packetIn,
+    mainJobChange = mainJobChange,
+    subJobChange = subJobChange,
+    zoneChange = zoneChange,
+    skillchain = skillchain,
+    -- timer = timer,
+    render = render,
+};
 
 function Export.onProfileLoad()
-    MODULE_STATES = {};
-    for _, mod in ipairs(ACTIVE_MODULES) do
-        MODULE_STATES[mod] = mod.init();
-    end
+    installPacketIn()
+    installGameTick()
 end
 
-function Export.onDefault()
-    for _, mod in ipairs(ACTIVE_MODULES) do
-        if mod.onDefault ~= nil then
-            mod.onDefault(MODULE_STATES[mod])
-        end
-    end
+function Export.onProfileUnload()
+    uninstallGameTick()
+    uninstallPacketIn()
 end
 
+return Export;

@@ -16,15 +16,16 @@ local DUCAL_ZONES = T{
     "Lower Jeuno",
     "Port Jeuno",
 };
+-- Ducal aketon includes all cities
+do
+    for k in pairs(ZONES) do
+        DUCAL_ZONES:extend(k);
+    end
+end
 
 local DUCAL_SET = {
     Body = "Ducal Aketon",
-}
-
--- Ducal aketon includes all cities
-for k, _v in pairs(ZONES) do
-    DUCAL_ZONES:extend(k);
-end
+};
 
 local lastZone = "undefined";
 local lastSet = {};

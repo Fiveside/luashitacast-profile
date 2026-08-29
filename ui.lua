@@ -4,11 +4,12 @@ local imgui = require('imgui');
 ---@cast imgui IGuiManager
 ---@module 'IGuiManagerTypes'
 
-local Slips = gFunc.LoadFile('slips/slips');
-local XI = gFunc.LoadFile('xi');
-local json = require('json');
 local d3d8 = require('d3d8');
 local ffi = require('ffi');
+
+local Slips = gFunc.LoadFile('slips/slips');
+local XI = gFunc.LoadFile('xi');
+local Bursts = gFunc.LoadFile('bursts');
 
 local state = {
     showGearlist = {true},
@@ -198,6 +199,17 @@ local function drawHud()
 
         imgui.SameLine();
         drawSetSelectors();
+
+        local target = gData.GetTarget();
+        if target ~= nil then
+            local sc = Bursts.getSkillchain(target.Id);
+            if sc ~= nil then
+                imgui.SameLine();
+                imgui.Text("|");
+                imgui.SameLine();
+                imgui.Text(sc.Name);
+            end
+        end
 
     end
     imgui.End();

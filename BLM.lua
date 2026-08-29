@@ -6,6 +6,7 @@ local getZoneSet = gFunc.LoadFile("town");
 local Idle = gFunc.LoadFile("idle");
 local Common = gFunc.LoadFile("common");
 local Bursts = gFunc.LoadFile("bursts");
+local events = gFunc.LoadFile('events');
 
 -- A map from an element to the appropriate staff
 local ELEMENT_STAFF = T {
@@ -34,6 +35,7 @@ sets.Idle = T {
 sets.Resting_Priority = T {
     Main = { ELEMENT_STAFF.Dark, "Pilgrim's Wand" },
     Body = { "Errant Hpl.", "Seer's Tunic" },
+    Waist = { "Qiqirn Sash +1" },
     Legs = { "Baron's slops" },
     Ear1 = { "Relaxing Earring" },
 };
@@ -54,7 +56,7 @@ sets.Midcast = T {
 ---@type GearSet
 sets.MagicAttack = T {
     Ammo = "Phtm. Tathlum",
-    Head = "Wizard's Petasos",
+    Head = "Sorcerer's Petas.",
     Neck = "Philomath Stole",
     Ear1 = "Moldavite Earring",
     Ear2 = "Morion Earring",
@@ -77,6 +79,7 @@ sets.MagicAttack = T {
 
 ---@type GearSet
 sets.ElementalMagic = Utils.compress_tables(sets.MagicAttack, T {
+    Head = "Sorcerer's Petas.",
     Body = "Sorcerer's Coat",
     Hands = "Wizard's Gloves",
     Back = "Merciful Cape",
@@ -84,7 +87,9 @@ sets.ElementalMagic = Utils.compress_tables(sets.MagicAttack, T {
 
 ---@type GearSet
 sets.EnfeeblingMagic = Utils.compress_tables(sets.MagicAttack, T {
+    Head = "Sorcerer's Petas.",
     Body = "Wizard's Coat",
+    Back = "Altruistic Cape",
 });
 
 ---@type GearSet
@@ -105,6 +110,16 @@ sets.EnhancingMagic = Utils.compress_tables(sets.MagicAttack, T {
 sets.MagicBurst = T {
     Hands = "Src. Gloves +1",
 };
+
+
+-------------------------
+-- Spell specific gear
+-------------------------
+
+-- Maximizes MND.
+sets.MA_Stoneskin = T {
+    Body = "Kirin's Osode",
+}
 
 -- Specific gear for job actions, spells, and weapon skills
 Common.applyCommonMagicSets(sets);
@@ -171,16 +186,18 @@ profile.Packer = {
 
 profile.OnLoad = function()
     gSettings.AllowAddSet = false;
-    Bursts.onProfileLoad();
-    ashita.events.register('packet_in', 'lac_profile_packet_in', function(pkt)
-        Bursts.onPacketIn(pkt);
-    end)
-    Bursts.onSkillchain(onSkillchain);
+    -- Bursts.onProfileLoad();
+    -- ashita.events.register('packet_in', 'lac_profile_packet_in', function(pkt)
+    --     Bursts.onPacketIn(pkt);
+    -- end)
+    events.onProfileLoad();
+    events.skillchain:on(onSkillchain);
 end
 
 profile.OnUnload = function()
-    ashita.events.unregister('packet_in', 'lac_profile_packet_in');
-    Bursts.onProfileUnload();
+    events.onProfileUnload();
+    -- ashita.events.unregister('packet_in', 'lac_profile_packet_in');
+    -- Bursts.onProfileUnload();
 end
 
 profile.HandleCommand = function(args)

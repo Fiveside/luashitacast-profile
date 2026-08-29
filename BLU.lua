@@ -1,20 +1,63 @@
 local Ui = gFunc.LoadFile('ui');
 local Utils = gFunc.LoadFile('util');
+local events = gFunc.LoadFile('events');
 
 local profile = {};
-local sets = {
-};
+local sets = {};
+
 profile.Sets = sets;
 
 profile.Packer = {
 };
+
+sets.TP_Priority = {
+    -- Main = "Kilij",
+    -- Sub = "Immortal's Scimitar",
+    Ammo = "Civet Sachet",
+    Head = "Voyager Sallet",
+    Neck = "Peacock Amulet",
+    Ear1 = "Morion Earring",
+    Ear2 = "Moldavite Earring",
+    Body = {"Scorpion Harness", "Brigandine"},
+    Hands = {"Magus Bazubands", "Savage Gauntlets"},
+    Ring1 = "Rajas Ring",
+    Ring2 = "Kshama Ring No.2",
+    Back = {"Amemet Mantle +1", "Jaguar Mantle"},
+    Waist = "Life Belt",
+    Legs = "Magus Shalwar",
+    Feet = "Magus Charuqs",
+};
+
+sets.Resting = T {
+    Waist = "Qiqirn Sash +1",
+    Legs = "Baron's Slops",
+}
+
+local physMagicSet = T {
+    Ammo = "Tiphia Sting",
+    Ear1 = "Spike Earring",
+    Ear2 = "Spike Earring",
+    Body = {"Magus Jubbah", "Scorpion Harness"},
+    Hands = "Battle Gloves",
+    Feet = "Savage Gaiters",
+};
+
+local magicDamageSet = T {
+    
+}
+
+sets['MA_Bludgeon_Priority'] = physMagicSet:copy(true)
+sets['MA_Jet Stream_Priority'] = physMagicSet:copy(true)
+sets['MA_Quad. Continuum_Priority'] = physMagicSet:copy(true)
+sets['MA_Sickle Slash_Priority'] = physMagicSet:copy(true)
+sets['MA_Death Scissors_Priority'] = physMagicSet:copy(true)
 
 local state = {
     combatSet = nil,
 };
 
 profile.OnLoad = function()
-    gSettings.AllowAddSet = true;
+    -- gSettings.AllowAddSet = true;
     state.combatSet = Utils.SetSelector.new("Combat", 'p', profile.Sets);
     state.combatSet:addSet('set1', "Thing1");
     state.combatSet:addSet('set2', "Thing2");
@@ -27,9 +70,17 @@ profile.OnLoad = function()
             state.combatSet,
         }
     });
+
+    events.onProfileLoad();
+    local mjoblvl = AshitaCore:GetMemoryManager():GetPlayer():GetMainJobLevel();
+    gFunc.EvaluateLevels(sets, mjoblvl)
+    events.mainJobChange:on(function(job, lvl)
+        gFunc.EvaluateLevels(sets, lvl);
+    end)
 end
 
 profile.OnUnload = function()
+    events.onProfileUnload();
     Ui.onProfileUnload();
 end
 
@@ -44,6 +95,13 @@ profile.HandleDefault = function()
     else
         state.combatSet:override();
     end
+
+    local player = gData.GetPlayer();
+    if player.Status == "Resting" then
+        gFunc.EquipSet(sets.Resting);
+    else
+        gFunc.EquipSet(sets.TP);
+    end
 end
 
 profile.HandleAbility = function()
@@ -56,6 +114,12 @@ profile.HandlePrecast = function()
 end
 
 profile.HandleMidcast = function()
+    local action = gData.GetAction();
+
+    local setName = 'MA_' .. action.Name;
+    if sets[setName] ~= nil then
+        gFunc.EquipSet(sets[setName])
+    end
 end
 
 profile.HandlePreshot = function()

@@ -132,6 +132,7 @@ profile.OnLoad = function()
 
     state.combatSelector:addSet("TP", "TP")
     state.combatSelector:addSet("Tanking", "Tanking")
+    -- state.combatSelector:addSet("HundredFists", "Hundred Fists");
 
     -- Default to TP set
     state.combatSelector:use("TP");

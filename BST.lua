@@ -15,15 +15,15 @@ sets.Idle = T{};
 
 sets.TP_Priority = {
     Main = {"Retributor", "Mythril Pick +1", "Cmb.Cst. Axe", "Barbaroi Axe", "Battleaxe +1"},
-    Sub = {"Martial Axe", "Barbaroi Axe", "Battleaxe +1"},
+    Sub = {"Temperance Axe", "Martial Axe", "Barbaroi Axe", "Battleaxe +1"},
     Head = {"Optical Hat", "Emperor Hairpin", "Ryl.Ftm. Bandana"},
     Neck = {"Peacock Amulet", "Spike Necklace"},
     Ear1 = {"Brutal Earring", "Spike Earring", "Beetle Earring +1"},
-    Ear2 = {"Beastly Earring", "Spike Earring", "Beetle Earring +1"},
+    Ear2 = {"Ethereal Earring", "Spike Earring", "Beetle Earring +1"},
     Body = {"Kirin's Osode", "Assault Jerkin", "Scorpion Harness", "Savage Separates", "Beetle Harness +1", "Brass Harness"},
     Hands = {"Beast Gloves", "Battle Gloves", "Lgn. Mittens"},
     Ring1 = {"Rajas Ring"},
-    Ring2 = {"Victory Ring", "Courage Ring"},
+    Ring2 = {"Toreador's Ring", "Kshama Ring No.2", "Courage Ring"},
     Back = {"Amemet Mantle +1", "Jaguar Mantle", "Nomad's Mantle"},
     Waist = {"Swift Belt", "Ryl.Kgt. Belt", "Warrior's Belt +1"},
     Legs = {"Byakko's Haidate", "Ryl.Kgt. Breeches", "Republic Subligar", "Beetle Subligar +1"},
@@ -32,6 +32,7 @@ sets.TP_Priority = {
 
 local WS_MULTIHIT = T{"Raging Axe", "Rampage", "Decimation"};
 sets.WS_Multihit_Priority = {
+    Body = {"Assault Jerkin"},
     Ring1 = {"Rajas Ring"},
     Ring2 = {"Toreador's Ring"},
     Waist = {"Life Belt"}

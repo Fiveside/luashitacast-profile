@@ -205,7 +205,7 @@ local function drawHud()
             local sc = Bursts.getSkillchain(target.Id);
             if sc ~= nil then
                 imgui.SameLine();
-                imgui.Text("|");
+                imgui.Text("| SC:");
                 imgui.SameLine();
                 imgui.Text(sc.Name);
             end

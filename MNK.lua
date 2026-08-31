@@ -39,8 +39,10 @@ sets.TP = T {
 -- Basically high evasion and counter.
 sets.Tanking = Utils.compress_tables(sets.TP, T {
     Head = "Optical Hat",
-    Body = "Scorpion Harness",
+    -- Body = "Scorpion Harness",
+    Body = "Arhat's Gi +1",
     Legs = "Temple Hose",
+    Feet = "Melee Gaiters",
 });
 
 sets.Evasion = Utils.compress_tables(sets.Tanking, T{

@@ -1,3 +1,60 @@
+---@alias Element
+---| '"Thunder"'
+---| '"Ice"'
+---| '"Fire"'
+---| '"Wind"'
+---| '"Water"'
+---| '"Earth"'
+---| '"Dark"'
+---| '"Light"'
+
+---@alias Skillchain
+---| '"Light"'
+---| '"Darkness"'
+---| '"Gravitation"'
+---| '"Fragmentation"'
+---| '"Distortion"'
+---| '"Fusion"'
+---| '"Compression"'
+---| '"Liquefaction"'
+---| '"Induration"'
+---| '"Reverberation"'
+---| '"Transfixion"'
+---| '"Scission"'
+---| '"Detonation"'
+---| '"Impaction"'
+---| '"Radiance"'
+---| '"Umbra"'
+
+-- https://www.bg-wiki.com/ffxi/Category:Bestiary
+---@alias CreatureFamily
+---| "Beast"
+---| "Lizard"
+---| "Vermin"
+---| "Plantoid"
+---| "Amorph"
+---| "Bird"
+---| "Aquan"
+---| "Undead"
+---| "Arcana"
+---| "Dragon"
+---| "Demon"
+---| "Blessed Races of Altana" Playable races
+---| "Beastmen"
+---| "Empty"
+---| "Luminian"
+---| "Luminion"
+---| "Vorageans"
+---| "Archaic Machine"
+---| "Elemental"
+---| "Structure"
+---| "Unclassified"
+
+---@alias PhysicalDamageType
+---| "Blunt"
+---| "Piercing"
+---| "Slashing"
+
 ---@alias GearSlot
 ---| '"Main"'
 ---| '"Sub"'

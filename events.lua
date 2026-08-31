@@ -15,6 +15,7 @@ require('common');
 ---@field injected boolean True if another addon injected this packet.
 ---@field blocked boolean Set to true to prevent the client from processing this packet
 
+local pktHeaderSize = 32; -- The size of the fields common to every packet (id, size, sync)
 
 ---@class EventEmitter
 local EventEmitter = {};
@@ -121,26 +122,61 @@ local lastStats = {
 };
 packetIn:on(function(pkt)
     ---@cast pkt IncommingPacket
+
+    local resources = AshitaCore:GetResourceManager();
+    local mjob, mjobLevel, sjob, sjobLevel;
     if pkt.id == 0x061 then
-        local resources = AshitaCore:GetResourceManager();
-        local jobOffsets = 32+64;
-        local mjob = ashita.bits.unpack_be(pkt.data_raw, jobOffsets, 8)
-        local mjobLevel = ashita.bits.unpack_be(pkt.data_raw, jobOffsets+8, 8)
-        local sjob = ashita.bits.unpack_be(pkt.data_raw, jobOffsets+16, 8)
-        local sjobLevel = ashita.bits.unpack_be(pkt.data_raw, jobOffsets+24, 8);
-        -- local jobChanged = false;
-        if mjob ~= lastStats.mainJob or mjobLevel ~= lastStats.mainLevel then
-            local jobName = resources:GetString('jobs.names_abbr', mjob):trimend('\x00');
-            lastStats.mainJob = mjob;
-            lastStats.mainLevel = mjobLevel;
-            mainJobChange:trigger(utils.ShiftJIS_To_UTF8(jobName), mjobLevel);
+        -- Character status update packet.
+        local jobOffset = pktHeaderSize+64;
+        mjob = ashita.bits.unpack_be(pkt.data_raw, jobOffset, 8)
+        mjobLevel = ashita.bits.unpack_be(pkt.data_raw, jobOffset+8, 8)
+        sjob = ashita.bits.unpack_be(pkt.data_raw, jobOffset+16, 8)
+        sjobLevel = ashita.bits.unpack_be(pkt.data_raw, jobOffset+24, 8);
+    elseif pkt.id == 0x0DD then
+        -- Party member update packet.
+        -- We're checking this packet as well because of the following scenario:
+        -- If you are in a level synced party where the sync is someone else
+        -- If the sync levels up, then pkt 0x061 isn't sent.  However, this packet is.
+        -- Therefore we can fire the job change events when pt member 0 (us) receives the update.
+        -- This might be private server behavior, have not yet checked retail.
+
+        local partyMemberNoOffset = pktHeaderSize + 128 + 32 + 16;
+        local partyMemberNo = ashita.bits.unpack_be(pkt.data_raw, partyMemberNoOffset, 8);
+
+        if partyMemberNo ~= 0 then
+            return;
         end
-        if sjob ~= lastStats.subJob or sjobLevel ~= lastStats.subLevel then
-            local jobName = resources:GetString('jobs.names_abbr', sjob):trimend('\x00')
-            lastStats.subJob = sjob;
-            lastStats.subLevel = sjobLevel;
-            subJobChange:trigger(utils.ShiftJIS_To_UTF8(jobName), sjobLevel);
+
+        local jobOffset = partyMemberNoOffset + 64;
+        mjob = ashita.bits.unpack_be(pkt.data_raw, jobOffset, 8);
+        mjobLevel = ashita.bits.unpack_be(pkt.data_raw, jobOffset+8, 8)
+        sjob = ashita.bits.unpack_be(pkt.data_raw, jobOffset+16, 8)
+        sjobLevel = ashita.bits.unpack_be(pkt.data_raw, jobOffset+24, 8);
+
+        -- Party member update zeros out most info if the member is outside the current
+        -- zone. We can safely reject packet updates if the character's main job is zero.
+        -- since that is not a legal job type.  We can't trust the ZoneNo field since characters are
+        -- marked as in the current zone but have no hp/mp/jobs while they are in the middle of zoning.
+        -- TODO: mjob is zero when we receive an update while /anon. Have not yet figured a way around that.
+        if mjob == 0 then
+            return;
         end
+    else
+        -- Not a packet we care about for the job/level change stuff.
+        return;
+    end
+
+    if mjob ~= lastStats.mainJob or mjobLevel ~= lastStats.mainLevel then
+        local jobName = resources:GetString('jobs.names_abbr', mjob):trimend('\x00');
+        lastStats.mainJob = mjob;
+        lastStats.mainLevel = mjobLevel;
+        mainJobChange:trigger(utils.ShiftJIS_To_UTF8(jobName), mjobLevel);
+    end
+    if sjob ~= lastStats.subJob or sjobLevel ~= lastStats.subLevel then
+        local jobName = resources:GetString('jobs.names_abbr', sjob):trimend('\x00')
+        lastStats.subJob = sjob;
+        lastStats.subLevel = sjobLevel;
+        subJobChange:trigger(utils.ShiftJIS_To_UTF8(jobName), sjobLevel);
     end
 end)
 
@@ -170,10 +206,13 @@ packetIn:on(function(pkt)
     if pkt.id ~= 0x028 then return; end
 
     -- https://github.com/LandSandBoat/server/blob/base/src/map/packets/s2c/0x028_battle2.cpp
-    -- We
+    
+    -- this packet contains a uint8_t worksize; variable after the common packet header.
+    -- we can safely ignore it.
+    local header = pktHeaderSize + 8;
 
     -- Need to pull target id, cmd_no, has_proc, and proc_kind
-    local cmdMath = 40 + 32 + 10
+    local cmdMath = header + 32 + 10
     local cmd = ashita.bits.unpack_be(pkt.data_raw, cmdMath, 4);
     if not skillchainCombatTypes:contains(cmd) then
         return;

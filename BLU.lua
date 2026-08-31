@@ -1,6 +1,7 @@
 local Ui = gFunc.LoadFile('ui');
 local Utils = gFunc.LoadFile('util');
 local events = gFunc.LoadFile('events');
+local Xi = gFunc.LoadFile('xi');
 
 local profile = {};
 local sets = {};
@@ -89,6 +90,7 @@ profile.HandleCommand = function(args)
 end
 
 profile.HandleDefault = function()
+    local layers = T{};
     local target = gData.GetTarget()
     if target ~= nil and target.Id % 2 > 0 then
         state.combatSet:override('override1');
@@ -98,10 +100,13 @@ profile.HandleDefault = function()
 
     local player = gData.GetPlayer();
     if player.Status == "Resting" then
-        gFunc.EquipSet(sets.Resting);
+        layers:append(sets.Resting);
     else
-        gFunc.EquipSet(sets.TP);
+        layers:append(sets.TP);
     end
+
+    local finalSet = Utils.compress_tables(layers:unpack());
+    gFunc.EquipSet(Xi.excludeUsableEquippedItems(finalSet));
 end
 
 profile.HandleAbility = function()

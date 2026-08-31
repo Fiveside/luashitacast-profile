@@ -7,6 +7,7 @@ local Idle = gFunc.LoadFile("idle");
 local Common = gFunc.LoadFile("common");
 local Bursts = gFunc.LoadFile("bursts");
 local events = gFunc.LoadFile('events');
+local ui = gFunc.LoadFile('ui');
 
 -- A map from an element to the appropriate staff
 local ELEMENT_STAFF = T {
@@ -148,9 +149,7 @@ local CONDITIONAL_GEAR = T {
 
         -- The mp threshold calculation conditions are actually somewhat intricate, but
         -- a straight 50% check covers 99.9% of cases.  Good enough.
-        -- Include drain and aspir since those use magic attack
-        local isDarkAttack = action.Name == 'Drain' or action.Name == 'Aspir';
-        return me.MPP < 50 and (action.Skill == 'ElementalMagic' or isDarkAttack);
+        return me.MPP < 50 and action.Skill == 'ElementalMagic';
     end,
 
     [T { Main = "Diabolos's Pole" }] = function()
@@ -192,9 +191,12 @@ profile.OnLoad = function()
     -- end)
     events.onProfileLoad();
     events.skillchain:on(onSkillchain);
+
+    ui.onProfileLoad()
 end
 
 profile.OnUnload = function()
+    ui.onProfileUnload();
     events.onProfileUnload();
     -- ashita.events.unregister('packet_in', 'lac_profile_packet_in');
     -- Bursts.onProfileUnload();
@@ -306,17 +308,6 @@ end
 
 profile.HandleWeaponskill = function()
 end
-
-
----@alias Element
----| '"Thunder"'
----| '"Ice"'
----| '"Fire"'
----| '"Wind"'
----| '"Water"'
----| '"Earth"'
----| '"Dark"'
----| '"Light"'
 
 
 -- Maps an element with the element it is weak to

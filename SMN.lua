@@ -3,24 +3,24 @@ local Util = gFunc.LoadFile("util");
 local profile = {};
 local sets = {
     Idle_Priority = {
-        Main = {"Solid Wand", "Yew wand +1", "Willow wand +1", "Maple Wand"},
-        Ammo = {"Fortune egg"},
+        Main = { "Solid Wand", "Yew wand +1", "Willow wand +1", "Maple Wand" },
+        Ammo = { "Fortune egg" },
         -- Head = {"Silver hairpin"},
         -- Body = {"Kingdom tunic"},-- {"Ducal Aketon"},
-        Hands = {"Mycophile cuffs"},
-        Legs = {"Seer's slacks +1"},
-        Ring1 = {"Eremite's ring", "San d'Orian Ring"},
-        Ring2 = {"Eremite's ring", "Windurstian Ring"}
+        Hands = { "Mycophile cuffs" },
+        Legs = { "Seer's slacks +1" },
+        Ring1 = { "Eremite's ring", "San d'Orian Ring" },
+        Ring2 = { "Eremite's ring", "Windurstian Ring" }
     },
-    
+
     Resting_Priority = {
-        Main = {"Pilgrim's Wand"},
-        Body = {"Seer's Tunic"},
-        Legs = {"Baron's slops"},
+        Main = { "Pilgrim's Wand" },
+        Body = { "Seer's Tunic" },
+        Legs = { "Baron's slops" },
     },
 
     Carbuncle_Priority = {
-        Hands = {"Carbuncle mitts"},
+        Hands = { "Carbuncle mitts" },
     },
 };
 local state = {
@@ -48,9 +48,9 @@ profile.HandleDefault = function()
         gFunc.EvaluateLevels(sets, myLevel);
         -- gFunc.EvaluateLevels(JA_sets, myLevel);
     end
-    local layers = T{};
+    local layers = T {};
     layers:append(sets.Idle);
-    
+
     local player = gData.GetPlayer();
     if (player.Status == "Resting") then
         layers:append(sets.Resting);
@@ -63,7 +63,7 @@ profile.HandleDefault = function()
             layers:append(petSet);
         end
     end
-    
+
     gFunc.EquipSet(Util.compress_tables(layers:unpack()));
 end
 

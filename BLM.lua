@@ -1,4 +1,3 @@
-
 ---@module 'types'
 
 local Utils = gFunc.LoadFile("util");
@@ -6,8 +5,8 @@ local getZoneSet = gFunc.LoadFile("town");
 local Idle = gFunc.LoadFile("idle");
 local Common = gFunc.LoadFile("common");
 local Bursts = gFunc.LoadFile("bursts");
-local events = gFunc.LoadFile('events');
-local ui = gFunc.LoadFile('ui');
+local events = gFunc.LoadFile("events");
+local ui = gFunc.LoadFile("ui");
 
 -- A map from an element to the appropriate staff
 local ELEMENT_STAFF = T {
@@ -16,7 +15,7 @@ local ELEMENT_STAFF = T {
     Ice = "Aquilo's staff",
     Wind = "Auster's staff",
     Water = "Neptune's staff",
-    Earth = 'Earth staff',
+    Earth = "Earth staff",
     Dark = "Pluto's staff",
 };
 
@@ -138,8 +137,8 @@ local CONDITIONAL_GEAR = T {
         -- The ring adds -15% mp, which sucks.  So only do this if our mp is already low.
         local me = gData.GetPlayer();
         local mpWithinRange = me.MPP < 85;
-        local isDarksday = gData.GetEnvironment().DayElement == 'Dark';
-        local isDarkMagic = gData.GetAction().Skill == 'Dark Magic';
+        local isDarksday = gData.GetEnvironment().DayElement == "Dark";
+        local isDarkMagic = gData.GetAction().Skill == "Dark Magic";
         return isDarksday and isDarkMagic and mpWithinRange;
     end,
 
@@ -149,16 +148,16 @@ local CONDITIONAL_GEAR = T {
 
         -- The mp threshold calculation conditions are actually somewhat intricate, but
         -- a straight 50% check covers 99.9% of cases.  Good enough.
-        return me.MPP < 50 and action.Skill == 'ElementalMagic';
+        return me.MPP < 50 and action.Skill == "ElementalMagic";
     end,
 
     [T { Main = "Diabolos's Pole" }] = function()
         local actionName = gData.GetAction().Name;
-        if actionName ~= 'Drain' and actionName ~= 'Aspir' then
+        if actionName ~= "Drain" and actionName ~= "Aspir" then
             return false;
         end
         local weather = gData.GetEnvironment().Weather;
-        return weather == 'Dark' or weather == 'Dark x2';
+        return weather == "Dark" or weather == "Dark x2";
     end,
 
 };
@@ -244,15 +243,15 @@ profile.HandleMidcast = function()
     layers:append(sets.Midcast);
 
     -- Apply different specialty sets if we're casting on something other than ourself.
-    -- This 
-    if target.Name ~= me.Name and target.Type ~= 'PC' then
+    -- This
+    if target.Name ~= me.Name and target.Type ~= "PC" then
         if FORCED_ELEMENTAL_SPELLS:contains(action.Name) then
             layers:append(sets.ElementalMagic);
-        elseif action.Skill == 'Dark Magic' then
+        elseif action.Skill == "Dark Magic" then
             layers:append(sets.DarkMagic)
-        elseif action.Skill == 'Elemental Magic' then
+        elseif action.Skill == "Elemental Magic" then
             layers:append(sets.MagicAttack)
-        elseif action.Skill == 'Enfeebling Magic' then
+        elseif action.Skill == "Enfeebling Magic" then
             layers:append(sets.EnfeeblingMagic)
         end
     end
@@ -266,13 +265,13 @@ profile.HandleMidcast = function()
             layers:append(conditionalSet)
         end
     end
-    
+
     -- Sets that only apply to one spell.
-    local spellSpecificSet = sets['MA_' .. action.Name];
+    local spellSpecificSet = sets["MA_" .. action.Name];
     if spellSpecificSet ~= nil then
         layers:append(spellSpecificSet);
     end
-    
+
     -- If a burst window is open, equip that set too.
     local chain = Bursts.getSkillchain(gData.GetActionTarget().Id);
     if chain ~= nil and chain.Elements:contains(action.Element) then

@@ -1,9 +1,9 @@
 -- Allows users to register callbacks to some formalized events.
 
-local xi = gFunc.LoadFile('xi');
-local utils = gFunc.LoadFile('util');
-local encoding = require('encoding');
-require('common');
+local xi = gFunc.LoadFile("xi");
+local utils = gFunc.LoadFile("util");
+local encoding = require("encoding");
+require("common");
 
 ---@class IncommingPacket
 ---@field id integer Type of packet
@@ -24,7 +24,7 @@ function EventEmitter.new()
         handlers = {},
         onceHandlers = {},
     };
-    return setmetatable(this, {__index=EventEmitter});
+    return setmetatable(this, { __index = EventEmitter });
 end
 
 function EventEmitter:on(callback)
@@ -98,13 +98,13 @@ end
 local render = EventEmitter.new();
 -- local timer = TimedEventEmitter.new();
 local function installGameTick()
-    ashita.events.register('d3d_present', 'lac_events_d3d_present', function()
+    ashita.events.register("d3d_present", "lac_events_d3d_present", function()
         -- timer:tick();
         render:trigger();
     end)
 end
 local function uninstallGameTick()
-    ashita.events.unregister('d3d_present', 'lac_events_d3d_present');
+    ashita.events.unregister("d3d_present", "lac_events_d3d_present");
 end
 
 ----------------------
@@ -127,11 +127,11 @@ packetIn:on(function(pkt)
     local mjob, mjobLevel, sjob, sjobLevel;
     if pkt.id == 0x061 then
         -- Character status update packet.
-        local jobOffset = pktHeaderSize+64;
+        local jobOffset = pktHeaderSize + 64;
         mjob = ashita.bits.unpack_be(pkt.data_raw, jobOffset, 8)
-        mjobLevel = ashita.bits.unpack_be(pkt.data_raw, jobOffset+8, 8)
-        sjob = ashita.bits.unpack_be(pkt.data_raw, jobOffset+16, 8)
-        sjobLevel = ashita.bits.unpack_be(pkt.data_raw, jobOffset+24, 8);
+        mjobLevel = ashita.bits.unpack_be(pkt.data_raw, jobOffset + 8, 8)
+        sjob = ashita.bits.unpack_be(pkt.data_raw, jobOffset + 16, 8)
+        sjobLevel = ashita.bits.unpack_be(pkt.data_raw, jobOffset + 24, 8);
     elseif pkt.id == 0x0DD then
         -- Party member update packet.
         -- We're checking this packet as well because of the following scenario:
@@ -149,9 +149,9 @@ packetIn:on(function(pkt)
 
         local jobOffset = partyMemberNoOffset + 64;
         mjob = ashita.bits.unpack_be(pkt.data_raw, jobOffset, 8);
-        mjobLevel = ashita.bits.unpack_be(pkt.data_raw, jobOffset+8, 8)
-        sjob = ashita.bits.unpack_be(pkt.data_raw, jobOffset+16, 8)
-        sjobLevel = ashita.bits.unpack_be(pkt.data_raw, jobOffset+24, 8);
+        mjobLevel = ashita.bits.unpack_be(pkt.data_raw, jobOffset + 8, 8)
+        sjob = ashita.bits.unpack_be(pkt.data_raw, jobOffset + 16, 8)
+        sjobLevel = ashita.bits.unpack_be(pkt.data_raw, jobOffset + 24, 8);
 
         -- Party member update zeros out most info if the member is outside the current
         -- zone. We can safely reject packet updates if the character's main job is zero.
@@ -167,13 +167,13 @@ packetIn:on(function(pkt)
     end
 
     if mjob ~= lastStats.mainJob or mjobLevel ~= lastStats.mainLevel then
-        local jobName = resources:GetString('jobs.names_abbr', mjob):trimend('\x00');
+        local jobName = resources:GetString("jobs.names_abbr", mjob):trimend("\x00");
         lastStats.mainJob = mjob;
         lastStats.mainLevel = mjobLevel;
         mainJobChange:trigger(utils.ShiftJIS_To_UTF8(jobName), mjobLevel);
     end
     if sjob ~= lastStats.subJob or sjobLevel ~= lastStats.subLevel then
-        local jobName = resources:GetString('jobs.names_abbr', sjob):trimend('\x00')
+        local jobName = resources:GetString("jobs.names_abbr", sjob):trimend("\x00")
         lastStats.subJob = sjob;
         lastStats.subLevel = sjobLevel;
         subJobChange:trigger(utils.ShiftJIS_To_UTF8(jobName), sjobLevel);
@@ -206,7 +206,7 @@ packetIn:on(function(pkt)
     if pkt.id ~= 0x028 then return; end
 
     -- https://github.com/LandSandBoat/server/blob/base/src/map/packets/s2c/0x028_battle2.cpp
-    
+
     -- this packet contains a uint8_t worksize; variable after the common packet header.
     -- we can safely ignore it.
     local header = pktHeaderSize + 8;

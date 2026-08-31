@@ -1,17 +1,16 @@
-
-local ffi = require('ffi');
+local ffi = require("ffi");
 
 local Export = {};
 
 local function table_tostring(o)
--- function Export.table_tostring(o)
-    if type(o) == 'table' then
-        local s = '{ '
-        for k,v in pairs(o) do
-            if type(k) ~= 'number' then k = '"'..k..'"' end
-            s = s .. '['..k..'] = ' .. table_tostring(v) .. ','
+    -- function Export.table_tostring(o)
+    if type(o) == "table" then
+        local s = "{ "
+        for k, v in pairs(o) do
+            if type(k) ~= "number" then k = '"' .. k .. '"' end
+            s = s .. "[" .. k .. "] = " .. table_tostring(v) .. ","
         end
-        return s .. '} '
+        return s .. "} "
     else
         return tostring(o)
     end
@@ -21,7 +20,7 @@ Export.table_tostring = table_tostring;
 
 function Export.compress_tables(...)
     local fin = {};
-    local arg = {...};
+    local arg = { ... };
     for _i, t in ipairs(arg) do
         for k, v in pairs(t) do
             fin[k] = v
@@ -78,13 +77,13 @@ function SetSelector.new(name, keybind, sets)
     -- sets should be the profile.sets object
     local this = {
         _sets = sets,
-        options = T{},
+        options = T {},
         name = name,
         selectedName = nil,
         overrideName = nil,
         keybind = keybind,
     }
-    return setmetatable(this, {__index = SetSelector})
+    return setmetatable(this, { __index = SetSelector })
 end
 
 ---Add a new set to this selector
@@ -112,7 +111,7 @@ function SetSelector:rotate()
     for idx, name in ipairs(setNames) do
         if name == self.selectedName then
             if idx ~= #setNames then
-                nextIndex = idx+1;
+                nextIndex = idx + 1;
             end
         end
     end
@@ -152,7 +151,7 @@ function SetSelector:getSet()
     return self._sets[self.selectedName];
 end
 
--- Luashitacast itself defines these FFI functions.  
+-- Luashitacast itself defines these FFI functions.
 -- This file may be reloaded often, so add a guard around FFI definitions
 -- so that it doesn't crash if it attempts to redefine them.
 -- pcall(function()
@@ -163,7 +162,7 @@ end
 -- end);
 
 function Export.ShiftJIS_To_UTF8(input)
-    local buffer = ffi.new('char[4096]');
+    local buffer = ffi.new("char[4096]");
     ffi.copy(buffer, input);
     local wBuffer = ffi.new("wchar_t[4096]");
     ffi.C.MultiByteToWideChar(932, 0, buffer, -1, wBuffer, 4096);
@@ -172,13 +171,12 @@ function Export.ShiftJIS_To_UTF8(input)
 end
 
 function Export.UTF8_To_ShiftJIS(input)
-    local buffer = ffi.new('char[4096]');
+    local buffer = ffi.new("char[4096]");
     ffi.copy(buffer, input);
     local wBuffer = ffi.new("wchar_t[4096]");
     ffi.C.MultiByteToWideChar(65001, 0, buffer, -1, wBuffer, 4096);
     ffi.C.WideCharToMultiByte(932, 0, wBuffer, -1, buffer, 4096, nil, nil);
     return ffi.string(buffer);
 end
-
 
 return Export;

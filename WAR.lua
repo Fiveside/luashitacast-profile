@@ -1,4 +1,4 @@
-local util = require('util');
+local util = require("util");
 
 
 local profile = {};
@@ -8,27 +8,27 @@ local state = {
 };
 local sets = {
     Idle_Priority = {
-        Main = {"Centurion's Axe", "Neckchopper", "Greataxe"},
-        Ammo = {"Happy Egg"},
-        Head = {"Shade Tiara", "Ryl.Ftm. Bandana"},
+        Main = { "Centurion's Axe", "Neckchopper", "Greataxe" },
+        Ammo = { "Happy Egg" },
+        Head = { "Shade Tiara", "Ryl.Ftm. Bandana" },
         Neck = "Spike Necklace",
-        Body = {"Beetle Harness +1", "Brass Harness"},
-        Hands = {"Lgn. Mittens"},
+        Body = { "Beetle Harness +1", "Brass Harness" },
+        Hands = { "Lgn. Mittens" },
         Ear1 = "Beetle Earring +1",
         Ear2 = "Beetle Earring +1",
-        Ring1 = {"Rajas Ring", "Courage Ring"},
-        Ring2 = {"Victory Ring", "Courage Ring", "Bastokan Ring"},
-        Back = {"Nomad's Mantle"},
-        Waist = {"Warrior's Belt +1"},
-        Legs = {"Republic Subligar", "Beetle Subligar +1", "Scale Cuisses"},
-        Feet = {"Btl. Leggings +1", "Scale Greaves"},
+        Ring1 = { "Rajas Ring", "Courage Ring" },
+        Ring2 = { "Victory Ring", "Courage Ring", "Bastokan Ring" },
+        Back = { "Nomad's Mantle" },
+        Waist = { "Warrior's Belt +1" },
+        Legs = { "Republic Subligar", "Beetle Subligar +1", "Scale Cuisses" },
+        Feet = { "Btl. Leggings +1", "Scale Greaves" },
     },
 };
 local extendedSets = {
     Idle_Priority = {
         RangedAttack_Priority = {
-            Range = 'Power Bow +1',
-            Ammo = 'Beetle Arrow',
+            Range = "Power Bow +1",
+            Ammo = "Beetle Arrow",
         }
     }
 }

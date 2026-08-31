@@ -1,32 +1,31 @@
-
 -- idk why this isn't working
-local imgui = require('imgui');
+local imgui = require("imgui");
 ---@cast imgui IGuiManager
 ---@module 'IGuiManagerTypes'
 
-local d3d8 = require('d3d8');
-local ffi = require('ffi');
+local d3d8 = require("d3d8");
+local ffi = require("ffi");
 
-local Slips = gFunc.LoadFile('slips/slips');
-local XI = gFunc.LoadFile('xi');
-local Bursts = gFunc.LoadFile('bursts');
+local Slips = gFunc.LoadFile("slips/slips");
+local XI = gFunc.LoadFile("xi");
+local Bursts = gFunc.LoadFile("bursts");
 
 local state = {
-    showGearlist = {true},
-    showHud = {true},
+    showGearlist = { true },
+    showHud = { true },
 }
 
 -- Texture cache of icons.  Fallback is a color array for imgui.
 ---@type table<string, {texture: IDirect3DTexture8?, fallback: integer[]}>
 local Icons = {
-    Lightning = {fallback = {1,1,1,1}},
-    Ice = {fallback = {1,1,1,1}},
-    Fire = {fallback = {1,1,1,1}},
-    Wind = {fallback = {1,1,1,1}},
-    Water = {fallback = {1,1,1,1}},
-    Earth = {fallback = {1,1,1,1}},
-    Light = {fallback = {1,1,1,1}},
-    Dark = {fallback = {1,1,1,1}},
+    Lightning = { fallback = { 1, 1, 1, 1 } },
+    Ice = { fallback = { 1, 1, 1, 1 } },
+    Fire = { fallback = { 1, 1, 1, 1 } },
+    Wind = { fallback = { 1, 1, 1, 1 } },
+    Water = { fallback = { 1, 1, 1, 1 } },
+    Earth = { fallback = { 1, 1, 1, 1 } },
+    Light = { fallback = { 1, 1, 1, 1 } },
+    Dark = { fallback = { 1, 1, 1, 1 } },
 }
 
 -- RGBA colors
@@ -34,24 +33,24 @@ local TextColors = {
     -- https://www.figma.com/colors/malachite/
     -- Triadic palette.
     -- (function(y) {return [y.slice(0, 2), y.slice(2,4), y.slice(4,6)].map(x => (parseInt(x, 16)/255).toFixed(2)).join(", ");})("510BDA")
-    LimeGreen = {0.196, 0.804, 0.196, 1},
+    LimeGreen = { 0.196, 0.804, 0.196, 1 },
     -- Green = {0.04, 0.85, 0.32, 1},
-    Green = {0, 1, 0, 1},
-    Blue = {0.21, 0.80, 0.7, 1},
-    Orange = {0.85, 0.32, 0.04, 1},
+    Green = { 0, 1, 0, 1 },
+    Blue = { 0.21, 0.80, 0.7, 1 },
+    Orange = { 0.85, 0.32, 0.04, 1 },
 
-    Light =         { 1.0, 1.0, 1.0, 1.0 }, --'0xFFFFFFFF';
-    Dark =          { 0.0, 0.0, 0.8, 1.0 }, --'0x0000CCFF';
-    Ice =           { 0.0, 1.0, 1.0, 1.0 }, --'0x00FFFFFF';
-    Water =         { 0.0, 1.0, 1.0, 1.0 }, --'0x00FFFFFF';
-    Earth =         { 0.6, 0.5, 0.0, 1.0 }, --'0x997600FF';
-    Wind =          { 0.4, 1.0, 0.4, 1.0 }, --'0x66FF66FF';
-    Fire =          { 1.0, 0.0, 0.0, 1.0 }, --'0xFF0000FF';
-    Lightning =     { 1.0, 0.0, 1.0, 1.0 }, --'0xFF00FFFF';
-    Gravitation =   { 0.4, 0.2, 0.0, 1.0 }, --'0x663300FF';
+    Light = { 1.0, 1.0, 1.0, 1.0 },         --'0xFFFFFFFF';
+    Dark = { 0.0, 0.0, 0.8, 1.0 },          --'0x0000CCFF';
+    Ice = { 0.0, 1.0, 1.0, 1.0 },           --'0x00FFFFFF';
+    Water = { 0.0, 1.0, 1.0, 1.0 },         --'0x00FFFFFF';
+    Earth = { 0.6, 0.5, 0.0, 1.0 },         --'0x997600FF';
+    Wind = { 0.4, 1.0, 0.4, 1.0 },          --'0x66FF66FF';
+    Fire = { 1.0, 0.0, 0.0, 1.0 },          --'0xFF0000FF';
+    Lightning = { 1.0, 0.0, 1.0, 1.0 },     --'0xFF00FFFF';
+    Gravitation = { 0.4, 0.2, 0.0, 1.0 },   --'0x663300FF';
     Fragmentation = { 1.0, 0.6, 1.0, 1.0 }, --'0xFA9CF7FF';
-    Fusion =        { 1.0, 0.4, 0.4, 1.0 }, --'0xFF6666FF';
-    Distortion =    { 0.2, 0.6, 1.0, 1.0 }, --'0x3399FFFF';
+    Fusion = { 1.0, 0.4, 0.4, 1.0 },        --'0xFF6666FF';
+    Distortion = { 0.2, 0.6, 1.0, 1.0 },    --'0x3399FFFF';
 };
 
 local profileState = {
@@ -91,8 +90,8 @@ local function drawIcon(icon)
         local width = texDesc.Width;
         local height = texDesc.Height;
         local lineHeight = imgui.GetTextLineHeight();
-        local newWidth = (lineHeight/height) * width;
-        imgui.Image(tonumber(ffi.cast("uint32_t", tex)), {newWidth, lineHeight})
+        local newWidth = (lineHeight / height) * width;
+        imgui.Image(tonumber(ffi.cast("uint32_t", tex)), { newWidth, lineHeight })
     end
 end
 
@@ -102,17 +101,17 @@ local function strikethroughPrevious()
     local downRightX, downRightY = imgui.GetItemRectMax();
     local lineHeight = imgui.GetTextLineHeight();
     local drawList = imgui.GetWindowDrawList();
-    local y = upLeftY + (lineHeight/2);
-    local color = imgui.GetColorU32({1,0,0,1});
-    drawList:AddLine({upLeftX, y}, {downRightX, y}, color, 2.5);
+    local y = upLeftY + (lineHeight / 2);
+    local color = imgui.GetColorU32({ 1, 0, 0, 1 });
+    drawList:AddLine({ upLeftX, y }, { downRightX, y }, color, 2.5);
 end
 
 local function drawSetSelectors()
     for _, selector in ipairs(profileState.selectors) do
-        imgui.Text('[');
-        imgui.SameLine(0,0);
+        imgui.Text("[");
+        imgui.SameLine(0, 0);
         imgui.TextColored(TextColors.Green, selector.keybind);
-        imgui.SameLine(0,0);
+        imgui.SameLine(0, 0);
         imgui.Text(string.format("]%s:", selector.name));
         imgui.SameLine()
         imgui.TextColored(TextColors.Blue, selector:getDisplayName());
@@ -154,23 +153,23 @@ end
 local function drawHud()
     local popStyleVars = pushStyleVars({
         [ImGuiStyleVar_WindowBorderSize] = 0,
-        [ImGuiStyleVar_WindowPadding] = {0, 0},
-        [ImGuiStyleVar_WindowMinSize] = {0, 0},
+        [ImGuiStyleVar_WindowPadding] = { 0, 0 },
+        [ImGuiStyleVar_WindowMinSize] = { 0, 0 },
     });
 
     local spacing = imgui.GetStyle().ItemSpacing;
     local popStyleColors = pushStyleColors({
-        [ImGuiStyleVar_ItemSpacing] = {spacing.x, 0},
-        [ImGuiCol_WindowBg] = {0, 0, 0, 1},
+        [ImGuiStyleVar_ItemSpacing] = { spacing.x, 0 },
+        [ImGuiCol_WindowBg] = { 0, 0, 0, 1 },
     })
 
     local lineHeight = imgui.GetTextLineHeight();
     -- local windowHeight = /
 
-    imgui.SetNextWindowPos({131, 0}, ImGuiCond_Always);
-    imgui.SetNextWindowSizeConstraints({250, lineHeight}, {-1, -1});
+    imgui.SetNextWindowPos({ 131, 0 }, ImGuiCond_Always);
+    imgui.SetNextWindowSizeConstraints({ 250, lineHeight }, { -1, -1 });
     local windowFlags = bit.bor(
-        -- ImGuiWindowFlags_NoBackground,
+    -- ImGuiWindowFlags_NoBackground,
         ImGuiWindowFlags_NoInputs,
         ImGuiWindowFlags_NoCollapse,
         ImGuiWindowFlags_NoTitleBar,
@@ -180,7 +179,6 @@ local function drawHud()
         ImGuiWindowFlags_AlwaysAutoResize
     );
     if imgui.Begin("##LAC_pofile_hud", state.showHud, windowFlags) then
-
         drawEnvironment();
         -- imgui.Text("[" .. os.date("%X") .. "]");
         -- imgui.SameLine();
@@ -210,7 +208,6 @@ local function drawHud()
                 imgui.Text(sc.Name);
             end
         end
-
     end
     imgui.End();
     popStyleColors();
@@ -274,10 +271,11 @@ function Export.onProfileLoad(options)
     end
 
     -- Load textures.
-    local elements = {"Lightning", "Ice", "Fire", "Wind", "Water", "Earth", "Light", "Dark"};
+    local elements = { "Lightning", "Ice", "Fire", "Wind", "Water", "Earth", "Light", "Dark" };
     for _, element in ipairs(elements) do
-        local path = string.format("%sconfig\\addons\\luashitacast\\%s_%u\\assets\\%s.png", AshitaCore:GetInstallPath(), gState.PlayerName, gState.PlayerId, element);
-        local texturePtr = ffi.new('IDirect3DTexture8*[1]');
+        local path = string.format("%sconfig\\addons\\luashitacast\\%s_%u\\assets\\%s.png", AshitaCore:GetInstallPath(),
+            gState.PlayerName, gState.PlayerId, element);
+        local texturePtr = ffi.new("IDirect3DTexture8*[1]");
         local loadResult = ffi.C.D3DXCreateTextureFromFileA(d3d8.get_device(), path, texturePtr)
         if loadResult == ffi.C.S_OK then
             Icons[element].texture = d3d8.gc_safe_release(ffi.cast("IDirect3DTexture8*", texturePtr[0]))
@@ -286,7 +284,7 @@ function Export.onProfileLoad(options)
         end
     end
 
-    ashita.events.register('d3d_present', 'lac_profile_gui', function()
+    ashita.events.register("d3d_present", "lac_profile_gui", function()
         drawUi();
         drawHud();
     end);
@@ -296,14 +294,15 @@ function Export.onProfileLoad(options)
     for index, selector in ipairs(profileState.selectors) do
         local keycode = kb:S2D(selector.keybind)
         if kb:IsBound(keycode, true, false, false, false, false, false, false, false) then
-            error(string.format("Keybind [%s] is already used, cannot assign to set selector %s", selector.keybind, selector.name));
+            error(string.format("Keybind [%s] is already used, cannot assign to set selector %s", selector.keybind,
+                selector.name));
         end
-        kb:Bind(keycode, true, false, false, false, false, false, false, false, '/lac fwd selector ' .. tostring(index))
+        kb:Bind(keycode, true, false, false, false, false, false, false, false, "/lac fwd selector " .. tostring(index))
     end
 end
 
 function Export.onProfileUnload()
-    ashita.events.unregister('d3d_present', 'lac_profile_gui');
+    ashita.events.unregister("d3d_present", "lac_profile_gui");
 
     -- Uninstall keybinds
     local kb = AshitaCore:GetInputManager():GetKeyboard();
@@ -311,6 +310,5 @@ function Export.onProfileUnload()
         kb:Unbind(kb:S2D(selector.keybind), true, false, false, false, false, false, false, false);
     end
 end
-
 
 return Export;

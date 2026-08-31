@@ -1,6 +1,6 @@
 -- Equips items that allows you to regen while not in combat, up to 95% max hp.
 local Conquest = gFunc.LoadFile("lib/conquest");
-local bit = require('bit');
+local bit = require("bit");
 local Utils = gFunc.LoadFile("util")
 local XI = gFunc.LoadFile("xi");
 
@@ -22,7 +22,7 @@ local function includeHairpin()
     local isValidZone = not Conquest.GetInsideControl();
 
     -- The auto-regen on the hairpin only procs if we have signet.
-    local hasSignet = XI.getMyBuffsByName()['Signet'] ~= nil;
+    local hasSignet = XI.getMyBuffsByName()["Signet"] ~= nil;
 
     return isValidZone and hasSignet;
 end
@@ -83,7 +83,7 @@ setmetatable(IdleRegen, { __index = EquipConditional });
 function IdleRegen:new(customSet)
     -- Merge in global regen stuff
     customSet = customSet or T {};
-    local sets = Utils.compress_tables(ITEM_SETS, {[customSet] = function () return true; end});
+    local sets = Utils.compress_tables(ITEM_SETS, { [customSet] = function() return true; end });
 
     local obj = EquipConditional:new(sets);
     obj.lastTickEnabled = false;
@@ -101,7 +101,7 @@ local function shouldEnable(lastTickEnabled)
     -- - - - We have less than 100% hp
     -- - - - Last tick, we enabled the regen set
     local player = gData.GetPlayer();
-    if not (player.Status == "Idle" or player.Status == 'Resting') then
+    if not (player.Status == "Idle" or player.Status == "Resting") then
         return false;
     end
     -- todo: how to detect when casting?

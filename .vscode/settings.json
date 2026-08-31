@@ -189,5 +189,6 @@
         // "libs/socket.lua",
     ],
     "Lua.workspace.maxPreload": 100000,
-    "Lua.workspace.preloadFileSize": 100000
+    "Lua.workspace.preloadFileSize": 100000,
+    "editor.formatOnSave": true
 }

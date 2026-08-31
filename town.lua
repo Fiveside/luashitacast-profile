@@ -1,16 +1,16 @@
-local ZONES = T{
-    [T{"Bastok Markets", "Bastok Mines", "Metalworks", "Port Bastok"}] = {
+local ZONES = T {
+    [T { "Bastok Markets", "Bastok Mines", "Metalworks", "Port Bastok" }] = {
         Body = "Republic Aketon",
     },
-    [T{"Southern San d'Oria", "Northern San d'Oria", "Port San d'Oria", "Chateau d'Oraguille"}] = {
+    [T { "Southern San d'Oria", "Northern San d'Oria", "Port San d'Oria", "Chateau d'Oraguille" }] = {
         Body = "Kingdom Aketon",
     },
-    [T{"Windurst Woods", "Windurst Walls", "Windurst Waters", "Port Windurst"}] = {
+    [T { "Windurst Woods", "Windurst Walls", "Windurst Waters", "Port Windurst" }] = {
         Body = "Federation Aketon",
     },
 };
 
-local DUCAL_ZONES = T{
+local DUCAL_ZONES = T {
     "Ru'Lude Gardens",
     "Upper Jeuno",
     "Lower Jeuno",
@@ -33,7 +33,7 @@ local lastSet = {};
 -- TODO: detect if we have a ducal aketon we should use instead.
 local use_ducal_aketon = true;
 
-return function ()
+return function()
     local zoneName = gData.GetEnvironment().Area
 
     -- Fast exit if we have not zoned.

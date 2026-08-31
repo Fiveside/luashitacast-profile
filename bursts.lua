@@ -1,8 +1,8 @@
 -- Tracking if a target has a skillchain on it
-local events = gFunc.LoadFile('events');
+local events = gFunc.LoadFile("events");
 
 ---@type table<integer, {}>
-local TARGET_STATE = T{};
+local TARGET_STATE = T {};
 
 events.skillchain:on(function(targetId, sc)
     local coro = ashita.tasks.once(10, function()
@@ -13,7 +13,7 @@ events.skillchain:on(function(targetId, sc)
     end
     TARGET_STATE[targetId] = {
         sc = sc,
-        coro = coro;
+        coro = coro,
     };
 end);
 

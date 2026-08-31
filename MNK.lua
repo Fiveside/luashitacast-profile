@@ -2,8 +2,8 @@ local getZoneSet = gFunc.LoadFile("town");
 local HELM = gFunc.LoadFile("services/helm");
 local Idle = gFunc.LoadFile("idle");
 local Utils = gFunc.LoadFile("util");
-local Xi = gFunc.LoadFile('xi');
-local Ui = gFunc.LoadFile('ui');
+local Xi = gFunc.LoadFile("xi");
+local Ui = gFunc.LoadFile("ui");
 
 local profile = {};
 local state = {
@@ -45,7 +45,7 @@ sets.Tanking = Utils.compress_tables(sets.TP, T {
     Feet = "Melee Gaiters",
 });
 
-sets.Evasion = Utils.compress_tables(sets.Tanking, T{
+sets.Evasion = Utils.compress_tables(sets.Tanking, T {
     Ammo = "Civet Satchet",
 });
 
@@ -130,7 +130,7 @@ profile.OnLoad = function()
     gSettings.AllowAddSet = false;
     state.idleRegen = Idle.IdleRegen:new(sets.IdleRegen);
     state.currentLevel = 0;
-    state.combatSelector = Utils.SetSelector.new('Combat', 'p', sets);
+    state.combatSelector = Utils.SetSelector.new("Combat", "p", sets);
 
     state.combatSelector:addSet("TP", "TP")
     state.combatSelector:addSet("Tanking", "Tanking")
@@ -163,20 +163,20 @@ profile.HandleDefault = function()
         state.idleRegen:refresh();
     end
 
-    
+
     local layers = T {};
     local player = gData.GetPlayer();
     if player.Status == "Engaged" then
         -- layers:append(sets.TP);
         -- layers:append(sets.Tanking);
-        
+
         local buffs = Xi.getMyBuffsByName();
-        if buffs['Hundred Fists'] ~= nil then
+        if buffs["Hundred Fists"] ~= nil then
         end
     else
         layers:append(sets.Idle);
     end
-    
+
     layers:append(state.combatSelector:getSet())
     layers:append(state.idleRegen:getSet());
     layers:append(getZoneSet());
@@ -189,7 +189,7 @@ end
 profile.HandleAbility = function()
     local action = gData.GetAction();
     if action.ActionType == "Ability" then
-        local set = sets['JA_' .. action.Name];
+        local set = sets["JA_" .. action.Name];
         if set ~= nil then
             gFunc.EquipSet(set);
         end

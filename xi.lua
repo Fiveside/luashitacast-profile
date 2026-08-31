@@ -1,8 +1,8 @@
 -- This file contains constants and functions for accessing FFXI things that aren't LAC specific
 -- Constants pulled from https://github.com/AshitaXI/Ashita-v4beta/blob/main/plugins/sdk/ffxi/enums.h
 
-local bit = require('bit');
-local ItemData = require('ffxi/itemdata');
+local bit = require("bit");
+local ItemData = require("ffxi/itemdata");
 
 local Export = {}
 
@@ -162,11 +162,11 @@ function Export.getMyBuffsByName()
     local buffs = T {};
     for buffSlot, buffId in ipairs(dm:GetPlayer():GetBuffs()) do
         if buffId ~= nil and buffId >= 0 then
-            local name = rm:GetString('buffs.names', buffId, Export.LanguageId.English);
+            local name = rm:GetString("buffs.names", buffId, Export.LanguageId.English);
             if name ~= nil then
                 buffs[name] = buffId;
             else
-                gFunc.Message("Failed to get buff name for buff id " .. buffId .. ' (' .. buffSlot .. ')');
+                gFunc.Message("Failed to get buff name for buff id " .. buffId .. " (" .. buffSlot .. ")");
             end
         end
     end

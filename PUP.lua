@@ -1,4 +1,4 @@
-local ui = gFunc.LoadFile('ui');
+local ui = gFunc.LoadFile("ui");
 
 local profile = {};
 local sets = {

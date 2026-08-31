@@ -1,9 +1,9 @@
-require('common');
+require("common");
 
-local settings = T{ };
-settings["EquipBags"] = T{ };
-settings["ForceEnableBags"] = T{ };
-settings["ForceDisableBags"] = T{ };
+local settings = T {};
+settings["EquipBags"] = T {};
+settings["ForceEnableBags"] = T {};
+settings["ForceDisableBags"] = T {};
 settings["FastCast"] = 0;
 settings["ItemBase"] = 8;
 settings["AddSetBackups"] = true;

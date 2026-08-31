@@ -14,5 +14,4 @@ function Export.applyCommonMagicSets(sets)
     };
 end
 
-
 return Export;

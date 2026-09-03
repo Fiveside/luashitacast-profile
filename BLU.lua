@@ -34,7 +34,7 @@ sets.Resting = T {
     Legs = "Baron's Slops",
 }
 
-local physMagicSet = T {
+local physDamageSet = T {
     Ammo = "Tiphia Sting",
     Ear1 = "Spike Earring",
     Ear2 = "Spike Earring",
@@ -47,11 +47,11 @@ local magicDamageSet = T {
 
 }
 
-sets["MA_Bludgeon_Priority"] = physMagicSet:copy(true)
-sets["MA_Jet Stream_Priority"] = physMagicSet:copy(true)
-sets["MA_Quad. Continuum_Priority"] = physMagicSet:copy(true)
-sets["MA_Sickle Slash_Priority"] = physMagicSet:copy(true)
-sets["MA_Death Scissors_Priority"] = physMagicSet:copy(true)
+sets["MA_Bludgeon_Priority"] = physDamageSet:copy(true)
+sets["MA_Jet Stream_Priority"] = physDamageSet:copy(true)
+sets["MA_Quad. Continuum_Priority"] = physDamageSet:copy(true)
+sets["MA_Sickle Slash_Priority"] = physDamageSet:copy(true)
+sets["MA_Death Scissors_Priority"] = physDamageSet:copy(true)
 
 local state = {
     combatSet = nil,

@@ -1,4 +1,3 @@
-
 ---@class SlipDefinition
 ---@field id integer The slip index number (Eg. "Storage Slip 01" = 1)
 ---@field item_id integer The slip's item id
@@ -11,13 +10,18 @@ local SlipData = gFunc.LoadFile("slips/slipdata");
 local XI = gFunc.LoadFile("xi");
 
 ---@type integer[]
-local SLIP_IDS = T{};
+local SLIP_IDS = T {};
+
+-- Map of slip item id to the SlipDef
+---@type table<integer, SlipDefinition>
+local SLIPS_BY_ID = T {};
 
 ---@type integer[]
-local SLIPPABLE_ITEMS = T{}
+local SLIPPABLE_ITEMS = T {}
 do
     for _, slip in pairs(SlipData) do
         table.insert(SLIP_IDS, slip.item_id);
+        SLIPS_BY_ID[slip.item_id] = slip;
         for _, itemId in ipairs(slip.items) do
             table.insert(SLIPPABLE_ITEMS, itemId);
         end
@@ -43,7 +47,7 @@ end
 
 ---@param slipItem item_t invariant
 ---@param index integer
----@return integer?, IItem?
+---@return integer?, {item: IItem, owned: boolean}?
 function possibleSlipContentsIterator(slipItem, index)
     local data = SLIP_IDS[slipItem.Id];
     if data == nil then
@@ -54,7 +58,7 @@ function possibleSlipContentsIterator(slipItem, index)
         return nil;
     end
     local result = getSlipItem(slipItem, index);
-    return index+1, result;
+    return index + 1, result;
 end
 
 ---An iterator for items the player has stored on the given slip
@@ -73,20 +77,31 @@ function ownedSlipContentsIterator(slipItem, index)
             return nil;
         end
 
-        ---@cast res { item: IItem, owned: boolean }
+        ---@cast res -?
         if res.owned then
             return nextIndex, res.item;
         end
     end
 end
 
----Iterate over all the items a slip can store.  Returns the item and a flag indicating if said item is stored in this slip.
----@param slipItem item_t
----@return fun(item_t, integer): integer, {item: IItem, owned: boolean} iterator
----@return item_t invariant
+---Iterate over all the items a slip can store.
+---@param slipItem IItem
+---@return fun(IItem, integer): integer?, IItem? iterator
+---@return IItem invariant
 ---@return integer starting index
 local function listSlipContents(slipItem)
-    return possibleSlipContentsIterator, slipItem, 1
+    local resources = AshitaCore:GetResourceManager();
+    ---@param slipItem IItem
+    ---@param index integer
+    return function(slipItem, index)
+        local slipData = SLIPS_BY_ID[slipItem.Id];
+        for i = index, #slipData.items do
+            local res = slipData.items[index];
+            if res ~= nil then
+                return index + 1, resources:GetItemById(res);
+            end
+        end
+    end, slipItem, 1
 end
 
 ---Iterate over all items stored in a slip
@@ -99,7 +114,7 @@ local function listOwnedSlipContents(slipItem)
 end
 
 local function getOwnedSlips()
-    local slips = T{};
+    local slips = T {};
     for _, result in XI.listEntireInventory() do
         ---@cast result {item: item_t, location: integer}
         if SLIP_IDS:contains(result.item.Id) then
@@ -115,6 +130,15 @@ local Export = {
     listOwnedSlipContents = listOwnedSlipContents,
 };
 
+do
+    local items = T {};
+    Export.slipItems = items;
+    local res = AshitaCore:GetResourceManager();
+    for slipNum, slipDef in pairs(SlipData) do
+        items[slipNum] = res:GetItemById(slipDef.item_id);
+    end
+end
+
 ---Returns a boolean if this item id can be stored in a slip
 ---@param itemId integer
 ---@return boolean
@@ -126,13 +150,13 @@ end
 ---Format is map of container id to item in container.
 ---@return table<integer, item_t>
 function Export.getSlippableItemsInInventory()
-    local result = T{};
+    local result = T {};
     for _, searchResult in XI.listEntireInventory() do
         ---@cast searchResult {item: item_t, location: integer}
         if SLIPPABLE_ITEMS:contains(searchResult.item.Id) then
             local containerContents = result[searchResult.location];
             if containerContents == nil then
-                containerContents = T{};
+                containerContents = T {};
                 result[searchResult.location] = containerContents;
             end
             table.insert(containerContents, searchResult.item);
@@ -144,7 +168,7 @@ end
 ---Return all items we have stored in slips.
 ---@return unknown
 function Export.getAllItemsInSlips()
-    local result = T{};
+    local result = T {};
     for _, slip in ipairs(getOwnedSlips()) do
         for _, item in listOwnedSlipContents(slip) do
             table.insert(item);

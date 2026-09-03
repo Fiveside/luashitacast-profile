@@ -7,6 +7,7 @@ local Common = gFunc.LoadFile("common");
 local Bursts = gFunc.LoadFile("bursts");
 local events = gFunc.LoadFile("events");
 local ui = gFunc.LoadFile("ui");
+local JSE = Common.JSE;
 
 -- A map from an element to the appropriate staff
 local ELEMENT_STAFF = T {
@@ -56,7 +57,7 @@ sets.Midcast = T {
 ---@type GearSet
 sets.MagicAttack = T {
     Ammo = "Phtm. Tathlum",
-    Head = "Sorcerer's Petas.",
+    Head = JSE.BLM.RelicPlus1.Head,
     Neck = "Philomath Stole",
     Ear1 = "Moldavite Earring",
     Ear2 = "Morion Earring",
@@ -79,23 +80,23 @@ sets.MagicAttack = T {
 
 ---@type GearSet
 sets.ElementalMagic = Utils.compress_tables(sets.MagicAttack, T {
-    Head = "Sorcerer's Petas.",
-    Body = "Sorcerer's Coat",
-    Hands = "Wizard's Gloves",
+    Head = JSE.BLM.RelicPlus1.Head,
+    Body = JSE.BLM.Relic.Body,
+    Hands = JSE.BLM.Artifact.Hands,
     Back = "Merciful Cape",
 });
 
 ---@type GearSet
 sets.EnfeeblingMagic = Utils.compress_tables(sets.MagicAttack, T {
-    Head = "Sorcerer's Petas.",
-    Body = "Wizard's Coat",
+    Head = JSE.BLM.RelicPlus1.Head,
+    Body = JSE.BLM.Artifact.Body,
     Back = "Altruistic Cape",
 });
 
 ---@type GearSet
 sets.DarkMagic = Utils.compress_tables(sets.MagicAttack, T {
     Main = ELEMENT_STAFF.Dark,
-    Hands = "Src. Gloves +1",
+    Hands = JSE.BLM.RelicPlus1.Hands,
     Legs = "Wizard's Tonban",
     Back = "Merciful Cape",
 });
@@ -108,7 +109,7 @@ sets.EnhancingMagic = Utils.compress_tables(sets.MagicAttack, T {
 -- A list of gear that only gets equipped while the magic burst window is open on the target
 ---@type GearSet
 sets.MagicBurst = T {
-    Hands = "Src. Gloves +1",
+    Hands = JSE.BLM.RelicPlus1.Hands,
 };
 
 
@@ -371,7 +372,7 @@ function getSpellEnvSet()
     local set = {};
     if ELEMENT_STAFF[action.Element] ~= nil then
         set.Main = ELEMENT_STAFF[action.Element];
-        set.Sub = "displaced";
+        set.Sub = "Bugard Strap +1";
     end
 
     if envMult > 0 and ELEMENT_OBI[action.Element] ~= nil then

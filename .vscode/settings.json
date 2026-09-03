@@ -190,5 +190,7 @@
     ],
     "Lua.workspace.maxPreload": 100000,
     "Lua.workspace.preloadFileSize": 100000,
-    "editor.formatOnSave": true
+    "editor.formatOnSave": true,
+    "editor.formatOnType": true,
+    "editor.defaultFormatter": "esbenp.prettier-vscode"
 }

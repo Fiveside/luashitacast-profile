@@ -20,8 +20,8 @@ local state = T {
 
 ---@type PriorityGearSet
 sets.TP_Priority = T {
-    Main = { "Demon's Knife +1", "Beetle Knife +1" },
-    Sub = { "Demon's Knife +1", "Marauder's Knife" },
+    Main = { "Hoplites Harpe", "Demon's Knife +1", "Beetle Knife +1" },
+    Sub = { "Hoplites Harpe", "Demon's Knife +1", "Marauder's Knife" },
     Range = { "Thug's Zamburak" },
 
     Head = { "Voyager Sallet", "Emperor Hairpin" },
@@ -32,7 +32,7 @@ sets.TP_Priority = T {
     Body = { "Rapparee Harness" },
     Hands = { "Rogue's armlets" },
     Ring1 = { "Rajas Ring" },
-    Ring2 = { "Kshama Ring No.2" },
+    Ring2 = { "Toreador's Ring", "Kshama Ring No.2" },
 
     Back = { "Amemet Mantle +1", "Jaguar Mantle" },
     Waist = { "Swift Belt" },

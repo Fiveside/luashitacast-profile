@@ -1,9 +1,6 @@
 {
     "lua.debug.settings.luaVersion": "luajit",
-    "Lua.diagnostics.disable": [
-        "lowercase-global",
-        "undefined-field"
-    ],
+    "Lua.diagnostics.disable": ["lowercase-global", "undefined-field"],
     "Lua.diagnostics.enable": true,
     "Lua.diagnostics.globals": [
         // Enumerations (Ashita)
@@ -169,6 +166,13 @@
         // Global Functions (Ashita)
         "GetEntity",
         "GetPlayerEntity",
+        // Extra Ashita stuff
+        "T",
+        // Luashitacast entries
+        "gData",
+        "gFunc",
+        "gSettings",
+        "profile"
     ],
     "Lua.diagnostics.ignoredFiles": "Disable",
     "Lua.diagnostics.workspaceDelay": -1,
@@ -177,10 +181,11 @@
     "Lua.hint.setType": false,
     "Lua.runtime.version": "LuaJIT",
     "Lua.workspace.library": [
-        ".vscode/annotations"
+        ".vscode/annotations/ashita",
+        ".vscode/annotations/ashitalibs"
     ],
     "Lua.workspace.ignoreDir": [
-        ".vscode",
+        ".vscode"
         // "libs/annotations",
         // "libs/socket",
         // "libs/json.lua",

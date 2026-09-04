@@ -1,5 +1,4 @@
 {
-    "lua.debug.settings.luaVersion": "luajit",
     "Lua.diagnostics.disable": ["lowercase-global", "undefined-field"],
     "Lua.diagnostics.enable": true,
     "Lua.diagnostics.globals": [
@@ -166,8 +165,6 @@
         // Global Functions (Ashita)
         "GetEntity",
         "GetPlayerEntity",
-        // Extra Ashita stuff
-        "T",
         // Luashitacast entries
         "gData",
         "gFunc",
@@ -179,6 +176,9 @@
     "Lua.diagnostics.workspaceEvent": "OnSave",
     "Lua.hint.enable": false,
     "Lua.hint.setType": false,
+    "Lua.runtime.special": {
+        "gFunc.LoadFile": "require"
+    },
     "Lua.runtime.version": "LuaJIT",
     "Lua.workspace.library": [
         ".vscode/annotations/ashita",

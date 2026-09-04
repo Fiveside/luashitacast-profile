@@ -188,15 +188,49 @@
 ---@field Quantity number|"all"? This is used to tell Packer to retrieve more than one of an item. It is not needed for cases such as 2 of the same ring, as that will be handled internally. Best used for medications inside the Packer section, or ammo inside sets.
 
 ---@alias LAC.GearReference
----| string The name of the gear piece
+---| string The name of the gear piece. Use "displaced" to indicate that this slot will be cleared by another piece. Use "remove" to unequip something from this slot
 ---| LAC.DetailedGearReference A reference to the gear piece with additional discriminations
 
 ---@alias LAC.GearSlotEntry
----| LAC.GearReference The gear piece itself.
+---| LAC.GearReference The gear piece itself. Use "displaced" to indicate that this slot will be cleared by another piece. Use "remove" to unequip something from this slot
 ---| '"displaced"' Indicates that this gear slot will be cleared by another piece of gear (EX: Vermillion Cloak displaces head)
 ---| '"remove"' Unequips gear from this slot.
 
----@alias LAC.GearSet table<LAC.GearSlot, LAC.GearSlotEntry>
+---@class (exact) LAC.GearSet
+---@field Main LAC.GearSlotEntry?
+---@field Sub LAC.GearSlotEntry?
+---@field Range LAC.GearSlotEntry?
+---@field Ammo LAC.GearSlotEntry?
+---@field Head LAC.GearSlotEntry?
+---@field Neck LAC.GearSlotEntry?
+---@field Ear1 LAC.GearSlotEntry?
+---@field Ear2 LAC.GearSlotEntry?
+---@field Body LAC.GearSlotEntry?
+---@field Hands LAC.GearSlotEntry?
+---@field Ring1 LAC.GearSlotEntry?
+---@field Ring2 LAC.GearSlotEntry?
+---@field Back LAC.GearSlotEntry?
+---@field Waist LAC.GearSlotEntry?
+---@field Legs LAC.GearSlotEntry?
+---@field Feet LAC.GearSlotEntry?
+
+---@class (exact) LAC.PriorityGearSet
+---@field Main LAC.GearSlotEntry[]?
+---@field Sub LAC.GearSlotEntry[]?
+---@field Range LAC.GearSlotEntry[]?
+---@field Ammo LAC.GearSlotEntry[]?
+---@field Head LAC.GearSlotEntry[]?
+---@field Neck LAC.GearSlotEntry[]?
+---@field Ear1 LAC.GearSlotEntry[]?
+---@field Ear2 LAC.GearSlotEntry[]?
+---@field Body LAC.GearSlotEntry[]?
+---@field Hands LAC.GearSlotEntry[]?
+---@field Ring1 LAC.GearSlotEntry[]?
+---@field Ring2 LAC.GearSlotEntry[]?
+---@field Back LAC.GearSlotEntry[]?
+---@field Waist LAC.GearSlotEntry[]?
+---@field Legs LAC.GearSlotEntry[]?
+---@field Feet LAC.GearSlotEntry[]?
 
 ---@class LAC.Alliance
 ---@field ActionTarget boolean true if you are currently executing an action targeting an alliance member, false otherwise
@@ -287,7 +321,7 @@
 ---@field TP integer your current TP
 
 ---@class LAC.GData
-local gData = {};
+gData = {};
 
 ---The current lifecycle call being handled
 ---@return LAC.CurrentCall
@@ -347,8 +381,14 @@ function gData.GetParty() end
 ---@return LAC.Entity?
 function gData.GetTarget() end
 
+--TODO: We can't write custom documentation for LoadFile because anything we write requires a new definition
+--for the function.  Said definition will clobber the existing type signature on require(), which means
+--we don't get intellisense entries for the exports from that file.  This can be resolved by writing a
+--plugin for LuaLS.
+
 ---@class LAC.GFunc
-local gFunc = {};
+gFunc = {};
+gFunc.LoadFile = require;
 
 ---Backs up your profile, replaces the set with your current equipment, then writes your profile back to disc.
 ---Will no longer modify anything besides the set in question. If the set doesn't already exist, it will be added to the end of your sets.
@@ -447,13 +487,6 @@ function gFunc.InterimEquipSet(set) end
 ---@param text string the text you would like to print
 function gFunc.Message(text) end
 
----Loads a lua file, searching first for a full path match, then for a match inside ashita/config/addons/luashitacast/playername_playerid,
----then ashita/config/addons/luashitacast/, and finally in each package path(same as require).
----Should be used in place of require for any dependencies, to allow easy per-character overrides and default fallback, as well as
----prevent issues with multiple require from different profiles.
----@param path string filename or filepath to load
-function gFunc.LoadFile(path) end
-
 ---Overrides all state processing and equips a set for the specified period of time. This does not bypass disable/enable.
 ---@param set string|LAC.GearSet A gear set table or the name of a set table, which must be located directly inside the profile.Sets table
 ---@param seconds number the length of seconds(decimals allowed) to lock a set on for
@@ -472,6 +505,7 @@ function gFunc.SetMidDelay(delay) end
 
 ---@class LAC.GSettings
 ---@field AddSetEquipScreenOrder boolean If true, addset will write your sets in the order of equip screen rows. If false, addset will write them in the order of equipment slot IDs.
+---@field AllowAddSet boolean if false, LuAshitacast will prohibit the use of /lac addset
 ---@field AllowSyncEquip boolean If true, LuAshitacast will judge equipment based on your real level and attempt to equip pieces above your current sync level. If false, LuAshitacast will not try to equip anything above your current sync level.
 ---@field AddSetBackups boolean If true, a timestamped backup of your profile will be saved to the 'backups' subdirectory of the folder it is in whenever you use addset.
 ---@field Debug boolean If enabled, LuAshitacast will print your equipment swaps to the chat log.
@@ -492,9 +526,10 @@ function gFunc.SetMidDelay(delay) end
 -- https://github.com/ThornyFFXI/LuAshitacast/blob/main/config.lua
 
 ---@type LAC.GSettings
-local gSettings = {
+gSettings = {
     --Miscellaneous
     AddSetEquipScreenOrder = true,
+    AllowAddSet = false,
     AllowSyncEquip = true,
     AddSetBackups = true,
     -- HorizonMode = false,
@@ -520,7 +555,7 @@ local gSettings = {
 }
 
 ---@class LAC.Profile
----@field Sets table<string, LAC.GearSet|LAC.GearSet[]> This table should contain all of your sets. While you can directly equip set objects that are not contained within this table, only sets within this table will be written with '/lac addset', equipped with '/lac set', or respond to string based EquipSet calls.
+---@field Sets table<string, LAC.GearSet|LAC.PriorityGearSet> This table should contain all of your sets. While you can directly equip set objects that are not contained within this table, only sets within this table will be written with '/lac addset', equipped with '/lac set', or respond to string based EquipSet calls.
 ---@field Packer LAC.PackerGearReference[] This table should contain a list of items for use with /lac gear and /lac validate. Keys can be anything, values can be strings or tables, such as in sets. An additional parameter,
 local profile = {};
 

@@ -182,7 +182,8 @@
     "Lua.runtime.version": "LuaJIT",
     "Lua.workspace.library": [
         ".vscode/annotations/ashita",
-        ".vscode/annotations/ashitalibs"
+        ".vscode/annotations/ashitalibs",
+        ".vscode/annotations/luashitacast"
     ],
     "Lua.workspace.ignoreDir": [
         ".vscode"

@@ -179,4 +179,32 @@ function Export.UTF8_To_ShiftJIS(input)
     return ffi.string(buffer);
 end
 
+---@class SetBuilder
+local SetBuilder = T {};
+Export.SetBuilder = SetBuilder;
+
+function SetBuilder.new()
+    local this = {
+        layers = T {},
+    };
+    return setmetatable(this, { __index = SetBuilder });
+end
+
+function SetBuilder:add(...)
+    for _, set in ipairs({ ... }) do
+        self.layers:append(set);
+    end
+end
+
+function SetBuilder:getSet()
+    local compressed = T {};
+    for _, layer in ipairs(self.layers) do
+        for k, v in pairs(layer) do
+            compressed[k] = v;
+        end
+    end
+    self.layers = T { compressed };
+    return compressed;
+end
+
 return Export;

@@ -1,9 +1,16 @@
+---@module 'town'
 local getZoneSet = gFunc.LoadFile("town");
+---@module 'services.helm'
 local HELM = gFunc.LoadFile("services/helm");
+---@module 'idle'
 local Idle = gFunc.LoadFile("idle");
-local Utils = gFunc.LoadFile("util");
+---@module 'xi'
 local Xi = gFunc.LoadFile("xi");
+---@module 'ui'
 local Ui = gFunc.LoadFile("ui");
+---@module 'util'
+local Utils = gFunc.LoadFile("util");
+local SetBuilder = Utils.SetBuilder;
 
 local profile = {};
 local state = {
@@ -36,10 +43,9 @@ sets.TP = T {
     Feet = "Fuma Sune-Ate",
 };
 
--- Basically high evasion and counter.
+-- Basically high evasion, PDT, and counter.
 sets.Tanking = Utils.compress_tables(sets.TP, T {
     Head = "Optical Hat",
-    -- Body = "Scorpion Harness",
     Body = "Arhat's Gi +1",
     Legs = "Temple Hose",
     Feet = "Melee Gaiters",
@@ -47,6 +53,8 @@ sets.Tanking = Utils.compress_tables(sets.TP, T {
 
 sets.Evasion = Utils.compress_tables(sets.Tanking, T {
     Ammo = "Civet Satchet",
+    Head = "Optical Hat",
+    Body = "Scorpion Harness",
 });
 
 sets.HundredFists = Utils.compress_tables(sets.TP, T {
@@ -60,6 +68,7 @@ sets.JA_Chakra_Priority = {
     -- Special gear:
     --   Temple Cyclas - changes the vit multiplier from 1x to 2x
     --   Melee gloves - Adds an additional 0.6 multiplier to vit
+    Ammo = { "Fortune Egg" },
     Head = { "Genbu's Kabuto" },
     Body = { "Temple Cyclas" },
     Waist = { "Warrior's Belt +1" },
@@ -81,6 +90,7 @@ sets.JA_Counterstance_Priority = {
 };
 
 -- Modifiers: STR 10%, VIT 10%
+-- Asuran Fists gains no benefit from multiattack
 sets["WS_Asuran Fists"] = T {
     Head = "Shr.Znr.Kabuto",
     Neck = "Faith Torque",
@@ -126,6 +136,19 @@ profile.Sets = sets;
 profile.Packer = {
 };
 
+local function equipFenrirEar(set)
+    -- Fenrir's earring can replace a +atk earring during the day.
+    if Xi.isDaytime() then
+        local item = "Fenrir's Earring"
+        local replaces = T { "Ethereal Earring" }
+        if replaces:contains(set.Ear1) then
+            return { Ear1 = item };
+        elseif replaces:contains(set.Ear2) then
+            return { Ear2 = item };
+        end
+    end
+end
+
 profile.OnLoad = function()
     gSettings.AllowAddSet = false;
     state.idleRegen = Idle.IdleRegen:new(sets.IdleRegen);
@@ -163,8 +186,8 @@ profile.HandleDefault = function()
         state.idleRegen:refresh();
     end
 
+    local layers = SetBuilder.new();
 
-    local layers = T {};
     local player = gData.GetPlayer();
     if player.Status == "Engaged" then
         -- layers:append(sets.TP);
@@ -174,19 +197,20 @@ profile.HandleDefault = function()
         if buffs["Hundred Fists"] ~= nil then
         end
     else
-        layers:append(sets.Idle);
+        layers:add(sets.Idle);
     end
 
-    layers:append(state.combatSelector:getSet())
-    layers:append(state.idleRegen:getSet());
-    layers:append(getZoneSet());
-    layers:append(HELM.getSet());
-    local final = Utils.compress_tables(layers:unpack());
+    layers:add(state.combatSelector:getSet())
+    layers:add(state.idleRegen:getSet());
+    layers:add(getZoneSet());
+    layers:add(HELM.getSet());
+    layers:add(equipFenrirEar(layers:getSet()));
 
-    return gFunc.EquipSet(Xi.excludeUsableEquippedItems(final));
+    return gFunc.EquipSet(Xi.excludeUsableEquippedItems(layers:getSet()));
 end
 
 profile.HandleAbility = function()
+    local layers = SetBuilder.new();
     local action = gData.GetAction();
     if action.ActionType == "Ability" then
         local set = sets["JA_" .. action.Name];
@@ -214,9 +238,12 @@ end
 profile.HandleWeaponskill = function()
     local action = gData.GetAction();
     local setname = "WS_" .. action.Name
+    local layers = SetBuilder.new();
     if sets[setname] ~= nil then
-        gFunc.EquipSet(sets[setname]);
+        layers:add(sets[setname])
     end
+    layers:add(equipFenrirEar(layers:getSet()));
+    gFunc.EquipSet(layers:getSet());
 end
 
 return profile;

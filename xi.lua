@@ -139,7 +139,7 @@ Export.Skillchains = T {
     [1] = T { Name = "Light", Elements = T { "Light", "Thunder", "Fire", "Wind" } },
     [2] = T { Name = "Darkness", Elements = T { "Dark", "Ice", "Water", "Earth" } },
     [3] = T { Name = "Gravitation", Elements = T { "Dark", "Earth" } },
-    [4] = T { Name = "Fragmentation", Elements = T { "Fire", "Wind" } },
+    [4] = T { Name = "Fragmentation", Elements = T { "Thunder", "Wind" } },
     [5] = T { Name = "Distortion", Elements = T { "Ice", "Water" } },
     [6] = T { Name = "Fusion", Elements = T { "Light", "Fire" } },
     [7] = T { Name = "Compression", Elements = T { "Dark" } },

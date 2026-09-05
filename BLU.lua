@@ -2,14 +2,17 @@ local Ui = gFunc.LoadFile("ui");
 local Utils = gFunc.LoadFile("util");
 local events = gFunc.LoadFile("events");
 local Xi = gFunc.LoadFile("xi");
+local Magic = gFunc.LoadFile("magic");
+local Common = gFunc.LoadFile("common_sets");
 
-local profile = {};
-local sets = {};
+local JSE = Common.JSE;
 
-profile.Sets = sets;
-
-profile.Packer = {
+---@type LAC.Profile
+local profile = {
+    Sets = {},
+    Packer = {},
 };
+local sets = profile.Sets;
 
 sets.TP_Priority = {
     -- Main = "Kilij",
@@ -30,8 +33,15 @@ sets.TP_Priority = {
 };
 
 sets.Resting = T {
+    Head = "displaced",
+    Body = "Vermillion Cloak",
     Waist = "Qiqirn Sash +1",
     Legs = "Baron's Slops",
+};
+
+sets.Idle_Priority = T {
+    Head = { { Name = "displaced", Level = 62, } },
+    Body = { "Vermillion Cloak" }
 }
 
 local physDamageSet = T {
@@ -43,14 +53,22 @@ local physDamageSet = T {
     Feet = "Savage Gaiters",
 };
 
-local magicDamageSet = T {
+sets.PhysicalSpell_Prioirty = physDamageSet;
 
+local magicDamagePrioritySet = T {
+    Head = { JSE.BLU.Artifact.Head },
+    Ammo = { "Phtm. Tathlum" },
+    Ear1 = { "Moldavite Earring" },
+    Ear2 = { "Morion Earring" },
 }
+
+sets.MagicalBlueSpell_Priority = magicDamagePrioritySet;
 
 sets["MA_Bludgeon_Priority"] = physDamageSet:copy(true)
 sets["MA_Jet Stream_Priority"] = physDamageSet:copy(true)
 sets["MA_Quad. Continuum_Priority"] = physDamageSet:copy(true)
 sets["MA_Sickle Slash_Priority"] = physDamageSet:copy(true)
+sets["MA_Death Scissors_Priority"] = physDamageSet:copy(true)
 sets["MA_Death Scissors_Priority"] = physDamageSet:copy(true)
 
 local state = {
@@ -101,8 +119,10 @@ profile.HandleDefault = function()
     local player = gData.GetPlayer();
     if player.Status == "Resting" then
         layers:append(sets.Resting);
-    else
+    elseif player.Status == "Engaged" then
         layers:append(sets.TP);
+    else
+        layers:append(sets.Idle);
     end
 
     local finalSet = Utils.compress_tables(layers:unpack());
@@ -120,6 +140,9 @@ end
 
 profile.HandleMidcast = function()
     local action = gData.GetAction();
+    ---@cast action -?
+
+    local spell = Magic.BlueMagic[action.Name];
 
     local setName = "MA_" .. action.Name;
     if sets[setName] ~= nil then

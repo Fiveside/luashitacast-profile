@@ -3,11 +3,11 @@
 local Utils = gFunc.LoadFile("util");
 local getZoneSet = gFunc.LoadFile("town");
 local Idle = gFunc.LoadFile("idle");
-local Common = gFunc.LoadFile("common");
+local CommonSets = gFunc.LoadFile("common_sets");
 local Bursts = gFunc.LoadFile("bursts");
 local events = gFunc.LoadFile("events");
 local ui = gFunc.LoadFile("ui");
-local JSE = Common.JSE;
+local JSE = CommonSets.JSE;
 
 -- A map from an element to the appropriate staff
 local ELEMENT_STAFF = T {
@@ -120,10 +120,15 @@ sets.MagicBurst = T {
 -- Maximizes MND.
 sets.MA_Stoneskin = T {
     Body = "Kirin's Osode",
+    Neck = "Faith Torque",
+    Hands = "Savage Gauntlets",
+    Waist = "Penitent's Rope",
+    Back = "Red Cape +1",
+    Feet = "Rostrum Pumps",
 }
 
 -- Specific gear for job actions, spells, and weapon skills
-Common.applyCommonMagicSets(sets);
+CommonSets.applyCommonMagicSets(sets);
 
 ---Specific gear along with functions that return true when they it should be equipped
 ---Equip happens during midcast
@@ -183,6 +188,98 @@ profile.Sets = sets;
 profile.Packer = {
 };
 
+local function onSkillchain(targetId, chainInfo)
+    -- This is called when a skillchain appears nearby
+    local action = gData.GetAction();
+    local target = gData.GetActionTarget();
+    if action == nil or target == nil then
+        return;
+    end
+    if target.Id ~= targetId then
+        return;
+    end
+
+    -- we are currently casting on the target that the skillchain occurred on.
+    -- perform emergency gear swap outside of normal midcast callback.
+    -- We need to use ForceEquipSet because normal EquipSet is tied to the
+    -- LAC managed profile lifecycle. If you call EquipSet outside of a
+    -- lifecycle call, it doesn't do anything.
+    if chainInfo.Elements:contains(action.Element) then
+        gFunc.ForceEquipSet(sets.MagicBurst);
+    end
+end
+
+-- Maps an element with the element it is weak to
+---@type { [Element]: Element}
+local ELEMENTAL_WEAKNESS = T {
+    Thunder = "Earth",
+    Ice = "Fire",
+    Fire = "Water",
+    Wind = "Ice",
+    Water = "Thunder",
+    Earth = "Wind",
+    Dark = "Light",
+    Light = "Dark",
+};
+
+--[[
+    Spells gain the following potency for affinities:
+    10% for magic of the day
+    10% for magic matching single weather
+    20% for magic matching single weather and day
+    25% for magic matching double weather
+    35% for magic matching double weather and day
+]]
+
+
+---Calculate and return the multiplier for the current spell based on day and weather
+local function getElementEnvBonus(element, dayElement, weatherElement, weatherx2)
+    local action = gData.GetAction();
+    local env = gData.GetEnvironment();
+
+    local score = 0;
+
+    -- Add day bonus/penalty.
+    if action.Element == env.DayElement then
+        score = score + 0.1;
+    elseif ELEMENTAL_WEAKNESS[env.DayElement] == action.Element then
+        score = score - 0.1;
+    end
+
+    -- double weather gives +25%
+    local weatherBonus = 0.1
+    if env.Weather:endswith("x2") then
+        weatherBonus = 0.25
+    end
+
+    if action.Element == env.WeatherElement then
+        score = score + weatherBonus;
+    elseif ELEMENTAL_WEAKNESS[action.Element] == env.WeatherElement then
+        score = score + (weatherBonus * -1);
+    end
+
+    return score;
+end
+
+---Returns a set with staff and obi appropriate for the current cast
+---@return table The gear set in question
+local function getSpellEnvSet()
+    local action = gData.GetAction();
+
+    local envMult = getElementEnvBonus();
+
+    local set = {};
+    if ELEMENT_STAFF[action.Element] ~= nil then
+        set.Main = ELEMENT_STAFF[action.Element];
+        set.Sub = "Bugard Strap +1";
+    end
+
+    if envMult > 0 and ELEMENT_OBI[action.Element] ~= nil then
+        set.Waist = ELEMENT_OBI[action.Element];
+    end
+    return set;
+end
+
 profile.OnLoad = function()
     gSettings.AllowAddSet = false;
     -- Bursts.onProfileLoad();
@@ -238,8 +335,9 @@ profile.HandleMidcast = function()
     local action = gData.GetAction();
     local target = gData.GetActionTarget();
     local me = gData.GetPlayer();
-    -- local me = gData.GetPlayer();
-    -- local env = gData.GetEnvironment();
+
+    ---@cast target -?
+    ---@cast action -?
 
     layers:append(sets.Midcast);
 
@@ -282,24 +380,6 @@ profile.HandleMidcast = function()
     gFunc.EquipSet(Utils.compress_tables(layers:unpack()));
 end
 
-function onSkillchain(targetId, chainInfo)
-    -- This is called when a skillchain appears nearby
-    local action = gData.GetAction();
-    local target = gData.GetActionTarget();
-    if action == nil or target == nil then
-        return;
-    end
-    if target.Id ~= targetId then
-        return;
-    end
-
-    -- we are currently casting on the target that the skillchain occurred on.
-    -- perform emergency gear swap outside of normal midcast callback.
-    if chainInfo.Elements:contains(action.Element) then
-        gFunc.EquipSet(sets.MagicBurst);
-    end
-end
-
 profile.HandlePreshot = function()
 end
 
@@ -307,78 +387,6 @@ profile.HandleMidshot = function()
 end
 
 profile.HandleWeaponskill = function()
-end
-
-
--- Maps an element with the element it is weak to
----@type { [Element]: Element}
-local ELEMENTAL_WEAKNESS = T {
-    Thunder = "Earth",
-    Ice = "Fire",
-    Fire = "Water",
-    Wind = "Ice",
-    Water = "Thunder",
-    Earth = "Wind",
-    Dark = "Light",
-    Light = "Dark",
-};
-
---[[
-    Spells gain the following potency for affinities:
-    10% for magic of the day
-    10% for magic matching single weather
-    20% for magic matching single weather and day
-    25% for magic matching double weather
-    35% for magic matching double weather and day
-]]
-
-
----Calculate and return the multiplier for the current spell based on day and weather
-function getElementEnvBonus(element, dayElement, weatherElement, weatherx2)
-    local action = gData.GetAction();
-    local env = gData.GetEnvironment();
-
-    local score = 0;
-
-    -- Add day bonus/penalty.
-    if action.Element == env.DayElement then
-        score = score + 0.1;
-    elseif ELEMENTAL_WEAKNESS[env.DayElement] == action.Element then
-        score = score - 0.1;
-    end
-
-    -- double weather gives +25%
-    local weatherBonus = 0.1
-    if env.Weather:endswith("x2") then
-        weatherBonus = 0.25
-    end
-
-    if action.Element == env.WeatherElement then
-        score = score + weatherBonus;
-    elseif ELEMENTAL_WEAKNESS[action.Element] == env.WeatherElement then
-        score = score + (weatherBonus * -1);
-    end
-
-    return score;
-end
-
----Returns a set with staff and obi appropriate for the current cast
----@return table The gear set in question
-function getSpellEnvSet()
-    local action = gData.GetAction();
-
-    local envMult = getElementEnvBonus();
-
-    local set = {};
-    if ELEMENT_STAFF[action.Element] ~= nil then
-        set.Main = ELEMENT_STAFF[action.Element];
-        set.Sub = "Bugard Strap +1";
-    end
-
-    if envMult > 0 and ELEMENT_OBI[action.Element] ~= nil then
-        set.Waist = ELEMENT_OBI[action.Element];
-    end
-    return set;
 end
 
 return profile;

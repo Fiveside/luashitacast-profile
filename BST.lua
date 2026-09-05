@@ -1,5 +1,5 @@
 local getZoneSet = gFunc.LoadFile("town");
-local HELM = gFunc.LoadFile("services/helm");
+local HELM = gFunc.LoadFile("helm");
 local Utils = gFunc.LoadFile("util");
 local Idle = gFunc.LoadFile("idle");
 

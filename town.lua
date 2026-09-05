@@ -1,3 +1,6 @@
+local events = gFunc.LoadFile("events");
+local Xi = gFunc.LoadFile("xi");
+
 local ZONES = T {
     [T { "Bastok Markets", "Bastok Mines", "Metalworks", "Port Bastok" }] = {
         Body = "Republic Aketon",

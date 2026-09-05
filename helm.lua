@@ -1,3 +1,5 @@
+---@module 'events'
+local events = gFunc.LoadFile("events");
 
 
 local HELMSET = {
@@ -8,7 +10,6 @@ local HELMSET = {
 }
 
 local enabled = false;
-local lastZone = "unknown";
 
 local Export = {};
 
@@ -22,7 +23,6 @@ function Export.getSet()
     end
     return HELMSET;
 end
-
 
 function Export.toggle()
     local environ = gData.GetEnvironment();

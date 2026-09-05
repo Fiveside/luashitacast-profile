@@ -1,14 +1,8 @@
----@module 'town'
 local getZoneSet = gFunc.LoadFile("town");
----@module 'services.helm'
-local HELM = gFunc.LoadFile("services/helm");
----@module 'idle'
+local HELM = gFunc.LoadFile("helm");
 local Idle = gFunc.LoadFile("idle");
----@module 'xi'
 local Xi = gFunc.LoadFile("xi");
----@module 'ui'
 local Ui = gFunc.LoadFile("ui");
----@module 'util'
 local Utils = gFunc.LoadFile("util");
 local SetBuilder = Utils.SetBuilder;
 

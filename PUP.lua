@@ -1,12 +1,11 @@
 local ui = gFunc.LoadFile("ui");
 
-local profile = {};
-local sets = {
+---@type LAC.Profile
+local profile = {
+    Sets = {},
+    Packer = {},
 };
-profile.Sets = sets;
-
-profile.Packer = {
-};
+local sets = profile.Sets;
 
 profile.OnLoad = function()
     gSettings.AllowAddSet = true;

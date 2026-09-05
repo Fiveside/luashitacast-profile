@@ -178,6 +178,7 @@
 
 ---@class LAC.DetailedGearReference
 ---@field Name string Must be specified. The item to be equipped has to have a name matching the value of this member.
+---@field Level integer? When the name is "displaced" or "remove", this is the level to treat the entry as in a priority gear set list.
 ---@field Bag integer|LAC.Container? The item must be in this container to be equipped. Please note that while the tag supports all containers, only heavily modified Topaz servers can equip from anything besides inventory or wardrobes.
 ---@field Augment string|string[]? At least one of the item's augments must match the string to be equipped. The augment must match all strings if this is a table
 ---@field AugPath 'A'|'B'|'C'|'D'? The item must have this augment path to be equipped.

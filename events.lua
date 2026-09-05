@@ -2,7 +2,7 @@
 
 local xi = gFunc.LoadFile("xi");
 local utils = gFunc.LoadFile("util");
-local encoding = require("encoding");
+
 require("common");
 
 ---@class IncommingPacket

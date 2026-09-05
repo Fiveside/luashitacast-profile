@@ -1,5 +1,7 @@
 ---@module 'types'
 
+local Xi = gFunc.LoadFile("xi");
+
 ---@alias BlueMagicType Element|PhysicalDamageType|"Healing"|"Ranged"|"Hand-to-Hand"
 
 ---@class BlueMagicSpell
@@ -123,8 +125,25 @@ local blueMagic = {
 };
 
 
+---@type table<string, BlueMagicSpell>
+local blueMagicByName = T {};
+do
+    for _, spell in ipairs(blueMagic) do
+        blueMagicByName[spell.name] = spell;
+    end
+end
 
 -- Sanity check to make sure all of our spells are correctly referenced
 do
     local res = AshitaCore:GetResourceManager();
+    for _, spell in ipairs(blueMagic) do
+        if res:GetSpellByName(spell.name, Xi.LanguageId.English) == nil then
+            gFunc.Error("invalid spell name: " .. spell.name)
+        end
+    end
 end
+
+
+return {
+    BlueMagic = blueMagicByName,
+}

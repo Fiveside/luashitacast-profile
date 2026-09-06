@@ -1,6 +1,6 @@
 ---@module 'types'
 
-local Xi = gFunc.LoadFile("xi");
+local Xi = require("xi");
 
 ---@alias BlueMagicType Element|PhysicalDamageType|"Healing"|"Ranged"|"Hand-to-Hand"
 
@@ -74,7 +74,7 @@ local blueMagic = {
     { name = "Self-Destruct",     type = "Fire",         trait = "Auto Refresh",        scProperty = nil,                                family = "Arcana" },
     { name = "Cold Wave",         type = "Ice",          trait = "Auto Refresh",        scProperty = nil,                                family = "Arcana" },
     { name = "Filamented Hold",   type = "Earth",        trait = "Clear Mind",          scProperty = nil,                                family = "Vermin" },
-    { name = "Quad. Continnuum",  type = "Piercing",     trait = "Defense Bonus",       scProperty = { "Reverberation", "Scission" },    family = "Empty" },
+    { name = "Quad. Continuum",   type = "Piercing",     trait = "Defense Bonus",       scProperty = { "Reverberation", "Scission" },    family = "Empty" },
     { name = "Hecatomb Wave",     type = "Wind",         trait = "Max MP Boost",        scProperty = nil,                                family = "Demon" },
     { name = "Radiant Breath",    type = "Light",        trait = nil,                   scProperty = nil,                                family = "Dragon" },
     { name = "Winds of Promy.",   type = "Light",        trait = "Auto Refresh",        scProperty = nil,                                family = "Empty" },

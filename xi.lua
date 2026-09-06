@@ -3,7 +3,6 @@
 
 local bit = require("bit");
 local ItemData = require("ffxi/itemdata");
-local json = require("json");
 
 local Export = {}
 
@@ -109,7 +108,7 @@ Export.EquipmentSlot = {
 };
 
 Export.EquipmentSlotMask = {
-    None  = 0x0000,
+    -- None  = 0x0000,
     Main  = 0x0001,
     Sub   = 0x0002,
     Range = 0x0004,
@@ -121,18 +120,18 @@ Export.EquipmentSlotMask = {
     Feet  = 0x0100,
     Neck  = 0x0200,
     Waist = 0x0400,
-    LEar  = 0x0800,
-    REar  = 0x1000,
-    LRing = 0x2000,
-    RRing = 0x4000,
+    Ear1  = 0x0800,
+    Ear2  = 0x1000,
+    Ring1 = 0x2000,
+    Ring2 = 0x4000,
     Back  = 0x8000,
 
     -- Slot Groups
-    Ears  = bit.bor(0x0800, 0x1000), -- LEar | REar
-    Rings = bit.bor(0x2000, 0x4000), -- LRing | RRing
+    -- Ears  = bit.bor(0x0800, 0x1000), -- LEar | REar
+    -- Rings = bit.bor(0x2000, 0x4000), -- LRing | RRing
 
     -- All Slots
-    All   = 0xFFFF,
+    -- All   = 0xFFFF,
 }
 
 Export.Skillchains = T {

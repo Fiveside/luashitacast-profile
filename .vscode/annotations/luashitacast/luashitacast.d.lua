@@ -79,8 +79,8 @@
 ---| '"Unknown"'
 
 ---@alias LAC.GData.GetBuffCountArgs
----| 'string' The name of the buff you are checking for
----| 'number' The ID of the buff you are checking for
+---| string The name of the buff you are checking for
+---| number The ID of the buff you are checking for
 
 ---@alias LAC.WeatherElement
 ---| '"None"'

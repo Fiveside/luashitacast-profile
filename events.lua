@@ -32,7 +32,7 @@ function EventEmitter:on(callback)
 end
 
 function EventEmitter:once(callback)
-    self.once[callback] = callback;
+    self.onceHandlers[callback] = callback;
 end
 
 function EventEmitter:trigger(...)

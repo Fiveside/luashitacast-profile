@@ -1,5 +1,5 @@
 ---@module 'events'
-local events = gFunc.LoadFile("events");
+local events = require("events");
 
 
 local HELMSET = {

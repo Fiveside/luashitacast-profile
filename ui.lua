@@ -6,9 +6,9 @@ local imgui = require("imgui");
 local d3d8 = require("d3d8");
 local ffi = require("ffi");
 
-local Slips = gFunc.LoadFile("slips/slips");
-local XI = gFunc.LoadFile("xi");
-local Bursts = gFunc.LoadFile("bursts");
+local Slips = require("slips/slips");
+local XI = require("xi");
+local Bursts = require("bursts");
 
 local state = {
     showGearlist = { true },

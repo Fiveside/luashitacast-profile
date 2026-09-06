@@ -6,8 +6,8 @@
 ---@field ja string Japanese localized name of this slip
 
 ---@type table<integer, SlipDefinition>
-local SlipData = gFunc.LoadFile("slips/slipdata");
-local XI = gFunc.LoadFile("xi");
+local SlipData = require("slips/slipdata");
+local XI = require("xi");
 
 ---@type integer[]
 local SLIP_IDS = T {};

@@ -1,7 +1,7 @@
 local getZoneSet = gFunc.LoadFile("town");
 local HELM = gFunc.LoadFile("helm");
 local Utils = gFunc.LoadFile("util");
-local Idle = gFunc.LoadFile("idle");
+-- local Idle = gFunc.LoadFile("idle");
 
 local profile = {};
 local state = {
@@ -65,7 +65,7 @@ profile.Packer = {
 profile.OnLoad = function()
     gSettings.AllowAddSet = false;
     -- ashita.events.register("packet_in", "toz_lac_profile_handler", HandleInboundPacket);
-    state.idleRegen = Idle.IdleRegen:new();
+    -- state.idleRegen = Idle.IdleRegen:new();
 end
 
 profile.OnUnload = function()
@@ -82,7 +82,7 @@ profile.HandleDefault = function()
         state.syncedLevel = myLevel;
         gFunc.EvaluateLevels(sets, myLevel);
         gFunc.EvaluateLevels(JA_sets, myLevel);
-        state.idleRegen:refresh();
+        -- state.idleRegen:refresh();
     end
     local layers = T {};
 
@@ -93,7 +93,7 @@ profile.HandleDefault = function()
         layers:append(sets.Idle);
     end
 
-    layers:append(state.idleRegen:getSet());
+    -- layers:append(state.idleRegen:getSet());
     layers:append(getZoneSet());
     layers:append(HELM.getSet());
     -- print(string.format("Heads: %s -> %s", layers:map(function(t) return t.Head; end):join(','), Utils.compress_tables(layers:unpack()).Head));

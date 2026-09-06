@@ -1,4 +1,4 @@
-local Util = gFunc.LoadFile("util");
+local Util = require("util");
 
 local profile = {};
 local sets = {

@@ -1,5 +1,5 @@
-local Slips = gFunc.LoadFile("slips/slips");
-local Xi = gFunc.LoadFile("xi");
+local Slips = require("slips/slips");
+local Xi = require("xi");
 
 local Export = {};
 

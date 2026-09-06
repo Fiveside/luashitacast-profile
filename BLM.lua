@@ -1,12 +1,12 @@
 ---@module 'types'
 
-local Utils = gFunc.LoadFile("util");
-local getZoneSet = gFunc.LoadFile("town");
-local Idle = gFunc.LoadFile("idle");
-local CommonSets = gFunc.LoadFile("common_sets");
-local Bursts = gFunc.LoadFile("bursts");
-local events = gFunc.LoadFile("events");
-local ui = gFunc.LoadFile("ui");
+local Utils = require("util");
+local getZoneSet = require("town");
+local Idle = require("idle");
+local CommonSets = require("common_sets");
+local Bursts = require("bursts");
+local events = require("events");
+local ui = require("ui");
 local JSE = CommonSets.JSE;
 
 -- A map from an element to the appropriate staff
@@ -28,8 +28,8 @@ local ELEMENT_OBI = T {
 
 local profile = {};
 local sets = T {};
-sets.Idle = T {
-    Body = "Sorcerer's Coat",
+sets.AutoRefresh = T {
+    Body = JSE.BLM.Relic.Body,
 };
 
 ---@type PriorityGearSet
@@ -58,6 +58,7 @@ sets.Midcast = T {
 sets.MagicAttack = T {
     Ammo = "Phtm. Tathlum",
     Head = JSE.BLM.RelicPlus1.Head,
+    -- Head = JSE.BLM.Artifact.Head,
     Neck = "Philomath Stole",
     Ear1 = "Moldavite Earring",
     Ear2 = "Morion Earring",
@@ -175,9 +176,6 @@ local FORCED_ELEMENTAL_SPELLS = T {
 };
 
 local state = {
-    -- to redo _Priority sets
-    syncedLevel = 0,
-
     -- Used to handle magic burst switching
     currentSpell = nil,
     currentTargetId = nil,
@@ -282,10 +280,6 @@ end
 
 profile.OnLoad = function()
     gSettings.AllowAddSet = false;
-    -- Bursts.onProfileLoad();
-    -- ashita.events.register('packet_in', 'lac_profile_packet_in', function(pkt)
-    --     Bursts.onPacketIn(pkt);
-    -- end)
     events.onProfileLoad();
     events.skillchain:on(onSkillchain);
 
@@ -295,21 +289,15 @@ end
 profile.OnUnload = function()
     ui.onProfileUnload();
     events.onProfileUnload();
-    -- ashita.events.unregister('packet_in', 'lac_profile_packet_in');
-    -- Bursts.onProfileUnload();
 end
 
 profile.HandleCommand = function(args)
 end
 
 profile.HandleDefault = function()
-    local myLevel = AshitaCore:GetMemoryManager():GetPlayer():GetMainJobLevel();
-    if (myLevel ~= state.syncedLevel) then
-        state.syncedLevel = myLevel;
-        gFunc.EvaluateLevels(sets, myLevel);
-    end
     local layers = T {};
-    layers:append(sets.Idle);
+    layers:append(Idle.autoRegen:getSet());
+    layers:append(Idle.autoRefresh:getSet(sets.AutoRefresh));
     layers:append(getZoneSet());
 
     local player = gData.GetPlayer();

@@ -44,7 +44,7 @@ sets.Idle_Priority = T {
     Body = { "Vermillion Cloak" }
 }
 
-local physDamageSet = T {
+sets.PhysicalBlueSpell_Prioirty = T {
     Ammo = "Tiphia Sting",
     Ear1 = "Spike Earring",
     Ear2 = "Spike Earring",
@@ -53,23 +53,19 @@ local physDamageSet = T {
     Feet = "Savage Gaiters",
 };
 
-sets.PhysicalSpell_Prioirty = physDamageSet;
-
-local magicDamagePrioritySet = T {
+sets.MagicalBlueSpell_Priority = T {
     Head = { JSE.BLU.Artifact.Head },
     Ammo = { "Phtm. Tathlum" },
     Ear1 = { "Moldavite Earring" },
     Ear2 = { "Morion Earring" },
 }
 
-sets.MagicalBlueSpell_Priority = magicDamagePrioritySet;
-
-sets["MA_Bludgeon_Priority"] = physDamageSet:copy(true)
-sets["MA_Jet Stream_Priority"] = physDamageSet:copy(true)
-sets["MA_Quad. Continuum_Priority"] = physDamageSet:copy(true)
-sets["MA_Sickle Slash_Priority"] = physDamageSet:copy(true)
-sets["MA_Death Scissors_Priority"] = physDamageSet:copy(true)
-sets["MA_Death Scissors_Priority"] = physDamageSet:copy(true)
+-- sets["MA_Bludgeon_Priority"] = physDamageSet:copy(true)
+-- sets["MA_Jet Stream_Priority"] = physDamageSet:copy(true)
+-- sets["MA_Quad. Continuum_Priority"] = physDamageSet:copy(true)
+-- sets["MA_Sickle Slash_Priority"] = physDamageSet:copy(true)
+-- sets["MA_Death Scissors_Priority"] = physDamageSet:copy(true)
+-- sets["MA_Death Scissors_Priority"] = physDamageSet:copy(true)
 
 local state = {
     combatSet = nil,
@@ -138,16 +134,29 @@ end
 profile.HandlePrecast = function()
 end
 
+---@type BlueMagicType[]
+local physicalSpellTypes = T { "Slashing", "Piercing", "Blunt", "Hand-to-Hand" }
 profile.HandleMidcast = function()
+    local layers = Utils.SetBuilder.new();
     local action = gData.GetAction();
     ---@cast action -?
 
     local spell = Magic.BlueMagic[action.Name];
 
+    if physicalSpellTypes:contains(spell.type) then
+        layers:add(sets.MagicalBlueSpell);
+    elseif spell.type == "Ranged" then
+        -- TODO
+    else
+        layers:add(sets.PhysicalBlueSpell)
+    end
+
     local setName = "MA_" .. action.Name;
     if sets[setName] ~= nil then
-        gFunc.EquipSet(sets[setName])
+        layers:add(sets[setName]);
     end
+
+    gFunc.EquipSet(layers:getSet());
 end
 
 profile.HandlePreshot = function()

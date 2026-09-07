@@ -1,9 +1,9 @@
-local Ui = gFunc.LoadFile("ui");
-local Utils = gFunc.LoadFile("util");
-local events = gFunc.LoadFile("events");
-local Xi = gFunc.LoadFile("xi");
-local Magic = gFunc.LoadFile("magic");
-local Common = gFunc.LoadFile("common_sets");
+local Ui = require("ui");
+local Utils = require("util");
+local events = require("events");
+local Xi = require("xi");
+local Magic = require("magic");
+local Common = require("common_sets");
 
 local JSE = Common.JSE;
 
@@ -87,11 +87,10 @@ profile.OnLoad = function()
     });
 
     events.onProfileLoad();
-    local mjoblvl = AshitaCore:GetMemoryManager():GetPlayer():GetMainJobLevel();
-    gFunc.EvaluateLevels(sets, mjoblvl)
+    gFunc.EvaluateLevels(sets, gData.GetPlayer().MainJobLevel)
     events.mainJobChange:on(function(job, lvl)
         gFunc.EvaluateLevels(sets, lvl);
-    end)
+    end);
 end
 
 profile.OnUnload = function()

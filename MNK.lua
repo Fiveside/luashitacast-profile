@@ -156,6 +156,11 @@ profile.OnLoad = function()
     state.combatSelector:use("TP");
 
     Events.onProfileLoad();
+    Events.mainJobChange:on(function(job, lvl)
+        gFunc.EvaluateLevels(sets, lvl);
+    end);
+    gFunc.EvaluateLevels(sets, gData.GetPlayer().MainJobLevel);
+
     Ui.onProfileLoad({
         selectors = {
             state.combatSelector

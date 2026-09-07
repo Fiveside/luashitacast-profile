@@ -1,17 +1,16 @@
 ---@module 'types'
-local getZoneSet = gFunc.LoadFile("town");
-local Utils = gFunc.LoadFile("util");
-local Xi = gFunc.LoadFile("xi");
-local Idle = gFunc.LoadFile("idle");
+local getZoneSet = require("town");
+local Utils = require("util");
+local Xi = require("xi");
+local Idle = require("idle");
+local Events = require("events");
 
 
-local profile = {};
-local sets = {
+local profile = {
+    sets = {},
+    packer = {},
 };
-profile.Sets = sets;
-
-profile.Packer = {
-};
+local sets = profile.sets;
 
 local state = T {
     syncedLevel = 0,
@@ -24,7 +23,7 @@ sets.TP_Priority = T {
     Sub = { "Hoplites Harpe", "Demon's Knife +1", "Marauder's Knife" },
     Range = { "Thug's Zamburak" },
 
-    Head = { "Voyager Sallet", "Emperor Hairpin" },
+    Head = { "Optical Hat", "Voyager Sallet", "Emperor Hairpin" },
     Neck = { "Peacock Amulet" },
     Ear1 = { "Spike Earring" },
     Ear2 = { "Spike Earring" },
@@ -114,7 +113,10 @@ sets["WS_Evisceration"] = T {
 
 profile.OnLoad = function()
     gSettings.AllowAddSet = true;
-    state.idleRegen = Idle.IdleRegen:new();
+    Events.mainJobChange:on(function(job, lvl)
+        gFunc.EvaluateLevels(sets, lvl);
+    end);
+    gFunc.EvaluateLevels(sets, gData.GetPlayer().MainJobLevel)
 end
 
 profile.OnUnload = function()
@@ -124,12 +126,6 @@ profile.HandleCommand = function(args)
 end
 
 profile.HandleDefault = function()
-    local myLevel = AshitaCore:GetMemoryManager():GetPlayer():GetMainJobLevel();
-    if (myLevel ~= state.syncedLevel) then
-        gFunc.EvaluateLevels(sets, myLevel);
-        state.syncedLevel = myLevel
-    end
-
     local layers = T {};
     local player = gData.GetPlayer();
     if player.Status == "Engaged" then
@@ -137,7 +133,8 @@ profile.HandleDefault = function()
         -- layers:append(sets.Evasion);
     end
 
-    layers:append(state.idleRegen:getSet());
+    layers:append(Idle.autoRegen:getSet());
+    layers:append(Idle.autoRegain:getSet());
     layers:append(getZoneSet());
     local final = Utils.compress_tables(table.unpack(layers));
     gFunc.EquipSet(Xi.excludeUsableEquippedItems(final));

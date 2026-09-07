@@ -1,15 +1,15 @@
-local getZoneSet = gFunc.LoadFile("town");
-local HELM = gFunc.LoadFile("helm");
-local Idle = gFunc.LoadFile("idle");
-local Xi = gFunc.LoadFile("xi");
-local Ui = gFunc.LoadFile("ui");
-local Utils = gFunc.LoadFile("util");
+local getZoneSet = require("town");
+local HELM = require("helm");
+local Idle = require("idle");
+local Xi = require("xi");
+local Ui = require("ui");
+local Utils = require("util");
+local Events = require("events");
 local SetBuilder = Utils.SetBuilder;
 
 local profile = {};
 local state = {
     currentLevel = 0,
-    idleRegen = nil,
 
     ---@type SetSelector
     combatSelector = nil,
@@ -51,6 +51,7 @@ sets.Evasion = Utils.compress_tables(sets.Tanking, T {
     Body = "Scorpion Harness",
 });
 
+-- No need for gear haste.
 sets.HundredFists = Utils.compress_tables(sets.TP, T {
     Legs = "Shura Haidate",
     Feet = "Shura Sune-Ate",
@@ -121,7 +122,7 @@ sets["WS_Howling Fist"] = Utils.compress_tables(sets["WS_Dragon Kick"], T {
 
 sets.WS_Combo = Utils.compress_tables(sets["WS_Asuran Fists"]);
 
-sets.IdleRegen = T {
+sets.AutoRegen = T {
     Body = "Melee Cyclas",
 };
 
@@ -145,8 +146,6 @@ end
 
 profile.OnLoad = function()
     gSettings.AllowAddSet = false;
-    state.idleRegen = Idle.IdleRegen:new(sets.IdleRegen);
-    state.currentLevel = 0;
     state.combatSelector = Utils.SetSelector.new("Combat", "p", sets);
 
     state.combatSelector:addSet("TP", "TP")
@@ -156,6 +155,7 @@ profile.OnLoad = function()
     -- Default to TP set
     state.combatSelector:use("TP");
 
+    Events.onProfileLoad();
     Ui.onProfileLoad({
         selectors = {
             state.combatSelector
@@ -165,6 +165,7 @@ end
 
 profile.OnUnload = function()
     Ui.onProfileUnload();
+    Events.onProfileUnload();
 end
 
 profile.HandleCommand = function(args)
@@ -173,13 +174,6 @@ profile.HandleCommand = function(args)
 end
 
 profile.HandleDefault = function()
-    local myLevel = AshitaCore:GetMemoryManager():GetPlayer():GetMainJobLevel();
-    if (myLevel ~= state.syncedLevel) then
-        state.syncedLevel = myLevel
-        gFunc.EvaluateLevels(sets, myLevel);
-        state.idleRegen:refresh();
-    end
-
     local layers = SetBuilder.new();
 
     local player = gData.GetPlayer();
@@ -187,15 +181,16 @@ profile.HandleDefault = function()
         -- layers:append(sets.TP);
         -- layers:append(sets.Tanking);
 
-        local buffs = Xi.getMyBuffsByName();
-        if buffs["Hundred Fists"] ~= nil then
+        if gData.GetBuffCount("Hundred Fists") > 0 then
+            layers:append(sets.HundredFists);
         end
     else
         layers:add(sets.Idle);
     end
 
     layers:add(state.combatSelector:getSet())
-    layers:add(state.idleRegen:getSet());
+    layers:add(Idle.autoRegen:getSet(sets.AutoRegen));
+    layers:add(Idle.autoRegain:getSet());
     layers:add(getZoneSet());
     layers:add(HELM.getSet());
     layers:add(equipFenrirEar(layers:getSet()));

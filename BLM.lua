@@ -9,6 +9,13 @@ local events = require("events");
 local ui = require("ui");
 local JSE = CommonSets.JSE;
 
+---@type LAC.Profile
+local profile = {
+    Sets = T {},
+    Packer = T {},
+};
+local sets = profile.Sets;
+
 -- A map from an element to the appropriate staff
 local ELEMENT_STAFF = T {
     Thunder = "Jupiter's staff",
@@ -26,13 +33,10 @@ local ELEMENT_OBI = T {
     Dark = "Anrin Obi",
 };
 
-local profile = {};
-local sets = T {};
 sets.AutoRefresh = T {
     Body = JSE.BLM.Relic.Body,
 };
 
----@type PriorityGearSet
 sets.Resting_Priority = T {
     Main = { ELEMENT_STAFF.Dark, "Pilgrim's Wand" },
     Body = { "Errant Hpl.", "Seer's Tunic" },
@@ -48,13 +52,11 @@ sets.Precast = T {
 -- This set is the base set overridden by other more specialized sets
 -- This should mainly include haste gear to reduce cooldown timers.
 -- Really this only applys to spells targeting the player.
----@type GearSet
 sets.Midcast = T {
     Waist = "Swift Belt",
 };
 
 -- This set should be considered the default set.
----@type GearSet
 sets.MagicAttack = T {
     Ammo = "Phtm. Tathlum",
     Head = JSE.BLM.RelicPlus1.Head,
@@ -79,7 +81,6 @@ sets.MagicAttack = T {
     -- Feet = "Wizard's Sabots",
 };
 
----@type GearSet
 sets.ElementalMagic = Utils.compress_tables(sets.MagicAttack, T {
     Head = JSE.BLM.RelicPlus1.Head,
     Body = JSE.BLM.Relic.Body,
@@ -87,14 +88,12 @@ sets.ElementalMagic = Utils.compress_tables(sets.MagicAttack, T {
     Back = "Merciful Cape",
 });
 
----@type GearSet
 sets.EnfeeblingMagic = Utils.compress_tables(sets.MagicAttack, T {
     Head = JSE.BLM.RelicPlus1.Head,
     Body = JSE.BLM.Artifact.Body,
     Back = "Altruistic Cape",
 });
 
----@type GearSet
 sets.DarkMagic = Utils.compress_tables(sets.MagicAttack, T {
     Main = ELEMENT_STAFF.Dark,
     Hands = JSE.BLM.RelicPlus1.Hands,
@@ -102,13 +101,11 @@ sets.DarkMagic = Utils.compress_tables(sets.MagicAttack, T {
     Back = "Merciful Cape",
 });
 
----@type GearSet
 sets.EnhancingMagic = Utils.compress_tables(sets.MagicAttack, T {
     Back = "Merciful Cape",
 });
 
 -- A list of gear that only gets equipped while the magic burst window is open on the target
----@type GearSet
 sets.MagicBurst = T {
     Hands = JSE.BLM.RelicPlus1.Hands,
 };
@@ -181,10 +178,6 @@ local state = {
     currentTargetId = nil,
 
 };
-profile.Sets = sets;
-
-profile.Packer = {
-};
 
 local function onSkillchain(targetId, chainInfo)
     -- This is called when a skillchain appears nearby
@@ -231,7 +224,7 @@ local ELEMENTAL_WEAKNESS = T {
 
 
 ---Calculate and return the multiplier for the current spell based on day and weather
-local function getElementEnvBonus(element, dayElement, weatherElement, weatherx2)
+local function getElementEnvBonus()
     local action = gData.GetAction();
     local env = gData.GetEnvironment();
 
@@ -282,6 +275,10 @@ profile.OnLoad = function()
     gSettings.AllowAddSet = false;
     events.onProfileLoad();
     events.skillchain:on(onSkillchain);
+    events.mainJobChange:on(function(job, lvl)
+        gFunc.EvaluateLevels(sets, lvl);
+    end);
+    gFunc.EvaluateLevels(sets, gData.GetPlayer().MainJobLevel);
 
     ui.onProfileLoad()
 end

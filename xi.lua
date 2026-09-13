@@ -185,42 +185,6 @@ local EQUIPPABLE_BAGS = T {
     16, -- Wardrobe 8
 }
 
----Returns details for equipment given the name
----@param itemName string
----@return { name: string, level: integer, jobs: string[], isReady: boolean } isReady indicates if the item is in an equippable bag.
-function Export.getEquipmentDetails(itemName)
-    local mem = AshitaCore:GetMemoryManager();
-    local res = AshitaCore:GetResourceManager();
-
-    local item = res:GetItemByName(itemName, Export.LanguageId.English);
-    local jobs = T {};
-    for job, mask in pairs(Export.JobMask) do
-        if bit.band(item.Jobs, mask) > 0 then
-            jobs:append(job);
-        end
-    end
-
-    local inventory = AshitaCore:GetMemoryManager():GetInventory();
-    local isReady = false;
-
-    for _, containerId in ipairs(EQUIPPABLE_BAGS) do
-        for slotId = 1, inventory:GetContainerCount(containerId) do
-            local containerItem = inventory:GetContainerItem(containerId, slotId);
-            if containerItem.Id == item.Id then
-                isReady = true
-                break
-            end
-        end
-    end
-
-    return T {
-        name = item.Name,
-        level = item.Level,
-        jobs = jobs,
-        isReady = isReady,
-    }
-end
-
 ---Looks through inventory and wardrobes to see if we have the item in question
 ---@param itemName string
 ---@return boolean True if this equipment is in a bag we can equip it directly from
@@ -243,7 +207,7 @@ end
 ---Looks through equipped items to see if we're currently wearing something that can be
 ---used like an item.  If we find one, then we return the list of slots that item
 ---is occupying so that gearswap logic can ignore swapping these in the default handler
----@return GearSlot[]
+---@return LAC.GearSlot[]
 function Export.getEquipedExclusionList()
     -- Get currently equipped items.
     local inv = AshitaCore:GetMemoryManager():GetInventory();
@@ -299,8 +263,8 @@ end
 
 ---Takes a gearset and returns one without entries in it that could conflict with usable items we
 ---currently have equipped.
----@param gs GearSet
----@return GearSet
+---@param gs LAC.GearSet
+---@return LAC.GearSet
 function Export.excludeUsableEquippedItems(gs)
     local exclusionList = Export.getEquipedExclusionList();
 

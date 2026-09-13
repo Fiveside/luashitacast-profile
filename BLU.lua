@@ -4,6 +4,7 @@ local events = require("events");
 local Xi = require("xi");
 local Magic = require("magic");
 local Common = require("common_sets");
+local Idle = require("idle");
 
 local JSE = Common.JSE;
 
@@ -23,13 +24,13 @@ sets.TP_Priority = {
     Ear1 = "Morion Earring",
     Ear2 = "Moldavite Earring",
     Body = { "Scorpion Harness", "Brigandine" },
-    Hands = { "Magus Bazubands", "Savage Gauntlets" },
+    Hands = { JSE.BLU.Artifact.Hands, "Savage Gauntlets" },
     Ring1 = "Rajas Ring",
     Ring2 = "Kshama Ring No.2",
     Back = { "Amemet Mantle +1", "Jaguar Mantle" },
     Waist = "Life Belt",
-    Legs = "Magus Shalwar",
-    Feet = "Magus Charuqs",
+    Legs = JSE.BLU.Artifact.Legs,
+    Feet = JSE.BLU.Artifact.Feet,
 };
 
 sets.Resting = T {
@@ -39,16 +40,11 @@ sets.Resting = T {
     Legs = "Baron's Slops",
 };
 
-sets.Idle_Priority = T {
-    Head = { { Name = "displaced", Level = 62, } },
-    Body = { "Vermillion Cloak" }
-}
-
 sets.PhysicalBlueSpell_Prioirty = T {
     Ammo = "Tiphia Sting",
     Ear1 = "Spike Earring",
     Ear2 = "Spike Earring",
-    Body = { "Magus Jubbah", "Scorpion Harness" },
+    Body = { JSE.BLU.Artifact.Body, "Scorpion Harness" },
     Hands = "Battle Gloves",
     Feet = "Savage Gaiters",
 };
@@ -110,15 +106,16 @@ profile.HandleDefault = function()
     else
         state.combatSet:override();
     end
-
     local player = gData.GetPlayer();
     if player.Status == "Resting" then
         layers:append(sets.Resting);
     elseif player.Status == "Engaged" then
         layers:append(sets.TP);
-    else
-        layers:append(sets.Idle);
     end
+
+    layers:append(Idle.autoRegen:getSet())
+    layers:append(Idle.autoRefresh:getSet());
+    layers:append(Idle.autoRegain:getSet());
 
     local finalSet = Utils.compress_tables(layers:unpack());
     gFunc.EquipSet(Xi.excludeUsableEquippedItems(finalSet));
@@ -140,14 +137,16 @@ profile.HandleMidcast = function()
     local action = gData.GetAction();
     ---@cast action -?
 
-    local spell = Magic.BlueMagic[action.Name];
+    if action.Skill == "Blue Magic" then
+        local spell = Magic.BlueMagic[action.Name];
 
-    if physicalSpellTypes:contains(spell.type) then
-        layers:add(sets.MagicalBlueSpell);
-    elseif spell.type == "Ranged" then
-        -- TODO
-    else
-        layers:add(sets.PhysicalBlueSpell)
+        if physicalSpellTypes:contains(spell.type) then
+            layers:add(sets.PhysicalBlueSpell)
+        elseif spell.type == "Ranged" then
+            -- TODO
+        else
+            layers:add(sets.MagicalBlueSpell);
+        end
     end
 
     local setName = "MA_" .. action.Name;

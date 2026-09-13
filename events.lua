@@ -45,39 +45,6 @@ function EventEmitter:trigger(...)
     end
 end
 
--- ---@class TimedEventEmitter
--- local TimedEventEmitter = {};
--- function TimedEventEmitter.new()
---     local this = {
---         handlers = {}
---     }
---     return setmetatable(this, {__index=TimedEventEmitter});
--- end
-
--- local perfFreq = ashita.time.query_performance_frequency().quad_part;
--- local function nowTimestamp()
---     local now = ashita.time.query_performance_counter().quad_part;
---     return (now*1000)/perfFreq;
--- end
-
--- function TimedEventEmitter:after(time, callback)
---     table.insert(self.handlers, {
---         timestamp = nowTimestamp()+time,
---         callback = callback,
---     })
--- end
-
--- function TimedEventEmitter:tick()
---     local now = nowTimestamp();
---     for i = #self.handlers, 1, -1 do
---         local handler = self.handlers[i];
---         if handler.timestamp < now then
---             handler.callback()
---             table.remove(self.handlers, i);
---         end
---     end
--- end
-
 ----------------------
 -- Packet In
 ----------------------
@@ -236,6 +203,34 @@ packetIn:on(function(pkt)
     local sc = xi.Skillchains[proc];
     skillchain:trigger(targetId, sc)
 end);
+
+
+-- FIXME: We export all of these event emitters as singletons.  The expectation is that
+-- require('events') will execute this file once and cache the return value as a module.
+-- Then, subsequent require() calls just return the cached module.  However, LuAshitaCast
+-- does not use require() to load profiles.  It uses gFunc.LoadFile() instead.  Internally,
+-- gFunc.LoadFile() does not do any cacheing of returned modules.  Thus every time gFunc.LoadFile()
+-- is called, it executes the file and returns a fresh instance of the returned module.
+-- This means that any modules returned by identical gFunc.LoadFile() calls are distinct.
+-- Including the event emitters returned here.  This is why we use require() everywhere in
+-- the profile code; so that the singletons returned by modules remain unique and aren't
+-- duplicated.  LuAshitaCast itself uses gFunc.LoadFile() to load a job profile, however.
+-- So every time LuAshitaCast imports a profile, the file is re-executed.  require() calls
+-- in the profile still return the cached modules, as expected.  But any event callbacks
+-- registered in the profile file itself will be re-registered.  EventEmitter uses the
+-- callback function itself as the unique registration key.  So anonymous functions and
+-- functions from freshly parsed and executed lua code (such as during gFunc.LoadFile())
+-- will generate additional entries in the emitter's callback list.  EventEmitter also
+-- does not currently have a published method of un-registering a callback, and doesn't have
+-- a way of clearing handlers loaded inside the main profile file (the one that gets
+-- re-executed by gFunc.LoadFile()).
+--
+-- All this means that when the user changes jobs (for example from from MNK->BLM) new
+-- callbacks are registered (in BLM.lua) and old callbacks are not un-registered (in MNK.lua).
+--
+-- This currently doesn't cause too much extraneous code to run as the number of callbacks registered
+-- in profile code is small and the number of times those events fire is low.
+-- But this may become an issue that we need to solve later on if/when that assumption changes.
 
 
 local Export = {

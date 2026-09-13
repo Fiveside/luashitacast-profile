@@ -5,16 +5,12 @@ local events = require("events");
 local TARGET_STATE = T {};
 
 events.skillchain:on(function(targetId, sc)
-    print("Am I even called?")
     local coro = ashita.tasks.once(10, function()
-        print(string.format("Clearing SC target %d", targetId));
         TARGET_STATE[targetId] = nil;
     end);
     if TARGET_STATE[targetId] ~= nil then
-        print(string.format("Aborting SC clear on target %d", targetId))
         coroutine.kill(TARGET_STATE[targetId].coro)
     end
-    print(string.format("Tracking sc on target ", targetId))
     TARGET_STATE[targetId] = {
         sc = sc,
         coro = coro,

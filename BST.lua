@@ -1,15 +1,15 @@
-local getZoneSet = gFunc.LoadFile("town");
-local HELM = gFunc.LoadFile("helm");
-local Utils = gFunc.LoadFile("util");
--- local Idle = gFunc.LoadFile("idle");
+local getZoneSet = require("town");
+local HELM = require("helm");
+local Utils = require("util");
+local Idle = require("idle");
+local events = require("events");
 
-local profile = {};
-local state = {
-    syncedLevel = 0,
-    idleRegen = nil,
+---@type LAC.Profile
+local profile = {
+    Sets = T {},
+    Packer = T {},
 };
-local sets = {
-};
+local sets = profile.Sets;
 
 sets.Idle = T {};
 
@@ -57,19 +57,16 @@ local JA_sets = {
     }
 };
 
-profile.Sets = sets;
-
-profile.Packer = {
-};
-
 profile.OnLoad = function()
     gSettings.AllowAddSet = false;
-    -- ashita.events.register("packet_in", "toz_lac_profile_handler", HandleInboundPacket);
-    -- state.idleRegen = Idle.IdleRegen:new();
+    events.onProfileLoad();
+    events.mainJobChange:on(function(job, lvl)
+        gFunc.EvaluateLevels(sets, lvl);
+    end);
+    gFunc.EvaluateLevels(sets, gData.GetPlayer().MainJobLevel);
 end
 
 profile.OnUnload = function()
-    -- ashita.events.unregister("packet_in", "toz_lac_profile_handler");
 end
 
 profile.HandleCommand = function(args)
@@ -77,13 +74,6 @@ profile.HandleCommand = function(args)
 end
 
 profile.HandleDefault = function()
-    local myLevel = AshitaCore:GetMemoryManager():GetPlayer():GetMainJobLevel();
-    if (myLevel ~= state.syncedLevel) then
-        state.syncedLevel = myLevel;
-        gFunc.EvaluateLevels(sets, myLevel);
-        gFunc.EvaluateLevels(JA_sets, myLevel);
-        -- state.idleRegen:refresh();
-    end
     local layers = T {};
 
     local player = gData.GetPlayer();
@@ -94,6 +84,7 @@ profile.HandleDefault = function()
     end
 
     -- layers:append(state.idleRegen:getSet());
+    layers:append(Idle.autoRegen:getSet())
     layers:append(getZoneSet());
     layers:append(HELM.getSet());
     -- print(string.format("Heads: %s -> %s", layers:map(function(t) return t.Head; end):join(','), Utils.compress_tables(layers:unpack()).Head));

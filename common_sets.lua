@@ -6,12 +6,10 @@ local Export = {};
 --- Specific gear for job actions, spells, and weapon skills.
 --- These sets apply to all jobs.
 function Export.applyCommonMagicSets(sets)
-    ---@type GearSet
     sets.MA_Sneak = T {
         Feet = "Dream Boots +1",
     };
 
-    ---@type GearSet
     sets.MA_Invisible = T {
         Hands = "Dream Mittens +1"
     };
@@ -19,7 +17,7 @@ end
 
 -- Collecting AF, AF+1, Relic, and Relic+1 into something easy to reference.
 -- job->category->slot->itemName
----@type table<string, table<string, table<GearSlot, string>>>
+---@type table<string, table<string, table<LAC.GearSlot, string>>>
 Export.JSE = T {};
 do
     local slipMap = {

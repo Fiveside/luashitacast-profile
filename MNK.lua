@@ -206,11 +206,9 @@ end
 profile.HandleAbility = function()
     local layers = SetBuilder.new();
     local action = gData.GetAction();
-    if action.ActionType == "Ability" then
-        local set = sets["JA_" .. action.Name];
-        if set ~= nil then
-            gFunc.EquipSet(set);
-        end
+    local set = sets["JA_" .. action.Name];
+    if set ~= nil then
+        gFunc.EquipSet(set);
     end
 end
 

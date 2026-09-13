@@ -82,11 +82,9 @@ function EquipConditional:refresh(myJob, myLevel)
     local myJob = me.MainJob;
     local myLevel = me.MainJobSync;
 
-    local resources = AshitaCore:GetResourceManager();
-
     for _, autoDef in ipairs(self.defaultSets) do
-        if autoDef.jobs:filter(function(job) return myJob ~= job; end):any() then
-            if autoDef.level <= myLevel then
+        if autoDef.jobs:contains(myJob) then
+            if autoDef.resource.Level <= myLevel then
                 table.insert(self.activeSets, autoDef);
             end
         end
@@ -109,7 +107,7 @@ function EquipConditional:getSet(additionalSet)
         local canDisplace = autoDef.displaces:imap(function(slot) return finalSet[slot] == nil; end):all();
         if canDisplace then
             -- Find a free slot to fit this
-            local emptySlot = autoDef.slots:ifilter(function(slot) return finalSet[slot] == nil; end):first();
+            local emptySlot = autoDef.slots:filter(function(slot) return finalSet[slot] == nil; end):first();
             if emptySlot ~= nil then
                 -- Found a free slot
                 finalSet[emptySlot] = autoDef.name;

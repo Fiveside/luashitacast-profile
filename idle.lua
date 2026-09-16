@@ -4,14 +4,14 @@ local bit = require("bit");
 local XI = require("xi");
 local Events = require("events");
 
----@class AutoGearItemPartialDefinition: AutoGearItemDefinition
+---@class AutoGearItemPartialDefinition
 ---@field name string
 ---@field condition (fun(): boolean)?
----@field displaces GearSlot[]?
+---@field displaces LAC.GearSlot[]?
 
----@class AutoGearItemDefinition
+---@class AutoGearItemDefinition: AutoGearItemPartialDefinition
 ---@field condition fun(): boolean
----@field displaces GearSlot[]
+---@field displaces LAC.GearSlot[]
 ---@field resource IItem
 ---@field jobs string[]
 ---@field slots string[]
@@ -61,7 +61,7 @@ function EquipConditional.new(defaultSets, activationCondition)
     defaultSets = defaultSets or T {};
     local obj = T {
         activeSets = T {},
-        defaultSets = T(defaultSets):values(),
+        defaultSets = enrichItemPartialDefinition(defaultSets):values(),
         condition = activationCondition or function() return true; end,
         conditionContext = {},
     };
@@ -78,9 +78,6 @@ end
 function EquipConditional:refresh(myJob, myLevel)
     -- Get the default list of sets, prune sets that we can't equip
     self.activeSets = T {};
-    local me = gData.GetPlayer();
-    local myJob = me.MainJob;
-    local myLevel = me.MainJobSync;
 
     for _, autoDef in ipairs(self.defaultSets) do
         if autoDef.jobs:contains(myJob) then
@@ -89,6 +86,11 @@ function EquipConditional:refresh(myJob, myLevel)
             end
         end
     end
+end
+
+---Resets the context of the custom condition back to default.
+function EquipConditional:reset()
+    self.conditionContext = {};
 end
 
 function EquipConditional:getSet(additionalSet)
@@ -120,7 +122,7 @@ function EquipConditional:getSet(additionalSet)
     return finalSet;
 end
 
-local AUTO_REGEN_ITEMS = enrichItemPartialDefinition(T {
+local AUTO_REGEN_ITEMS = T {
     {
         name = "President. Hairpin",
         condition = function()
@@ -146,7 +148,7 @@ local AUTO_REGEN_ITEMS = enrichItemPartialDefinition(T {
             return gameTime > 8.0 and gameTime < 18.0;
         end,
     },
-});
+};
 
 local autoRegen = EquipConditional.new(AUTO_REGEN_ITEMS, function(ctx)
     -- Enable the regen set if
@@ -176,12 +178,12 @@ local autoRegen = EquipConditional.new(AUTO_REGEN_ITEMS, function(ctx)
     return false;
 end);
 
-local AUTO_REFRESH_ITEMS = enrichItemPartialDefinition(T {
+local AUTO_REFRESH_ITEMS = T {
     {
         name = "Vermillion Cloak",
         displaces = T { "Head" },
     }
-});
+};
 
 local autoRefresh = EquipConditional.new(AUTO_REFRESH_ITEMS, function(ctx)
     -- Identical rules to the auto-regen set, just for mp now.
@@ -210,7 +212,7 @@ local autoRefresh = EquipConditional.new(AUTO_REFRESH_ITEMS, function(ctx)
     return false;
 end);
 
-local AUTO_REGAIN_ITEMS = enrichItemPartialDefinition(T {
+local AUTO_REGAIN_ITEMS = T {
     {
         name = "Opo-opo Necklace",
         condition = function()
@@ -218,7 +220,7 @@ local AUTO_REGAIN_ITEMS = enrichItemPartialDefinition(T {
             return gData.GetBuffCount("sleep") > 0;
         end,
     }
-});
+};
 
 local autoRegain = EquipConditional.new(AUTO_REGAIN_ITEMS, function(ctx)
     -- There's no reason not to recover TP until we hit 3k.  No gear flashing
@@ -234,8 +236,10 @@ end
 
 Events.mainJobChange:on(refreshAll);
 Events.zoneChange:on(function()
-
-end)
+    autoRegen:reset();
+    autoRefresh:reset();
+    autoRegain:reset();
+end);
 
 return {
     EquipConditional = EquipConditional,

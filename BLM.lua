@@ -25,6 +25,7 @@ local ELEMENT_STAFF = T {
     Water = "Neptune's staff",
     Earth = "Earth staff",
     Dark = "Pluto's staff",
+    Light = "Light staff",
 };
 
 -- A map from an element to the appropriate obi.
@@ -53,7 +54,9 @@ sets.Precast = T {
 -- This should mainly include haste gear to reduce cooldown timers.
 -- Really this only applys to spells targeting the player.
 sets.Midcast = T {
+    Hands = "Nashira Gages",
     Waist = "Swift Belt",
+    Legs = "Nashira Seraweels",
 };
 
 -- This set should be considered the default set.
@@ -92,6 +95,7 @@ sets.EnfeeblingMagic = Utils.compress_tables(sets.MagicAttack, T {
     Head = JSE.BLM.RelicPlus1.Head,
     Body = JSE.BLM.Artifact.Body,
     Back = "Altruistic Cape",
+    Legs = "Nashira Seraweels",
 });
 
 sets.DarkMagic = Utils.compress_tables(sets.MagicAttack, T {
@@ -122,6 +126,7 @@ sets.MA_Stoneskin = T {
     Hands = "Savage Gauntlets",
     Waist = "Penitent's Rope",
     Back = "Red Cape +1",
+    Legs = "Errant Slops",
     Feet = "Rostrum Pumps",
 }
 

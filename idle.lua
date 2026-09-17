@@ -106,15 +106,17 @@ function EquipConditional:getSet(additionalSet)
     local env = gData.GetEnvironment();
     for i = #self.activeSets, 1, -1 do
         local autoDef = self.activeSets[i];
-        local canDisplace = autoDef.displaces:imap(function(slot) return finalSet[slot] == nil; end):all();
-        if canDisplace then
-            -- Find a free slot to fit this
-            local emptySlot = autoDef.slots:filter(function(slot) return finalSet[slot] == nil; end):first();
-            if emptySlot ~= nil then
-                -- Found a free slot
-                finalSet[emptySlot] = autoDef.name;
-                for _, displacedSlot in ipairs(autoDef.displaces) do
-                    finalSet[displacedSlot] = "displaced";
+        if autoDef.condition() then
+            local canDisplace = autoDef.displaces:imap(function(slot) return finalSet[slot] == nil; end):all();
+            if canDisplace then
+                -- Find a free slot to fit this
+                local emptySlot = autoDef.slots:filter(function(slot) return finalSet[slot] == nil; end):first();
+                if emptySlot ~= nil then
+                    -- Found a free slot
+                    finalSet[emptySlot] = autoDef.name;
+                    for _, displacedSlot in ipairs(autoDef.displaces) do
+                        finalSet[displacedSlot] = "displaced";
+                    end
                 end
             end
         end

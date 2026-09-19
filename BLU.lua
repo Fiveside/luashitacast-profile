@@ -4,7 +4,7 @@ local events = require("events");
 local Xi = require("xi");
 local Magic = require("magic");
 local Common = require("common_sets");
-local Idle = require("idle");
+local Shared = require("shared");
 
 local JSE = Common.JSE;
 
@@ -113,9 +113,9 @@ profile.HandleDefault = function()
         layers:append(sets.TP);
     end
 
-    layers:append(Idle.autoRegen:getSet())
-    layers:append(Idle.autoRefresh:getSet());
-    layers:append(Idle.autoRegain:getSet());
+    layers:append(Shared.autoRegen:getSet())
+    layers:append(Shared.autoRefresh:getSet());
+    layers:append(Shared.autoRegain:getSet());
 
     local finalSet = Utils.compress_tables(layers:unpack());
     gFunc.EquipSet(Xi.excludeUsableEquippedItems(finalSet));

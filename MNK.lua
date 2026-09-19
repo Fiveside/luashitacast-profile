@@ -1,6 +1,6 @@
 local getZoneSet = require("town");
 local HELM = require("helm");
-local Idle = require("idle");
+local Shared = require("shared");
 local Xi = require("xi");
 local Ui = require("ui");
 local Utils = require("util");
@@ -194,8 +194,8 @@ profile.HandleDefault = function()
     end
 
     layers:add(state.combatSelector:getSet())
-    layers:add(Idle.autoRegen:getSet(sets.AutoRegen));
-    layers:add(Idle.autoRegain:getSet());
+    layers:add(Shared.autoRegen:getSet(sets.AutoRegen));
+    layers:add(Shared.autoRegain:getSet());
     layers:add(getZoneSet());
     layers:add(HELM.getSet());
     layers:add(equipFenrirEar(layers:getSet()));

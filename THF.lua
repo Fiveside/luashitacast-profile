@@ -2,7 +2,7 @@
 local getZoneSet = require("town");
 local Utils = require("util");
 local Xi = require("xi");
-local Idle = require("idle");
+local Shared = require("shared");
 local Events = require("events");
 
 
@@ -13,8 +13,6 @@ local profile = {
 local sets = profile.sets;
 
 local state = T {
-    syncedLevel = 0,
-    idleRegen = nil,
 };
 
 ---@type PriorityGearSet
@@ -133,8 +131,8 @@ profile.HandleDefault = function()
         -- layers:append(sets.Evasion);
     end
 
-    layers:append(Idle.autoRegen:getSet());
-    layers:append(Idle.autoRegain:getSet());
+    layers:append(Shared.autoRegen:getSet());
+    layers:append(Shared.autoRegain:getSet());
     layers:append(getZoneSet());
     local final = Utils.compress_tables(table.unpack(layers));
     gFunc.EquipSet(Xi.excludeUsableEquippedItems(final));

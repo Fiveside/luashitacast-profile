@@ -1,53 +1,61 @@
 local Util = require("util");
+local Shared = require("shared");
+local events = require("events");
 
-local profile = {};
-local sets = {
-    Idle_Priority = {
-        Main = { "Solid Wand", "Yew wand +1", "Willow wand +1", "Maple Wand" },
-        Ammo = { "Fortune egg" },
-        -- Head = {"Silver hairpin"},
-        -- Body = {"Kingdom tunic"},-- {"Ducal Aketon"},
-        Hands = { "Mycophile cuffs" },
-        Legs = { "Seer's slacks +1" },
-        Ring1 = { "Eremite's ring", "San d'Orian Ring" },
-        Ring2 = { "Eremite's ring", "Windurstian Ring" }
-    },
-
-    Resting_Priority = {
-        Main = { "Pilgrim's Wand" },
-        Body = { "Seer's Tunic" },
-        Legs = { "Baron's slops" },
-    },
-
-    Carbuncle_Priority = {
-        Hands = { "Carbuncle mitts" },
-    },
+---@type LAC.Profile
+local profile = {
+    Sets = T {},
+    Packer = T {},
 };
+local sets = profile.Sets;
+
+sets.Idle_Priority = {
+    Main = { "Solid Wand", "Yew wand +1", "Willow wand +1", "Maple Wand" },
+    Ammo = { "Fortune egg" },
+    -- Head = {"Silver hairpin"},
+    -- Body = {"Kingdom tunic"},-- {"Ducal Aketon"},
+    Hands = { "Mycophile cuffs" },
+    Legs = { "Seer's slacks +1" },
+    Ring1 = { "Eremite's ring", "San d'Orian Ring" },
+    Ring2 = { "Eremite's ring", "Windurstian Ring" }
+};
+
+sets.Resting_Priority = {
+    Main = { "Pilgrim's Wand" },
+    Body = { "Seer's Tunic" },
+    Legs = { "Baron's slops" },
+};
+
+sets.Carbuncle_Priority = {
+    Hands = { "Carbuncle mitts" },
+};
+
+sets.Blood_Pact_Priority = T {
+
+}
+
 local state = {
     syncedLevel = 0,
-};
-profile.Sets = sets;
-
-profile.Packer = {
 };
 
 profile.OnLoad = function()
     gSettings.AllowAddSet = false;
+
+    events.onProfileLoad();
+    events.mainJobChange:on(function(job, lvl)
+        gFunc.EvaluateLevels(sets, lvl);
+    end);
+    gFunc.EvaluateLevels(sets, gData.GetPlayer().MainJobSync);
 end
 
 profile.OnUnload = function()
+    events.onProfileUnload();
 end
 
 profile.HandleCommand = function(args)
 end
 
 profile.HandleDefault = function()
-    local myLevel = AshitaCore:GetMemoryManager():GetPlayer():GetMainJobLevel();
-    if (myLevel ~= state.syncedLevel) then
-        state.syncedLevel = myLevel;
-        gFunc.EvaluateLevels(sets, myLevel);
-        -- gFunc.EvaluateLevels(JA_sets, myLevel);
-    end
     local layers = T {};
     layers:append(sets.Idle);
 

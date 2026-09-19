@@ -1,7 +1,7 @@
 local getZoneSet = require("town");
 local HELM = require("helm");
 local Utils = require("util");
-local Idle = require("idle");
+local Shared = require("shared");
 local events = require("events");
 
 ---@type LAC.Profile
@@ -84,7 +84,7 @@ profile.HandleDefault = function()
     end
 
     -- layers:append(state.idleRegen:getSet());
-    layers:append(Idle.autoRegen:getSet())
+    layers:append(Shared.autoRegen:getSet())
     layers:append(getZoneSet());
     layers:append(HELM.getSet());
     -- print(string.format("Heads: %s -> %s", layers:map(function(t) return t.Head; end):join(','), Utils.compress_tables(layers:unpack()).Head));

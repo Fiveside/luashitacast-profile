@@ -2,7 +2,7 @@
 
 local Utils = require("util");
 local getZoneSet = require("town");
-local Idle = require("idle");
+local Shared = require("shared");
 local CommonSets = require("common_sets");
 local Bursts = require("bursts");
 local events = require("events");
@@ -298,8 +298,8 @@ end
 
 profile.HandleDefault = function()
     local layers = T {};
-    layers:append(Idle.autoRegen:getSet());
-    layers:append(Idle.autoRefresh:getSet(sets.AutoRefresh));
+    layers:append(Shared.autoRegen:getSet());
+    layers:append(Shared.autoRefresh:getSet(sets.AutoRefresh));
     layers:append(getZoneSet());
 
     local player = gData.GetPlayer();

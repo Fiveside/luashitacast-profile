@@ -12,7 +12,7 @@ local Xi = require("xi");
 ---@field family CreatureFamily Monster family this spell came from.
 
 -- Blue magic from here: https://horizonffxi.wiki/Category:Blue_Magic
--- Last updated 2026-08-30
+-- Last updated 2026-09-17
 
 ---@type BlueMagicSpell[]
 local blueMagic = {
@@ -67,7 +67,7 @@ local blueMagic = {
     { name = "Magnetite Cloud",   type = "Earth",        trait = "Magic Defense Bonus", scProperty = nil,                                family = "Beastmen" },
     { name = "Blood Saber",       type = "Dark",         trait = "Auto Refresh",        scProperty = nil,                                family = "Undead" },
     { name = "Jettatura",         type = "Dark",         trait = nil,                   scProperty = nil,                                family = "Bird" },
-    { name = "Refueling",         type = "Wind",         trait = nil,                   scProperty = nil,                                family = "Arcana" },
+    { name = "Refueling",         type = "Wind",         trait = "Resist Slow",         scProperty = nil,                                family = "Arcana" },
     { name = "Sickle Slash",      type = "Hand-to-Hand", trait = "Store TP",            scProperty = { "Compression" },                  family = "Vermin" },
     { name = "Frightful Roar",    type = "Wind",         trait = "Auto Refresh",        scProperty = nil,                                family = "Demon" },
     { name = "Ice Break",         type = "Ice",          trait = "Magic Defense Bonus", scProperty = nil,                                family = "Arcana" },
@@ -97,7 +97,7 @@ local blueMagic = {
     { name = "Feather Tickle",    type = "Wind",         trait = "Clear Mind",          scProperty = nil,                                family = "Bird" },
     { name = "Voracious Trunk",   type = "Wind",         trait = "Auto Refresh",        scProperty = nil,                                family = "Beast" },
     { name = "Yawn",              type = "Light",        trait = "Resist Sleep",        scProperty = nil,                                family = "Bird" },
-    { name = "Infrasonics",       type = "Ice",          trait = nil,                   scProperty = nil,                                family = "Lizard" },
+    { name = "Infrasonics",       type = "Ice",          trait = "Magic Accuracy",      scProperty = nil,                                family = "Lizard" },
     { name = "Zephyr Mantle",     type = "Wind",         trait = "Conserve MP",         scProperty = nil,                                family = "Dragon" },
     { name = "Frost Breath",      type = "Ice",          trait = "Conserve MP",         scProperty = nil,                                family = "Lizard" },
     { name = "Sandspray",         type = "Dark",         trait = "Clear Mind",          scProperty = nil,                                family = "Beastmen" },
@@ -117,7 +117,7 @@ local blueMagic = {
     { name = "Ram Charge",        type = "Blunt",        trait = "Lizard Killer",       scProperty = { "Fragmentation" },                family = "Beast" },
     { name = "Temporal Shift",    type = "Thunder",      trait = "Attack Bonus",        scProperty = nil,                                family = "Luminian" },
     { name = "Actinic Burst",     type = "Light",        trait = "Auto Refresh",        scProperty = nil,                                family = "Luminion" },
-    { name = "Magic Hammer",      type = "Light",        trait = "Magic Attack Bonus",  scProperty = nil,                                family = "Beastmen" },
+    { name = "Magic Hammer",      type = "Light",        trait = nil,                   scProperty = nil,                                family = "Beastmen" },
     { name = "Reactor Cool",      type = "Ice",          trait = "Magic Attack Bonus",  scProperty = nil,                                family = "Luminion" },
     { name = "Exuviation",        type = "Fire",         trait = "Resist Sleep",        scProperty = nil,                                family = "Vermin" },
     { name = "Plasma Charge",     type = "Thunder",      trait = "Auto Refresh",        scProperty = nil,                                family = "Luminian" },

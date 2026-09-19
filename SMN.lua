@@ -14,7 +14,7 @@ sets.Idle_Priority = {
     Ammo = { "Fortune egg" },
     -- Head = {"Silver hairpin"},
     -- Body = {"Kingdom tunic"},-- {"Ducal Aketon"},
-    Hands = { "Mycophile cuffs" },
+    Hands = { "Savage Gauntlets", "Mycophile cuffs" },
     Legs = { "Seer's slacks +1" },
     Ring1 = { "Eremite's ring", "San d'Orian Ring" },
     Ring2 = { "Eremite's ring", "Windurstian Ring" }
@@ -30,12 +30,32 @@ sets.Carbuncle_Priority = {
     Hands = { "Carbuncle mitts" },
 };
 
-sets.Blood_Pact_Priority = T {
-
+-- This is for -bp delay gear.
+sets.BloodPact_Priority = T {
+    Head = { "Austere Hat" },
+    Body = { "Austere Robe" },
 }
 
-local state = {
-    syncedLevel = 0,
+sets.SummoningMagic_Priority = T {
+    Head = { "Austere Hat" },
+}
+
+-- Non-specific avatar perpetuation cost gear.
+sets.PerpetuationCost_Priority = T {
+}
+
+-- Avatar to element map, for use when choosing which staff to use
+---@type table<string, LAC.Element>
+local AVATAR_ELEMENT = {
+    Carbuncle = "Light",
+    Ramuh = "Thunder",
+    Shiva = "Ice",
+    Ifrit = "Fire",
+    Garuda = "Wind",
+    Leviathan = "Water",
+    Titan = "Earth",
+    Fenrir = "Dark",
+    Diabolos = "Dark",
 };
 
 profile.OnLoad = function()

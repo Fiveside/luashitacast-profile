@@ -153,6 +153,20 @@ Export.Skillchains = T {
     [16] = T { Name = "Umbra", Elements = T { "Dark", "Ice", "Water", "Earth" } },
 };
 
+-- Maps an element with the element it is weak to
+---@type { [LAC.Element]: LAC.Element}
+Export.ElementalWeakness = T {
+    Thunder = "Earth",
+    Ice = "Fire",
+    Fire = "Water",
+    Wind = "Ice",
+    Water = "Thunder",
+    Earth = "Wind",
+    Dark = "Light",
+    Light = "Dark",
+};
+
+
 ---Returns a table of strings for all current buffs
 ---@return table<string, number>;
 function Export.getMyBuffsByName()
@@ -285,28 +299,28 @@ function Export.isDaytime()
     return gameTime > 8.0 and gameTime < 18.0;
 end
 
----@alias ContainerDefinition {id: integer, name: string}
+---@alias ContainerDefinition {id: integer, name: string, equippable: boolean}
 
 -- Ordered this way because it appears in the UI this way.
 ---@type ContainerDefinition[]
 local CONTAINER_LIST = T {
-    { id = 3,  name = "Temporary" },
-    { id = 0,  name = "Inventory" },
-    { id = 1,  name = "Safe" },
-    { id = 9,  name = "Safe2" },
-    { id = 2,  name = "Storage" },
-    { id = 4,  name = "Locker" },
-    { id = 5,  name = "Satchel" },
-    { id = 6,  name = "Sack" },
-    { id = 7,  name = "Case" },
-    { id = 8,  name = "Wardrobe" },
-    { id = 10, name = "Wardrobe2" },
-    { id = 11, name = "Wardrobe3" },
-    { id = 12, name = "Wardrobe4" },
-    { id = 13, name = "Wardrobe5" },
-    { id = 14, name = "Wardrobe6" },
-    { id = 15, name = "Wardrobe7" },
-    { id = 16, name = "Wardrobe8" },
+    { id = 3,  name = "Temporary", equippable = false },
+    { id = 0,  name = "Inventory", equippable = true },
+    { id = 1,  name = "Safe",      equippable = false },
+    { id = 9,  name = "Safe2",     equippable = false },
+    { id = 2,  name = "Storage",   equippable = false },
+    { id = 4,  name = "Locker",    equippable = false },
+    { id = 5,  name = "Satchel",   equippable = false },
+    { id = 6,  name = "Sack",      equippable = false },
+    { id = 7,  name = "Case",      equippable = false },
+    { id = 8,  name = "Wardrobe",  equippable = true },
+    { id = 10, name = "Wardrobe2", equippable = true },
+    { id = 11, name = "Wardrobe3", equippable = true },
+    { id = 12, name = "Wardrobe4", equippable = true },
+    { id = 13, name = "Wardrobe5", equippable = true },
+    { id = 14, name = "Wardrobe6", equippable = true },
+    { id = 15, name = "Wardrobe7", equippable = true },
+    { id = 16, name = "Wardrobe8", equippable = true },
 };
 
 ---@type table<integer, string>
@@ -359,6 +373,15 @@ Export.debug = inventoryIterator;
 ---@return {id: integer, name: string} starting index
 function Export.listEntireInventory()
     return inventoryIterator, CONTAINER_LIST, { container = 1, index = 1 }
+end
+
+---An iterator over all items in equippable containers in our inventory
+---@return fun(): ContainerDefinition?, {item: item_t, location: integer}? iterator function
+---@return ContainerDefinition[] invariant
+---@return {id: integer, name: string} starting index
+function Export.listEquippableInventory()
+    local containers = CONTAINER_LIST:filter(function(c) return c.equippable; end);
+    return inventoryIterator, containers, { container = 1, index = 1 }
 end
 
 ---An iterator over all items in a container

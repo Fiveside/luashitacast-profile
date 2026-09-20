@@ -16,39 +16,22 @@ local profile = {
 };
 local sets = profile.Sets;
 
--- A map from an element to the appropriate staff
-local ELEMENT_STAFF = T {
-    Thunder = "Jupiter's staff",
-    Fire = "Vulcan's staff",
-    Ice = "Aquilo's staff",
-    Wind = "Auster's staff",
-    Water = "Neptune's staff",
-    Earth = "Earth staff",
-    Dark = "Pluto's staff",
-    Light = "Light staff",
-};
-
--- A map from an element to the appropriate obi.
-local ELEMENT_OBI = T {
-    Ice = "Hyorin Obi",
-    Dark = "Anrin Obi",
-};
-
 sets.AutoRefresh = T {
     Body = JSE.BLM.Relic.Body,
 };
 
 sets.Resting_Priority = T {
-    Main = { ELEMENT_STAFF.Dark, "Pilgrim's Wand" },
+    Main = { Shared.getElementalStaff("Dark"), "Pilgrim's Wand" },
     Body = { "Errant Hpl.", "Seer's Tunic" },
     Waist = { "Qiqirn Sash +1" },
     Legs = { "Baron's slops" },
     Ear1 = { "Relaxing Earring" },
 };
 
-sets.Precast = T {
-    Ear1 = "Loquac. Earring",
-}
+sets.Precast_Priority = T {
+    Ear1 = { "Loquac. Earring" },
+    Feet = { "Rostrum Pumps" },
+};
 
 -- This set is the base set overridden by other more specialized sets
 -- This should mainly include haste gear to reduce cooldown timers.
@@ -99,7 +82,7 @@ sets.EnfeeblingMagic = Utils.compress_tables(sets.MagicAttack, T {
 });
 
 sets.DarkMagic = Utils.compress_tables(sets.MagicAttack, T {
-    Main = ELEMENT_STAFF.Dark,
+    Main = Shared.getElementalStaff("Dark"),
     Hands = JSE.BLM.RelicPlus1.Hands,
     Legs = "Wizard's Tonban",
     Back = "Merciful Cape",
@@ -205,77 +188,6 @@ local function onSkillchain(targetId, chainInfo)
     end
 end
 
--- Maps an element with the element it is weak to
----@type { [Element]: Element}
-local ELEMENTAL_WEAKNESS = T {
-    Thunder = "Earth",
-    Ice = "Fire",
-    Fire = "Water",
-    Wind = "Ice",
-    Water = "Thunder",
-    Earth = "Wind",
-    Dark = "Light",
-    Light = "Dark",
-};
-
---[[
-    Spells gain the following potency for affinities:
-    10% for magic of the day
-    10% for magic matching single weather
-    20% for magic matching single weather and day
-    25% for magic matching double weather
-    35% for magic matching double weather and day
-]]
-
-
----Calculate and return the multiplier for the current spell based on day and weather
-local function getElementEnvBonus()
-    local action = gData.GetAction();
-    local env = gData.GetEnvironment();
-
-    local score = 0;
-
-    -- Add day bonus/penalty.
-    if action.Element == env.DayElement then
-        score = score + 0.1;
-    elseif ELEMENTAL_WEAKNESS[env.DayElement] == action.Element then
-        score = score - 0.1;
-    end
-
-    -- double weather gives +25%
-    local weatherBonus = 0.1
-    if env.Weather:endswith("x2") then
-        weatherBonus = 0.25
-    end
-
-    if action.Element == env.WeatherElement then
-        score = score + weatherBonus;
-    elseif ELEMENTAL_WEAKNESS[action.Element] == env.WeatherElement then
-        score = score + (weatherBonus * -1);
-    end
-
-    return score;
-end
-
----Returns a set with staff and obi appropriate for the current cast
----@return table The gear set in question
-local function getSpellEnvSet()
-    local action = gData.GetAction();
-
-    local envMult = getElementEnvBonus();
-
-    local set = {};
-    if ELEMENT_STAFF[action.Element] ~= nil then
-        set.Main = ELEMENT_STAFF[action.Element];
-        set.Sub = "Bugard Strap +1";
-    end
-
-    if envMult > 0 and ELEMENT_OBI[action.Element] ~= nil then
-        set.Waist = ELEMENT_OBI[action.Element];
-    end
-    return set;
-end
-
 profile.OnLoad = function()
     gSettings.AllowAddSet = false;
     events.onProfileLoad();
@@ -346,7 +258,11 @@ profile.HandleMidcast = function()
     end
 
     -- Staff and Obi set.
-    layers:append(getSpellEnvSet());
+    layers:append(T {
+        Main = Shared.getElementalStaff(),
+        Sub = "Bugard Strap +1",
+        Waist = Shared.getElementalObi(),
+    });
 
     -- Sets with complex activation conditions.
     for conditionalSet, condition in pairs(CONDITIONAL_GEAR) do

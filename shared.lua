@@ -124,6 +124,10 @@ function EquipConditional:getSet(additionalSet)
     return finalSet;
 end
 
+----------------------------
+-- Auto-Regen, Auto-Refresh, and Auto-Regain
+----------------------------
+
 local AUTO_REGEN_ITEMS = T {
     {
         name = "President. Hairpin",
@@ -132,8 +136,7 @@ local AUTO_REGEN_ITEMS = T {
             -- "outside own nation's control".
 
             -- Note that XI considers "not inside control" and "outside control" to be
-            -- two different conditions. Unsure if LSB emulates this detail.
-            -- This may need to be updated when playing in ToAU zones.
+            -- two different conditions.
             local isValidZone = not Conquest.GetInsideControl();
 
             -- The auto-regen on the hairpin only procs if we have signet.
@@ -162,12 +165,6 @@ local autoRegen = EquipConditional.new(AUTO_REGEN_ITEMS, function(ctx)
     -- - - - We have less than 100% hp
     -- - - - Last tick, we enabled the regen set
     local player = gData.GetPlayer();
-    if not (player.Status == "Idle" or player.Status == "Resting") then
-        return false;
-    end
-    if gData.GetAction() ~= nil then
-        return false;
-    end
 
     if player.HPP < 95 then
         ctx.lastTickEnabled = true;
@@ -193,13 +190,6 @@ local autoRefresh = EquipConditional.new(AUTO_REFRESH_ITEMS, function(ctx)
 
     -- If the player has zero mp, then MPP will also be zero
     if player.MaxMP == 0 then
-        return false;
-    end
-
-    if not (player.Status == "Idle" or player.Status == "Resting") then
-        return false;
-    end
-    if gData.GetAction() ~= nil then
         return false;
     end
 
@@ -230,22 +220,211 @@ local autoRegain = EquipConditional.new(AUTO_REGAIN_ITEMS, function(ctx)
     return gData.GetPlayer().TP < 3000;
 end);
 
-local function refreshAll(job, lvl)
+Events.mainJobChange:on(function(job, lvl)
     autoRegen:refresh(job, lvl);
     autoRefresh:refresh(job, lvl);
     autoRegain:refresh(job, lvl);
-end
+end);
 
-Events.mainJobChange:on(refreshAll);
 Events.zoneChange:on(function()
     autoRegen:reset();
     autoRefresh:reset();
     autoRegain:reset();
 end);
 
-return {
+local Export = {
     EquipConditional = EquipConditional,
     autoRegen = autoRegen,
     autoRefresh = autoRefresh,
     autoRegain = autoRegain,
 };
+
+----------------------------
+-- Staffs, Obis, and Torques
+----------------------------
+
+-- Spells gain the following potency for affinities:
+-- 10% for magic of the day
+-- 10% for magic matching single weather
+-- 20% for magic matching single weather and day
+-- 25% for magic matching double weather
+-- 35% for magic matching double weather and day
+
+---Calculate and return the multiplier for the passed element based on day and weather
+---@param element LAC.Element
+---@return number
+local function getElementEnvBonus(element)
+    local action = gData.GetAction();
+    local env = gData.GetEnvironment();
+
+    local score = 0;
+
+    -- Add day bonus/penalty.
+    if element == env.DayElement then
+        score = score + 0.1;
+    elseif XI.ElementalWeakness[env.DayElement] == element then
+        score = score - 0.1;
+    end
+
+    -- double weather gives +25%
+    local weatherBonus = 0.1
+    if env.Weather:endswith("x2") then
+        weatherBonus = 0.25
+    end
+
+    if element == env.WeatherElement then
+        score = score + weatherBonus;
+    elseif XI.ElementalWeakness[element] == env.WeatherElement then
+        score = score + (weatherBonus * -1);
+    end
+
+    return score;
+end
+
+-- A constant for every possible elemental staff.  We search for the right ones later.
+---@type table<LAC.Element, string[]>
+local STAFFS = T {
+    Thunder = { "Jupiter's Staff", "Thunder Staff" },
+    Ice = { "Aquilo's Staff", "Ice Staff" },
+    Fire = { "Vulcan's Staff", "Fire Staff" },
+    Wind = { "Auster's Staff", "Wind Staff" },
+    Water = { "Neptune's Staff", "Water Staff" },
+    Earth = { "Terra's Staff", "Earth Staff" },
+    Light = { "Apollo's Staff", "Light Staff" },
+    Dark = { "Pluto's Staff", "Dark Staff" },
+};
+
+---@type table<LAC.Element, string[]>
+local OBIS = T {
+    Fire = { "Karin Obi" },
+    Earth = { "Dorin Obi" },
+    Water = { "Suirin Obi" },
+    Wind = { "Furin Obi" },
+    Ice = { "Hyorin Obi" },
+    Thunder = { "Rairin Obi" },
+    Light = { "Korin Obi" },
+    Dark = { "Anrin Obi" },
+};
+
+---@type table<LAC.Element, string[]>
+local TORQUES = T {
+    Fire = { "Flame Gorget" },
+    Earth = { "Soil Gorget" },
+    Water = { "Aqua Gorget" },
+    Wind = { "Breeze Gorget" },
+    Ice = { "Snow Gorget" },
+    Thunder = { "Thunder Gorget" },
+    Light = { "Light Gorget" },
+    Dark = { "Shadow Gorget" },
+};
+
+-- Map each item's id to its element. Include the position of the item
+-- in the above priority maps in the event we find more than one.
+---@type table<integer, {element: LAC.Element, index: integer, name: string, type: any}>
+local ITEMS_TO_ELEMENTS = T {};
+do
+    local resources = AshitaCore:GetResourceManager();
+    for _, typ in ipairs({ STAFFS, OBIS, TORQUES }) do
+        for elem, gearList in pairs(typ) do
+            for priority, itemName in ipairs(gearList) do
+                local item = resources:GetItemByName(itemName, XI.LanguageId.English);
+                assert(item ~= nil, string.format("Programming error: No item named {}", itemName));
+                ITEMS_TO_ELEMENTS[item.Id] = T {
+                    element = elem,
+                    index = priority,
+                    name = itemName,
+                    type = typ,
+                };
+            end
+        end
+    end
+end
+
+-- Map of element -> surrogate key -> item name
+-- where surrogate key is a type of item (staff, obi, etc).
+-- nil means the cache needs to be rebuilt because the inventory
+-- changed.
+---@type table<LAC.Element, table<any, string>>?
+local EQUIP_CACHE = nil;
+
+---Get (and possibly rebuild) the equipment cache
+---@return table<LAC.Element, table<any, string>>
+local function getEquipmentCache()
+    if EQUIP_CACHE == nil then
+        -- Reset the cache
+        EQUIP_CACHE = T {};
+        for elem in pairs(STAFFS) do
+            EQUIP_CACHE[elem] = T {};
+        end
+
+        -- Rebuild the cache
+        for _, result in XI.listEquippableInventory() do
+            local candidate = result.item;
+            local elementalItem = ITEMS_TO_ELEMENTS[candidate.Id];
+            if elementalItem ~= nil then
+                local existing = EQUIP_CACHE[elementalItem.element];
+                if existing ~= nil then
+                    existing = T {};
+                    EQUIP_CACHE[elementalItem.element] = existing;
+                end
+                existing[elementalItem.type] = elementalItem.name;
+            end
+        end
+    end
+
+    return EQUIP_CACHE;
+end
+
+
+---Return the appropriate staff for the passed element or currently casting spell
+---@param element LAC.Element?
+---@return string?
+function Export.getElementalStaff(element)
+    if element == nil then
+        local action = gData.GetAction();
+        if action == nil then
+            return nil;
+        end
+        element = action.Element;
+    end
+    return getEquipmentCache()[element][STAFFS];
+end
+
+---Return the appropriate staff for the passed element or currently casting spell
+---@param element LAC.Element?
+---@return string?
+function Export.getElementalObi(element)
+    if element == nil then
+        local action = gData.GetAction();
+        if action == nil then
+            return nil;
+        end
+        element = action.Element;
+    end
+    ---@cast element -?
+
+    -- We only want an obi if the current day and weather
+    -- amplifies the spell we're casting.
+    if getElementEnvBonus(element) <= 0 then
+        return nil;
+    end
+    return getEquipmentCache()[element][OBIS];
+end
+
+---Return the appropriate torque for the current weaponskill.
+---Does no divining of the correct torque, instead the user must
+---provide all applicable elements for the weaponskill and we will
+---return the first one we find.
+---@param ... LAC.Element[]
+---@return string?
+function Export.getElementalTorque(...)
+    local eq = getEquipmentCache();
+    for _, element in ipairs({ ... }) do
+        local torque = eq[element][TORQUES];
+        if torque ~= nil then
+            return torque;
+        end
+    end
+end
+
+return Export;

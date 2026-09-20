@@ -126,13 +126,14 @@ end
 profile.HandleDefault = function()
     local layers = T {};
     local player = gData.GetPlayer();
+    layers:append(Shared.autoRegen:getSet());
+    layers:append(Shared.autoRegain:getSet());
+
     if player.Status == "Engaged" then
         layers:append(sets.TP);
         -- layers:append(sets.Evasion);
     end
 
-    layers:append(Shared.autoRegen:getSet());
-    layers:append(Shared.autoRegain:getSet());
     layers:append(getZoneSet());
     local final = Utils.compress_tables(table.unpack(layers));
     gFunc.EquipSet(Xi.excludeUsableEquippedItems(final));

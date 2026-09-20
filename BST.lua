@@ -75,6 +75,7 @@ end
 
 profile.HandleDefault = function()
     local layers = T {};
+    layers:append(Shared.autoRegen:getSet())
 
     local player = gData.GetPlayer();
     if player.Status == "Engaged" then
@@ -84,7 +85,6 @@ profile.HandleDefault = function()
     end
 
     -- layers:append(state.idleRegen:getSet());
-    layers:append(Shared.autoRegen:getSet())
     layers:append(getZoneSet());
     layers:append(HELM.getSet());
     -- print(string.format("Heads: %s -> %s", layers:map(function(t) return t.Head; end):join(','), Utils.compress_tables(layers:unpack()).Head));

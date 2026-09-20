@@ -88,6 +88,38 @@ profile.HandleDefault = function()
     local layers = T {};
     layers:append(sets.Idle);
 
+    -- Pet state changes the desired gear set significantly.
+    -- A general rule of thumb is that no gear augments pets
+    -- in any permanent way such that you can equip the gear
+    -- before summoning the pet and then unequip it after
+    -- and have the effects persist.
+    --
+    -- The typical flow:
+    -- Gear swap to +spell haste
+    -- master begins casting summon
+    -- gear swap to +summoning magic
+    -- finish summon
+    -- gear swap to -perpetuation cost
+    -- master orders pet to attack, pet engages enemy
+    -- gear swap to +pet auto effectiveness
+    -- time passes
+    -- gear swap to -bp recast
+    -- Master performs BP action (HandleAbility)
+    -- gear swap to +bp effectiveness
+    -- pet readies and uses bp
+    -- gear swap to -perpetuation cost and or +pet auto effectiveness
+    -- master dismisses pet
+    -- gear swap to idle
+    --
+    -- Notable points of the above:
+    -- Bp recast is calculated upon the master using the ability, not the pet.
+    -- BP gains accuracy and power with +summoning magic
+    -- Pet state needs to be managed in HandleDefault, as the master is
+    -- -- not doing anything when the pet is readying or using an ability.
+
+    local pet = gData.GetPet()
+    local petAction = gData.GetPetAction();
+
     local player = gData.GetPlayer();
     if (player.Status == "Resting") then
         layers:append(sets.Resting);

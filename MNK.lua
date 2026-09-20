@@ -191,11 +191,11 @@ profile.HandleDefault = function()
         end
     else
         layers:add(sets.Idle);
+        layers:add(Shared.autoRegen:getSet(sets.AutoRegen));
     end
+    layers:add(Shared.autoRegain:getSet());
 
     layers:add(state.combatSelector:getSet())
-    layers:add(Shared.autoRegen:getSet(sets.AutoRegen));
-    layers:add(Shared.autoRegain:getSet());
     layers:add(getZoneSet());
     layers:add(HELM.getSet());
     layers:add(equipFenrirEar(layers:getSet()));

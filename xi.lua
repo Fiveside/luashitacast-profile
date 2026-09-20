@@ -380,7 +380,7 @@ end
 ---@return ContainerDefinition[] invariant
 ---@return {id: integer, name: string} starting index
 function Export.listEquippableInventory()
-    local containers = CONTAINER_LIST:filter(function(c) return c.equippable; end);
+    local containers = CONTAINER_LIST:filteri(function(c) return c.equippable; end);
     return inventoryIterator, containers, { container = 1, index = 1 }
 end
 

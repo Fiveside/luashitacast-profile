@@ -157,7 +157,7 @@ local CONDITIONAL_GEAR = T {
 
         -- The mp threshold calculation conditions are actually somewhat intricate, but
         -- a straight 50% check covers 99.9% of cases.  Good enough.
-        return me.MPP < 50 and action.Skill == "ElementalMagic";
+        return me.MPP < 50 and action.Skill == "Elemental Magic";
     end,
 
     [T { Main = "Diabolos's Pole" }] = function()

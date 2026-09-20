@@ -56,6 +56,15 @@ local AVATAR_ELEMENT = {
     Titan = "Earth",
     Fenrir = "Dark",
     Diabolos = "Dark",
+
+    ["Light Spirit"] = "Light",
+    ["Thunder Spirit"] = "Thunder",
+    ["Ice Spirit"] = "Ice",
+    ["Fire Spirit"] = "Fire",
+    ["Wind Spirit"] = "Wind",
+    ["Water Spirit"] = "Water",
+    ["Earth Spirit"] = "Earth",
+    ["Dark Spirit"] = "Dark",
 };
 
 profile.OnLoad = function()

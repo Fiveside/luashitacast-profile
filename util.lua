@@ -179,32 +179,36 @@ function Export.UTF8_To_ShiftJIS(input)
     return ffi.string(buffer);
 end
 
----@class SetBuilder
-local SetBuilder = T {};
-Export.SetBuilder = SetBuilder;
-
-function SetBuilder.new()
-    local this = {
-        layers = T {},
-    };
-    return setmetatable(this, { __index = SetBuilder });
-end
-
-function SetBuilder:add(...)
-    for _, set in ipairs({ ... }) do
-        self.layers:append(set);
-    end
-end
-
-function SetBuilder:getSet()
-    local compressed = T {};
-    for _, layer in ipairs(self.layers) do
-        for k, v in pairs(layer) do
-            compressed[k] = v;
+---Returns a function that, when called, returns the conditional item if condition() is true, and the default item otherwise.
+---@param conditionalItem string
+---@param defaultItem string
+---@param condition fun(): boolean
+function Export.prioirtyCondition(conditionalItem, defaultItem, condition)
+    return function()
+        if condition() then
+            return conditionalItem;
         end
+        return defaultItem;
     end
-    self.layers = T { compressed };
-    return compressed;
+end
+
+---Returns a debounced version of the passed function.
+---@generic T
+---@param time number Seconds to wait before executing the debounced fn
+---@param fn fun(T...) The function being debounced
+---@return fun(T...)
+function Export.debounce(time, fn)
+    local coro = nil;
+    return function(...)
+        local args = { ... };
+        if coro ~= nil then
+            coroutine.kill(coro);
+        end
+        ashita.tasks.once(time, function()
+            coro = nil;
+            fn(table.unpack(args));
+        end);
+    end
 end
 
 return Export;

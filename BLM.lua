@@ -7,6 +7,7 @@ local CommonSets = require("common_sets");
 local Bursts = require("bursts");
 local events = require("events");
 local ui = require("ui");
+local SetBuilder = require('setbuilder')
 local JSE = CommonSets.JSE;
 
 ---@type LAC.Profile
@@ -21,7 +22,7 @@ sets.AutoRefresh = T {
 };
 
 sets.Resting_Priority = T {
-    Main = { Shared.getElementalStaff("Dark"), "Pilgrim's Wand" },
+    Main = { Shared.getElementalStaff:bind1("Dark"), "Pilgrim's Wand" },
     Body = { "Errant Hpl.", "Seer's Tunic" },
     Waist = { "Qiqirn Sash +1" },
     Legs = { "Baron's slops" },
@@ -82,7 +83,7 @@ sets.EnfeeblingMagic = Utils.compress_tables(sets.MagicAttack, T {
 });
 
 sets.DarkMagic = Utils.compress_tables(sets.MagicAttack, T {
-    Main = Shared.getElementalStaff("Dark"),
+    Main = Shared.getElementalStaff:bind1("Dark"),
     Hands = JSE.BLM.RelicPlus1.Hands,
     Legs = "Wizard's Tonban",
     Back = "Merciful Cape",
@@ -104,6 +105,9 @@ sets.MagicBurst = T {
 
 -- Maximizes MND.
 sets.MA_Stoneskin = T {
+    --TODO: find room for kirin's pole in wardrobes
+    Main = Shared.getElementalStaff:bind1("Water"),
+    Sub = "Bugard Strap +1",
     Body = "Kirin's Osode",
     Neck = "Faith Torque",
     Hands = "Savage Gauntlets",
@@ -164,7 +168,6 @@ local state = {
     -- Used to handle magic burst switching
     currentSpell = nil,
     currentTargetId = nil,
-
 };
 
 local function onSkillchain(targetId, chainInfo)
@@ -209,17 +212,17 @@ profile.HandleCommand = function(args)
 end
 
 profile.HandleDefault = function()
-    local layers = T {};
-    layers:append(Shared.autoRegen:getSet());
-    layers:append(Shared.autoRefresh:getSet(sets.AutoRefresh));
-    layers:append(getZoneSet());
+    local layers = SetBuilder:new();
+    layers:add(Shared.autoRegen:getSet());
+    layers:add(Shared.autoRefresh:getSet(sets.AutoRefresh));
+    layers:add(getZoneSet());
 
     local player = gData.GetPlayer();
     if (player.Status == "Resting") then
-        layers:append(sets.Resting);
+        layers:add(sets.Resting);
     end
 
-    gFunc.EquipSet(Utils.compress_tables(layers:unpack()));
+    gFunc.EquipSet(layers:finalize());
 end
 
 profile.HandleAbility = function()
@@ -229,11 +232,11 @@ profile.HandleItem = function()
 end
 
 profile.HandlePrecast = function()
-    gFunc.EquipSet(sets.Precast);
+    gFunc.EquipSet(SetBuilder.resolveLazy(sets.Precast));
 end
 
 profile.HandleMidcast = function()
-    local layers = T {};
+    local layers = SetBuilder:new();
     local action = gData.GetAction();
     local target = gData.GetActionTarget();
     local me = gData.GetPlayer();
@@ -241,24 +244,24 @@ profile.HandleMidcast = function()
     ---@cast target -?
     ---@cast action -?
 
-    layers:append(sets.Midcast);
+    layers:add(sets.Midcast);
 
     -- Apply different specialty sets if we're casting on something other than ourself.
     -- This
     if target.Name ~= me.Name and target.Type ~= "PC" then
         if FORCED_ELEMENTAL_SPELLS:contains(action.Name) then
-            layers:append(sets.ElementalMagic);
+            layers:add(sets.ElementalMagic);
         elseif action.Skill == "Dark Magic" then
-            layers:append(sets.DarkMagic)
+            layers:add(sets.DarkMagic)
         elseif action.Skill == "Elemental Magic" then
-            layers:append(sets.MagicAttack)
+            layers:add(sets.MagicAttack)
         elseif action.Skill == "Enfeebling Magic" then
-            layers:append(sets.EnfeeblingMagic)
+            layers:add(sets.EnfeeblingMagic)
         end
     end
 
     -- Staff and Obi set.
-    layers:append(T {
+    layers:add(T {
         Main = Shared.getElementalStaff(),
         Sub = "Bugard Strap +1",
         Waist = Shared.getElementalObi(),
@@ -267,23 +270,23 @@ profile.HandleMidcast = function()
     -- Sets with complex activation conditions.
     for conditionalSet, condition in pairs(CONDITIONAL_GEAR) do
         if condition() then
-            layers:append(conditionalSet)
+            layers:add(conditionalSet)
         end
     end
 
     -- Sets that only apply to one spell.
     local spellSpecificSet = sets["MA_" .. action.Name];
     if spellSpecificSet ~= nil then
-        layers:append(spellSpecificSet);
+        layers:add(spellSpecificSet);
     end
 
     -- If a burst window is open, equip that set too.
     local chain = Bursts.getSkillchain(gData.GetActionTarget().Id);
     if chain ~= nil and chain.Elements:contains(action.Element) then
-        layers:append(sets.MagicBurst);
+        layers:add(sets.MagicBurst);
     end
 
-    gFunc.EquipSet(Utils.compress_tables(layers:unpack()));
+    gFunc.EquipSet(layers:finalize());
 end
 
 profile.HandlePreshot = function()

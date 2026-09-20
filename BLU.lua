@@ -5,6 +5,7 @@ local Xi = require("xi");
 local Magic = require("magic");
 local Common = require("common_sets");
 local Shared = require("shared");
+local SetBuilder = require('setbuilder');
 
 local JSE = Common.JSE;
 
@@ -134,7 +135,7 @@ end
 ---@type BlueMagicType[]
 local physicalSpellTypes = T { "Slashing", "Piercing", "Blunt", "Hand-to-Hand" }
 profile.HandleMidcast = function()
-    local layers = Utils.SetBuilder.new();
+    local layers = SetBuilder.new();
     local action = gData.GetAction();
     ---@cast action -?
 
@@ -155,7 +156,7 @@ profile.HandleMidcast = function()
         layers:add(sets[setName]);
     end
 
-    gFunc.EquipSet(layers:getSet());
+    gFunc.EquipSet(layers:finalize());
 end
 
 profile.HandlePreshot = function()

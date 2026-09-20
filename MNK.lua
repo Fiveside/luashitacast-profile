@@ -5,17 +5,20 @@ local Xi = require("xi");
 local Ui = require("ui");
 local Utils = require("util");
 local Events = require("events");
-local SetBuilder = Utils.SetBuilder;
+local SetBuilder = require('setbuilder');
 
-local profile = {};
+---@type LAC.Profile
+local profile = {
+    Sets = T {},
+    Packer = T{},
+};
+
 local state = {
-    currentLevel = 0,
-
     ---@type SetSelector
     combatSelector = nil,
-}
+};
 
-local sets = T {};
+local sets = profile.Sets;
 
 sets.Idle = T {};
 
@@ -26,7 +29,7 @@ sets.TP = T {
     -- Head = "Melee Crown",
     Neck = "Faith Torque",
     Ear1 = "Brutal Earring",
-    Ear2 = "Ethereal Earring",
+    Ear2 = Utils.prioirtyCondition("Ethereal Earring", "Fenrir's Earring", Xi.isDaytime),
     Body = "Shura Togi",
     Hands = "Mel. Gloves +1",
     Ring1 = "Rajas Ring",
@@ -126,23 +129,18 @@ sets.AutoRegen = T {
     Body = "Melee Cyclas",
 };
 
-profile.Sets = sets;
-
-profile.Packer = {
-};
-
-local function equipFenrirEar(set)
-    -- Fenrir's earring can replace a +atk earring during the day.
-    if Xi.isDaytime() then
-        local item = "Fenrir's Earring"
-        local replaces = T { "Ethereal Earring" }
-        if replaces:contains(set.Ear1) then
-            return { Ear1 = item };
-        elseif replaces:contains(set.Ear2) then
-            return { Ear2 = item };
-        end
-    end
-end
+-- local function equipFenrirEar(set)
+--     -- Fenrir's earring can replace a +atk earring during the day.
+--     if Xi.isDaytime() then
+--         local item = "Fenrir's Earring"
+--         local replaces = T { "Ethereal Earring" }
+--         if replaces:contains(set.Ear1) then
+--             return { Ear1 = item };
+--         elseif replaces:contains(set.Ear2) then
+--             return { Ear2 = item };
+--         end
+--     end
+-- end
 
 profile.OnLoad = function()
     gSettings.AllowAddSet = false;
@@ -182,34 +180,32 @@ profile.HandleDefault = function()
     local layers = SetBuilder.new();
 
     local player = gData.GetPlayer();
+
+    layers:add(sets.Idle);
+    layers:add(Shared.autoRegen:getSet(sets.AutoRegen));
+    layers:add(Shared.autoRegain:getSet());
+    layers:add(getZoneSet());
+    layers:add(HELM.getSet());
+
     if player.Status == "Engaged" then
-        -- layers:append(sets.TP);
-        -- layers:append(sets.Tanking);
+        layers:add(state.combatSelector:getSet())
 
         if gData.GetBuffCount("Hundred Fists") > 0 then
             layers:append(sets.HundredFists);
         end
-    else
-        layers:add(sets.Idle);
-        layers:add(Shared.autoRegen:getSet(sets.AutoRegen));
+
+        -- TODO: if incapacitated then equip auto-regain set
     end
-    layers:add(Shared.autoRegain:getSet());
 
-    layers:add(state.combatSelector:getSet())
-    layers:add(getZoneSet());
-    layers:add(HELM.getSet());
-    layers:add(equipFenrirEar(layers:getSet()));
-
-    return gFunc.EquipSet(Xi.excludeUsableEquippedItems(layers:getSet()));
+    local gs = Xi.excludeUsableEquippedItems(layers:finalize())
+    return gFunc.EquipSet(gs);
 end
 
 profile.HandleAbility = function()
     local layers = SetBuilder.new();
     local action = gData.GetAction();
-    local set = sets["JA_" .. action.Name];
-    if set ~= nil then
-        gFunc.EquipSet(set);
-    end
+    layers:add(sets["JA_" .. action.Name])
+    gFunc.EquipSet(layers:finalize());
 end
 
 profile.HandleItem = function()
@@ -228,14 +224,10 @@ profile.HandleMidshot = function()
 end
 
 profile.HandleWeaponskill = function()
-    local action = gData.GetAction();
-    local setname = "WS_" .. action.Name
     local layers = SetBuilder.new();
-    if sets[setname] ~= nil then
-        layers:add(sets[setname])
-    end
-    layers:add(equipFenrirEar(layers:getSet()));
-    gFunc.EquipSet(layers:getSet());
+    local action = gData.GetAction();
+    layers:add(sets["WS_" .. action.Name]);
+    gFunc.EquipSet(layers:finalize());
 end
 
 return profile;

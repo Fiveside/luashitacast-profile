@@ -342,10 +342,13 @@ end
 
 -- Map of element -> surrogate key -> item name
 -- where surrogate key is a type of item (staff, obi, etc).
--- nil means the cache needs to be rebuilt because the inventory
--- changed.
+-- nil means the cache needs to be rebuilt.
 ---@type table<LAC.Element, table<any, string>>?
 local EQUIP_CACHE = nil;
+
+Events.inventoryUpdate:on(function()
+    EQUIP_CACHE = nil;
+end);
 
 ---Get (and possibly rebuild) the equipment cache
 ---@return table<LAC.Element, table<any, string>>

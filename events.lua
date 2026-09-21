@@ -205,6 +205,29 @@ packetIn:on(function(pkt)
 end);
 
 
+---------------------
+-- Inventory Updates
+---------------------
+
+local inventoryUpdate = EventEmitter.new();
+
+-- we get loads of packets indicating the inventory has been updated.
+inventoryUpdate.trigger = utils.debounce(1, inventoryUpdate.trigger);
+
+packetIn:on(function(pkt)
+    -- Packet governs when the loading indicators at the top of the screen
+    -- should appear.  They only appear when streaming inventory updates from the server.
+    -- Most commonly seen after zoning.
+    if pkt.id == 0x1D then
+        local state = ashita.bits.unpack_be(pkt.data_raw, pktHeaderSize, 8);
+        -- local flags = ashita.bits.unpack_be(pkt.data_raw, pktHeaderSize + 8 + (5 * 8), 32);
+        if state == 1 then
+            inventoryUpdate:trigger();
+        end
+    end
+end);
+
+
 -- FIXME: We export all of these event emitters as singletons.  The expectation is that
 -- require('events') will execute this file once and cache the return value as a module.
 -- Then, subsequent require() calls just return the cached module.  However, LuAshitaCast
@@ -241,6 +264,7 @@ local Export = {
     skillchain = skillchain,
     -- timer = timer,
     render = render,
+    inventoryUpdate = inventoryUpdate,
 };
 
 function Export.onProfileLoad()

@@ -21,17 +21,17 @@ sets.AutoRefresh = T {
     Body = JSE.BLM.Relic.Body,
 };
 
-sets.Resting_Priority = T {
-    Main = { Shared.getElementalStaff:bind1("Dark"), "Pilgrim's Wand" },
-    Body = { "Errant Hpl.", "Seer's Tunic" },
-    Waist = { "Qiqirn Sash +1" },
-    Legs = { "Baron's slops" },
-    Ear1 = { "Relaxing Earring" },
+sets.Resting = T {
+    Main = Shared.getElementalStaff:bind1("Dark"),
+    Body = "Errant Hpl.",
+    Waist = "Qiqirn Sash +1",
+    Legs = "Baron's slops",
+    Ear1 = "Relaxing Earring",
 };
 
-sets.Precast_Priority = T {
-    Ear1 = { "Loquac. Earring" },
-    Feet = { "Rostrum Pumps" },
+sets.Precast = T {
+    Ear1 = "Loquac. Earring",
+    Feet = "Rostrum Pumps",
 };
 
 -- This set is the base set overridden by other more specialized sets

@@ -360,17 +360,31 @@ local function getEquipmentCache()
             EQUIP_CACHE[elem] = T {};
         end
 
+        ---@type table<string, integer>
+        local priorityCache = {};
+
         -- Rebuild the cache
         for _, result in XI.listEquippableInventory() do
             local candidate = result.item;
             local elementalItem = ITEMS_TO_ELEMENTS[candidate.Id];
             if elementalItem ~= nil then
+                priorityCache[elementalItem.name] = elementalItem.index;
                 local existing = EQUIP_CACHE[elementalItem.element];
+
                 if existing ~= nil then
                     existing = T {};
                     EQUIP_CACHE[elementalItem.element] = existing;
                 end
-                existing[elementalItem.type] = elementalItem.name;
+
+                -- check priority cache to see if this one is more important
+                local isHigherPriority = false;
+                if priorityCache[existing[elementalItem.name]] ~= nil then
+                    isHigherPriority = priorityCache[existing[elementalItem.name]] < elementalItem.index;
+                end
+
+                if existing[elementalItem.type] == nil or isHigherPriority then
+                    existing[elementalItem.type] = elementalItem.name;
+                end
             end
         end
     end

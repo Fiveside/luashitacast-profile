@@ -7,7 +7,7 @@ local CommonSets = require("common_sets");
 local Bursts = require("bursts");
 local events = require("events");
 local ui = require("ui");
-local SetBuilder = require('setbuilder')
+local SetBuilder = require("setbuilder")
 local JSE = CommonSets.JSE;
 
 ---@type LAC.Profile
@@ -76,6 +76,11 @@ sets.MinusEnmity = T {
     Waist = "Penitent's Rope",
     Legs = JSE.BLM.Relic.Legs,
     Feet = JSE.BLM.Artifact.Feet,
+};
+
+-- Equipped when we find and equip an elemental staff.
+sets.StaffStrap = T {
+    Sub = "Bugard Strap +1",
 };
 
 -- Maximizes +Elemental Magic Skill
@@ -161,7 +166,7 @@ local CONDITIONAL_GEAR = T {
         return me.MPP < 50 and action.Skill == "Elemental Magic";
     end,
 
-    [T { Main = "Diabolos's Pole" }] = function()
+    [T { Main = "Diabolos's Pole", Sub = "Bugard Strap +1" }] = function()
         local actionName = gData.GetAction().Name;
         if actionName ~= "Drain" and actionName ~= "Aspir" then
             return false;
@@ -273,9 +278,12 @@ profile.HandleMidcast = function()
     end
 
     -- Staff and Obi set.
+    local staff = Shared.getElementalStaff();
+    if staff ~= nil then
+        layers:add(sets.StaffStrap);
+    end
     layers:add(T {
-        Main = Shared.getElementalStaff(),
-        Sub = "Bugard Strap +1",
+        Main = staff,
         Waist = Shared.getElementalObi(),
     });
 

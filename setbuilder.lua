@@ -1,14 +1,28 @@
+local XI = require("xi");
+
+---@class SetBuilderOptions
+---@field replaceUsable boolean Allow the gearset to replace usable equipment we already have equipped. (default true)
+local defaultSetbuilderOptions = {
+    replaceUsable = true,
+}
 
 ---Manages the construction of a gearset via layering.  Includes support for lazy
 ---entry resolution by using a callable instead of a string or table for a gear piece.
 ---@class SetBuilder
+---@field private options SetBuilderOptions
+---@field private layers LAC.GearSet[]
 local SetBuilder = T {};
 
 ---Create a new setbuilder
+---@param options SetBuilderOptions?
 ---@return SetBuilder
-function SetBuilder.new()
+function SetBuilder.new(options)
+    options = options or T {};
+    options = T({}):merge(options):merge(defaultSetbuilderOptions)
+
     local this = {
         layers = T {},
+        options = options,
     };
     return setmetatable(this, { __index = SetBuilder });
 end
@@ -32,6 +46,11 @@ function SetBuilder:getCurrentSet()
             compressed[k] = v;
         end
     end
+
+    if not self.options.replaceUsable then
+        compressed = XI.removeUsableEquipment(compressed);
+    end
+
     self.layers = T { compressed };
     return compressed;
 end

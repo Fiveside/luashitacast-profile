@@ -3,6 +3,7 @@ local HELM = require("helm");
 local Utils = require("util");
 local Shared = require("shared");
 local events = require("events");
+local SetBuilder = require('setbuilder');
 
 ---@type LAC.Profile
 local profile = {
@@ -74,28 +75,28 @@ profile.HandleCommand = function(args)
 end
 
 profile.HandleDefault = function()
-    local layers = T {};
-    layers:append(Shared.autoRegen:getSet())
+    local layers = SetBuilder.new();
+    layers:add(Shared.autoRegen:getSet())
 
     local player = gData.GetPlayer();
     if player.Status == "Engaged" then
-        layers:append(sets.TP);
+        layers:add(sets.TP);
     else
-        layers:append(sets.Idle);
+        layers:add(sets.Idle);
     end
 
-    -- layers:append(state.idleRegen:getSet());
-    layers:append(getZoneSet());
-    layers:append(HELM.getSet());
+    -- layers:add(state.idleRegen:getSet());
+    layers:add(getZoneSet());
+    layers:add(HELM.getSet());
     -- print(string.format("Heads: %s -> %s", layers:map(function(t) return t.Head; end):join(','), Utils.compress_tables(layers:unpack()).Head));
-    gFunc.EquipSet(Utils.compress_tables(layers:unpack()));
+    gFunc.EquipSet(layers:finalize());
 end
 
 profile.HandleAbility = function()
     local action = gData.GetAction();
     local set = JA_sets[action.Name];
     if set ~= nil then
-        gFunc.EquipSet(set);
+        gFunc.EquipSet(SetBuilder.resolveLazy(set));
     end
 end
 
@@ -118,7 +119,7 @@ profile.HandleWeaponskill = function()
     local action = gData.GetAction();
     local name = action.Name;
     if WS_MULTIHIT:contains(name) then
-        gFunc.EquipSet(sets.WS_Multihit);
+        gFunc.EquipSet(SetBuilder.resolveLazy(sets.WS_Multihit));
     end
 end
 

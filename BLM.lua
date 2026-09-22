@@ -35,8 +35,8 @@ sets.Precast = T {
 };
 
 -- This set is the base set overridden by other more specialized sets
--- This should mainly include haste gear to reduce cooldown timers.
--- Really this only applys to spells targeting the player.
+-- This should mainly include haste gear to reduce cooldown timers,
+-- and Conserve MP gear.
 sets.Midcast = T {
     Hands = "Nashira Gages",
     Waist = "Swift Belt",
@@ -68,30 +68,44 @@ sets.MagicAttack = T {
     -- Feet = "Wizard's Sabots",
 };
 
-sets.ElementalMagic = Utils.compress_tables(sets.MagicAttack, T {
+-- Maximizes -Enmity
+sets.MinusEnmity = T {
+    Head = JSE.BLM.Artifact.Head,
+    Body = "Hydra Doublet",
+    Hands = JSE.BLM.RelicPlus1.Hands,
+    Waist = "Penitent's Rope",
+    Legs = JSE.BLM.Relic.Legs,
+    Feet = JSE.BLM.Artifact.Feet,
+};
+
+-- Maximizes +Elemental Magic Skill
+sets.ElementalMagic = T {
     Head = JSE.BLM.RelicPlus1.Head,
     Body = JSE.BLM.Relic.Body,
     Hands = JSE.BLM.Artifact.Hands,
     Back = "Merciful Cape",
-});
+};
 
-sets.EnfeeblingMagic = Utils.compress_tables(sets.MagicAttack, T {
+-- Maximizes +Enfeebling Magic Skill
+sets.EnfeeblingMagic = T {
     Head = JSE.BLM.RelicPlus1.Head,
     Body = JSE.BLM.Artifact.Body,
     Back = "Altruistic Cape",
     Legs = "Nashira Seraweels",
-});
+};
 
-sets.DarkMagic = Utils.compress_tables(sets.MagicAttack, T {
+-- Maximizes +Dark Magic Skill
+sets.DarkMagic = T {
     Main = Shared.getElementalStaff:bind1("Dark"),
     Hands = JSE.BLM.RelicPlus1.Hands,
     Legs = "Wizard's Tonban",
     Back = "Merciful Cape",
-});
+};
 
-sets.EnhancingMagic = Utils.compress_tables(sets.MagicAttack, T {
+-- Maximizes +Enhancing Magic Skill
+sets.EnhancingMagic = T {
     Back = "Merciful Cape",
-});
+};
 
 -- A list of gear that only gets equipped while the magic burst window is open on the target
 sets.MagicBurst = T {
@@ -246,9 +260,7 @@ profile.HandleMidcast = function()
 
     layers:add(sets.Midcast);
 
-    -- Apply different specialty sets if we're casting on something other than ourself.
-    -- This
-    if target.Name ~= me.Name and target.Type ~= "PC" then
+    if target.Type ~= "PC" then
         if FORCED_ELEMENTAL_SPELLS:contains(action.Name) then
             layers:add(sets.ElementalMagic);
         elseif action.Skill == "Dark Magic" then

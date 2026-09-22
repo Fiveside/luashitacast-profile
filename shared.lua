@@ -420,6 +420,10 @@ function Export.getElementalObi(element)
     end
     ---@cast element -?
 
+    -- IMPORTANT: According to a post by the developers, the current
+    -- day imparts a magic accuracy bonus to matching spells. However,
+    -- I'm not sure LSB implements this magic accuracy adjustment.
+    --
     -- We only want an obi if the current day and weather
     -- amplifies the spell we're casting.
     if getElementEnvBonus(element) <= 0 then

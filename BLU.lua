@@ -100,10 +100,10 @@ profile.HandleCommand = function(args)
 end
 
 profile.HandleDefault = function()
-    local layers = T {};
-    layers:append(Shared.autoRegen:getSet())
-    layers:append(Shared.autoRefresh:getSet());
-    layers:append(Shared.autoRegain:getSet());
+    local layers = SetBuilder.new();
+    layers:add(Shared.autoRegen:getSet())
+    layers:add(Shared.autoRefresh:getSet());
+    layers:add(Shared.autoRegain:getSet());
 
     local target = gData.GetTarget()
     if target ~= nil and target.Id % 2 > 0 then
@@ -113,14 +113,12 @@ profile.HandleDefault = function()
     end
     local player = gData.GetPlayer();
     if player.Status == "Resting" then
-        layers:append(sets.Resting);
+        layers:add(sets.Resting);
     elseif player.Status == "Engaged" then
-        layers:append(sets.TP);
+        layers:add(sets.TP);
     end
 
-
-    local finalSet = Utils.compress_tables(layers:unpack());
-    gFunc.EquipSet(Xi.excludeUsableEquippedItems(finalSet));
+    gFunc.EquipSet(Xi.excludeUsableEquippedItems(layers:finalize()));
 end
 
 profile.HandleAbility = function()

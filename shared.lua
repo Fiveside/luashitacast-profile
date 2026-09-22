@@ -353,38 +353,41 @@ end);
 ---Get (and possibly rebuild) the equipment cache
 ---@return table<LAC.Element, table<any, string>>
 local function getEquipmentCache()
-    if EQUIP_CACHE == nil then
-        -- Reset the cache
-        EQUIP_CACHE = T {};
-        for elem in pairs(STAFFS) do
-            EQUIP_CACHE[elem] = T {};
-        end
+    if EQUIP_CACHE ~= nil then
+        return EQUIP_CACHE;
+    end
 
-        ---@type table<string, integer>
-        local priorityCache = {};
+    -- Reset the cache
+    EQUIP_CACHE = T {};
+    for elem in pairs(STAFFS) do
+        EQUIP_CACHE[elem] = T {};
+    end
 
-        -- Rebuild the cache
-        for _, result in XI.listEquippableInventory() do
-            local candidate = result.item;
-            local elementalItem = ITEMS_TO_ELEMENTS[candidate.Id];
-            if elementalItem ~= nil then
-                priorityCache[elementalItem.name] = elementalItem.index;
-                local existing = EQUIP_CACHE[elementalItem.element];
+    ---@type table<string, integer>
+    local priorityCache = {};
 
-                if existing ~= nil then
-                    existing = T {};
-                    EQUIP_CACHE[elementalItem.element] = existing;
-                end
+    -- Rebuild the cache
+    for _, result in XI.listEquippableInventory() do
+        local candidate = result.item;
+        local elementalItem = ITEMS_TO_ELEMENTS[candidate.Id];
+        if elementalItem ~= nil then
+            priorityCache[elementalItem.name] = elementalItem.index;
+            local existing = EQUIP_CACHE[elementalItem.element];
 
-                -- check priority cache to see if this one is more important
-                local isHigherPriority = false;
-                if priorityCache[existing[elementalItem.name]] ~= nil then
-                    isHigherPriority = priorityCache[existing[elementalItem.name]] < elementalItem.index;
-                end
+            if existing ~= nil then
+                existing = T {};
+                EQUIP_CACHE[elementalItem.element] = existing;
+            end
+            ---@cast existing -?
 
-                if existing[elementalItem.type] == nil or isHigherPriority then
-                    existing[elementalItem.type] = elementalItem.name;
-                end
+            -- check priority cache to see if this one is more important
+            local isHigherPriority = false;
+            if priorityCache[existing[elementalItem.name]] ~= nil then
+                isHigherPriority = priorityCache[existing[elementalItem.name]] < elementalItem.index;
+            end
+
+            if existing[elementalItem.type] == nil or isHigherPriority then
+                existing[elementalItem.type] = elementalItem.name;
             end
         end
     end

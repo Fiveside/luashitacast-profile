@@ -5,12 +5,12 @@ local Xi = require("xi");
 local Ui = require("ui");
 local Utils = require("util");
 local Events = require("events");
-local SetBuilder = require('setbuilder');
+local SetBuilder = require("setbuilder");
 
 ---@type LAC.Profile
 local profile = {
     Sets = T {},
-    Packer = T{},
+    Packer = T {},
 };
 
 local state = {
@@ -177,7 +177,7 @@ profile.HandleCommand = function(args)
 end
 
 profile.HandleDefault = function()
-    local layers = SetBuilder.new();
+    local layers = SetBuilder.new({ replaceUsable = false });
 
     local player = gData.GetPlayer();
 
@@ -197,8 +197,7 @@ profile.HandleDefault = function()
         -- TODO: if incapacitated then equip auto-regain set
     end
 
-    local gs = Xi.excludeUsableEquippedItems(layers:finalize())
-    return gFunc.EquipSet(gs);
+    return gFunc.EquipSet(layers:finalize());
 end
 
 profile.HandleAbility = function()

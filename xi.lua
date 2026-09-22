@@ -85,6 +85,8 @@ Export.JobMask = {
     -- AllJobs = 0x007FFFFE,
 }
 
+Export.JobMask = T(Export.JobMask);
+
 ---@enum EquipmentSlot
 Export.EquipmentSlot = {
     Main = 0,
@@ -106,6 +108,8 @@ Export.EquipmentSlot = {
 
     -- Max = 16,
 };
+
+Export.EquipmentSlot = T(Export.EquipmentSlot);
 
 Export.EquipmentSlotMask = {
     -- None  = 0x0000,
@@ -133,6 +137,8 @@ Export.EquipmentSlotMask = {
     -- All Slots
     -- All   = 0xFFFF,
 }
+
+Export.EquipmentSlotMask = T(Export.EquipmentSlotMask);
 
 Export.Skillchains = T {
     [1] = T { Name = "Light", Elements = T { "Light", "Thunder", "Fire", "Wind" } },
@@ -287,6 +293,55 @@ function Export.excludeUsableEquippedItems(gs)
         result[slotName] = nil;
     end
     return result;
+end
+
+---Returns items currently equipped
+---@return table<LAC.GearSlot, {resource: IItem, item: item_t, container: integer, index: integer}>
+function Export.getEquipment()
+    local inv = AshitaCore:GetMemoryManager():GetInventory();
+    local resources = AshitaCore:GetResourceManager();
+    local ret = T {};
+    for slotName, slotId in pairs(Export.EquipmentSlot) do
+        local gearPiece = inv:GetEquippedItem(slotId);
+        if gearPiece ~= nil then
+            local containerId = bit.rshift(bit.band(gearPiece.Index, 0xFF00), 8);
+            local containerIndex = bit.band(gearPiece.Index, 0xFF);
+            local item = inv:GetContainerItem(containerId, containerIndex);
+            ret[slotName] = T {
+                resource = resources:GetItemById(item.Id),
+                item = item,
+                container = containerId,
+                index = containerIndex,
+            }
+        end
+    end
+    return ret;
+end
+
+---Returns true if the item has finished cooling down and is ready, or is waiting for the "just equipped" cooldown to finish.
+---Returns false if the item is cooling down or doesn't have a timer on it.
+---@param item item_t
+---@return boolean
+function Export.isUsableEquipmentReady(item)
+    local rItem = AshitaCore:GetResourceManager():GetItemById(item.Id);
+    ---@cast rItem -?
+
+    local timeData = ItemData.parse_timer_info(item, rItem, true);
+
+    -- timeData is empty object if there isn't good timer info on the item
+    if timeData.max_charges == nil then
+        return false;
+    end
+    -- Checking if the time to use this item is within the default cooldown
+    -- that comes from freshly equipping the item.
+    -- Add the additional 3 seconds to this check because the timer data has second level precision.
+    local isFreshEquipped = rItem.CastDelay + 3 >= timeData.use_delay;
+
+    -- Checking for items that have zero charges, because they're always ready
+    -- to use
+    local hasCharges = timeData.remaining_charges > 0;
+
+    return isFreshEquipped and hasCharges;
 end
 
 ---Returns true if its currently daytime and "Daytime" conditional gear is active.

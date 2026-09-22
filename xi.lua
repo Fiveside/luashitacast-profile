@@ -344,6 +344,29 @@ function Export.isUsableEquipmentReady(item)
     return isFreshEquipped and hasCharges;
 end
 
+---Remove items from the passed gearset that would be equipped in a slot currently
+---occupied by a usable item with a ready timer.  Returns the passed argument if no removal is needed.
+---@param gs LAC.GearSet
+---@return LAC.GearSet
+function Export.removeUsableEquipment(gs)
+    local ret = T {};
+    local hasReadyItem = false;
+    local equipped = Export.getEquipment();
+    for _, slotName in ipairs(Export.EquipmentSlot:keys()) do
+        local eqItem = equipped[slotName];
+        local isReady = Export.isUsableEquipmentReady(eqItem.item);
+        if eqItem ~= nil and not isReady then
+            ret[slotName] = gs[slotName];
+        end
+        hasReadyItem = hasReadyItem or isReady;
+    end
+
+    if hasReadyItem then
+        return ret;
+    end
+    return gs;
+end
+
 ---Returns true if its currently daytime and "Daytime" conditional gear is active.
 ---False does signal that "Nighttime" conditional gear is active.
 ---@return boolean

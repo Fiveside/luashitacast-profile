@@ -37,27 +37,6 @@ function SetBuilder:add(...)
     return self;
 end
 
--- Remove items from the passed gearset that would be equipped in a slot currently
--- occupied by a usable item with a ready timer.
-local function removeUsable(gs)
-    local ret = T {};
-    local hasReadyItem = false;
-    local equipped = XI.getEquipment();
-    for _, slotName in ipairs(XI.EquipmentSlot:keys()) do
-        local eqItem = equipped[slotName];
-        local isReady = XI.isUsableEquipmentReady(eqItem.item);
-        if eqItem ~= nil and not isReady then
-            ret[slotName] = gs[slotName];
-        end
-        hasReadyItem = hasReadyItem or isReady;
-    end
-
-    if hasReadyItem then
-        return ret;
-    end
-    return gs;
-end
-
 ---Return the built set without doing any lazy resolution.
 ---@return LAC.GearSet
 function SetBuilder:getCurrentSet()
@@ -69,7 +48,7 @@ function SetBuilder:getCurrentSet()
     end
 
     if not self.options.replaceUsable then
-        compressed = removeUsable(compressed);
+        compressed = XI.removeUsableEquipment(compressed);
     end
 
     self.layers = T { compressed };

@@ -417,7 +417,7 @@ local function containerIterator(containerId, index)
     local inventory = AshitaCore:GetMemoryManager():GetInventory();
 
     for i = index, inventory:GetContainerCountMax(containerId) do
-        local inventoryItem = inventory:GetContainerItem(containerId, index);
+        local inventoryItem = inventory:GetContainerItem(containerId, i);
         if inventoryItem ~= nil and inventoryItem.Id > 0 then
             return i + 1, inventoryItem
         end

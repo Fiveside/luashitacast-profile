@@ -343,7 +343,7 @@ end
 -- Map of element -> surrogate key -> item name
 -- where surrogate key is a type of item (staff, obi, etc).
 -- nil means the cache needs to be rebuilt.
----@type table<LAC.Element, table<any, string>>?
+---@type table<LAC.Element, table<table, string>>?
 local EQUIP_CACHE = nil;
 
 Events.inventoryUpdate:on(function()
@@ -351,7 +351,7 @@ Events.inventoryUpdate:on(function()
 end);
 
 ---Get (and possibly rebuild) the equipment cache
----@return table<LAC.Element, table<any, string>>
+---@return table<LAC.Element, table<table, string>>
 local function getEquipmentCache()
     if EQUIP_CACHE ~= nil then
         return EQUIP_CACHE;
@@ -372,22 +372,16 @@ local function getEquipmentCache()
         local elementalItem = ITEMS_TO_ELEMENTS[candidate.Id];
         if elementalItem ~= nil then
             priorityCache[elementalItem.name] = elementalItem.index;
-            local existing = EQUIP_CACHE[elementalItem.element];
-
-            if existing ~= nil then
-                existing = T {};
-                EQUIP_CACHE[elementalItem.element] = existing;
-            end
-            ---@cast existing -?
+            local element = EQUIP_CACHE[elementalItem.element];
 
             -- check priority cache to see if this one is more important
             local isHigherPriority = false;
-            if priorityCache[existing[elementalItem.name]] ~= nil then
-                isHigherPriority = priorityCache[existing[elementalItem.name]] < elementalItem.index;
+            if priorityCache[element[elementalItem.type]] ~= nil then
+                isHigherPriority = priorityCache[element[elementalItem.type]] < elementalItem.index;
             end
 
-            if existing[elementalItem.type] == nil or isHigherPriority then
-                existing[elementalItem.type] = elementalItem.name;
+            if element[elementalItem.type] == nil or isHigherPriority then
+                element[elementalItem.type] = elementalItem.name;
             end
         end
     end

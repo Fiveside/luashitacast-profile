@@ -212,7 +212,7 @@ end);
 local inventoryUpdate = EventEmitter.new();
 
 -- we get loads of packets indicating the inventory has been updated.
-inventoryUpdate.trigger = utils.debounce(1, inventoryUpdate.trigger);
+inventoryUpdate.trigger = utils.speedLimit(1, inventoryUpdate.trigger);
 
 packetIn:on(function(pkt)
     -- Packet governs when the loading indicators at the top of the screen

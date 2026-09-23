@@ -4,6 +4,7 @@ local Utils = require("util");
 local Xi = require("xi");
 local Shared = require("shared");
 local Events = require("events");
+local SetBuilder = require("setbuilder");
 
 
 local profile = {
@@ -124,19 +125,19 @@ profile.HandleCommand = function(args)
 end
 
 profile.HandleDefault = function()
-    local layers = T {};
+    local layers = SetBuilder.new({ replaceUsable = false });
     local player = gData.GetPlayer();
-    layers:append(Shared.autoRegen:getSet());
-    layers:append(Shared.autoRegain:getSet());
+    layers:add(Shared.autoRegen:getSet());
+    layers:add(Shared.autoRegain:getSet());
 
     if player.Status == "Engaged" then
-        layers:append(sets.TP);
-        -- layers:append(sets.Evasion);
+        layers:add(sets.TP);
+        -- layers:add(sets.Evasion);
     end
 
-    layers:append(getZoneSet());
-    local final = Utils.compress_tables(table.unpack(layers));
-    gFunc.EquipSet(Xi.excludeUsableEquippedItems(final));
+    layers:add(Shared.movementSpeed:getSet());
+
+    gFunc.EquipSet(layers:finalize());
 end
 
 profile.HandleAbility = function()

@@ -228,6 +228,7 @@ profile.OnUnload = function()
 end
 
 profile.HandleCommand = function(args)
+    ui.onSlashCommand(args);
 end
 
 profile.HandleDefault = function()

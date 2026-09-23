@@ -194,7 +194,7 @@ end
 
 ---Returns a debounced version of the passed function.
 ---@generic T
----@param time number Seconds to wait before executing the debounced fn
+---@param time number Seconds to wait before executing the wrapped fn
 ---@param fn fun(T...) The function being debounced
 ---@return fun(T...)
 function Export.debounce(time, fn)
@@ -209,6 +209,37 @@ function Export.debounce(time, fn)
             fn(table.unpack(args));
         end);
     end
+end
+
+---Returns a speed limited version of the passed function.  The wrapped function will be called
+---at most once per time interval.
+---So, Given a series of immediate calls, the inner will be called twice:
+---Once at the beginning, and once after the time limit has passed
+---@generic T
+---@param time number Seconds to wait between executions of the wrapped fn
+---@param fn fun(T...) The function being limited
+---@return fun(T...)
+function Export.speedLimit(time, fn)
+    local coro = nil;
+    local tombstone = {};
+    local nextCall = tombstone;
+    return function(...)
+        local function doCall()
+            if nextCall ~= tombstone then
+                fn(table.unpack(nextCall));
+                nextCall = tombstone;
+                coro = ashita.tasks.once(time, doCall);
+            else
+                coro = nil;
+            end
+        end
+        if coro == nil then
+            fn(...);
+            coro = ashita.tasks.once(time, doCall);
+        else
+            nextCall = { ... };
+        end
+    end;
 end
 
 return Export;

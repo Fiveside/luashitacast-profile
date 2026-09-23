@@ -307,12 +307,17 @@ function Export.getEquipment()
             local containerId = bit.rshift(bit.band(gearPiece.Index, 0xFF00), 8);
             local containerIndex = bit.band(gearPiece.Index, 0xFF);
             local item = inv:GetContainerItem(containerId, containerIndex);
-            ret[slotName] = T {
-                resource = resources:GetItemById(item.Id),
-                item = item,
-                container = containerId,
-                index = containerIndex,
-            }
+
+            -- Item id can be nil if we are currently zoning.  There is a period during zoning when
+            -- the player's equipment has loaded but their inventory has not yet loaded.
+            if item ~= nil and item.Id > 0 then
+                ret[slotName] = T {
+                    resource = resources:GetItemById(item.Id),
+                    item = item,
+                    container = containerId,
+                    index = containerIndex,
+                }
+            end
         end
     end
     return ret;
@@ -354,11 +359,13 @@ function Export.removeUsableEquipment(gs)
     local equipped = Export.getEquipment();
     for _, slotName in ipairs(Export.EquipmentSlot:keys()) do
         local eqItem = equipped[slotName];
-        local isReady = Export.isUsableEquipmentReady(eqItem.item);
-        if eqItem ~= nil and not isReady then
-            ret[slotName] = gs[slotName];
+        if eqItem ~= nil then
+            local isReady = Export.isUsableEquipmentReady(eqItem.item);
+            if not isReady then
+                ret[slotName] = gs[slotName];
+            end
+            hasReadyItem = hasReadyItem or isReady;
         end
-        hasReadyItem = hasReadyItem or isReady;
     end
 
     if hasReadyItem then

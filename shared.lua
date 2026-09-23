@@ -220,23 +220,89 @@ local autoRegain = EquipConditional.new(AUTO_REGAIN_ITEMS, function(ctx)
     return gData.GetPlayer().TP < 3000;
 end);
 
+----------------------------
+-- Movement speed
+----------------------------
+
+local CITY_ZONES = T {
+    Bastok = T { "Bastok Markets", "Bastok Mines", "Metalworks", "Port Bastok" },
+    Windurst = T { "Windurst Woods", "Windurst Walls", "Windurst Waters", "Port Windurst" },
+    ["San d'Oria"] = T { "Southern San d'Oria", "Northern San d'Oria", "Port San d'Oria", "Chateau d'Oraguille" },
+    Jeuno = T { "Ru'Lude Gardens", "Upper Jeuno", "Lower Jeuno", "Port Jeuno", },
+}
+
+do
+    local all = T {}
+    for city, zones in pairs(CITY_ZONES) do
+        all:extend(zones);
+    end
+    CITY_ZONES.All = all;
+end
+
+local MOVEMENT_SPEED_ITEMS = T {
+    {
+        name = "Ducal Aketon",
+        condition = function()
+            local zoneName = gData.GetEnvironment().Area;
+            return CITY_ZONES.All:contains(zoneName);
+        end
+    },
+    {
+        name = "Republic Aketon",
+        condition = function()
+            local inZone = CITY_ZONES.Bastok:contains(gData.GetEnvironment().Area);
+            return inZone and Conquest.GetCurrentNation() == "Bastok";
+        end
+    },
+    {
+        name = "Kingdom Aketon",
+        condition = function()
+            local inZone = CITY_ZONES["San d'Oria"]:contains(gData.GetEnvironment().Area);
+            return inZone and Conquest.GetCurrentNation() == "San d'Oria";
+        end
+    },
+    {
+        name = "Federation Aketon",
+        condition = function()
+            local inZone = CITY_ZONES.Windurst:contains(gData.GetEnvironment().Area);
+            return inZone and Conquest.GetCurrentNation() == "Windurst";
+        end
+    },
+}
+
+local movementSpeed = EquipConditional.new(MOVEMENT_SPEED_ITEMS, function(ctx)
+    return gData.GetPlayer().IsMoving;
+end)
+
 Events.mainJobChange:on(function(job, lvl)
     autoRegen:refresh(job, lvl);
     autoRefresh:refresh(job, lvl);
     autoRegain:refresh(job, lvl);
+    movementSpeed:refresh(job, lvl);
 end);
 
-Events.zoneChange:on(function()
-    autoRegen:reset();
-    autoRefresh:reset();
-    autoRegain:reset();
-end);
+Events.inventoryUpdate:on(function()
+    local player = gData.GetPlayer();
+    local job = player.MainJob;
+    local lvl = player.MainJobSync;
+    autoRegen:refresh(job, lvl);
+    autoRefresh:refresh(job, lvl);
+    autoRegain:refresh(job, lvl);
+    movementSpeed:refresh(job, lvl);
+end)
+
+-- Events.zoneChange:on(function()
+--     autoRegen:reset();
+--     autoRefresh:reset();
+--     autoRegain:reset();
+-- end);
 
 local Export = {
     EquipConditional = EquipConditional,
     autoRegen = autoRegen,
     autoRefresh = autoRefresh,
     autoRegain = autoRegain,
+    movementSpeed = movementSpeed,
 };
 
 ----------------------------

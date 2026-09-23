@@ -5,7 +5,7 @@ local Xi = require("xi");
 local Magic = require("magic");
 local Common = require("common_sets");
 local Shared = require("shared");
-local SetBuilder = require('setbuilder');
+local SetBuilder = require("setbuilder");
 
 local JSE = Common.JSE;
 
@@ -100,7 +100,7 @@ profile.HandleCommand = function(args)
 end
 
 profile.HandleDefault = function()
-    local layers = SetBuilder.new();
+    local layers = SetBuilder.new({ replaceUsable = false });
     layers:add(Shared.autoRegen:getSet())
     layers:add(Shared.autoRefresh:getSet());
     layers:add(Shared.autoRegain:getSet());
@@ -118,7 +118,9 @@ profile.HandleDefault = function()
         layers:add(sets.TP);
     end
 
-    gFunc.EquipSet(Xi.excludeUsableEquippedItems(layers:finalize()));
+    layers:add(Shared.movementSpeed:getSet());
+
+    gFunc.EquipSet(layers:finalize());
 end
 
 profile.HandleAbility = function()

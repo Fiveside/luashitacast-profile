@@ -42,6 +42,7 @@ sets.TP = T {
 
 -- Basically high evasion, PDT, and counter.
 sets.Tanking = Utils.compress_tables(sets.TP, T {
+    Ammo = "Civet Satchet",
     Head = "Optical Hat",
     Body = "Arhat's Gi +1",
     Legs = "Temple Hose",

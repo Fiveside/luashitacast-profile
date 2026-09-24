@@ -183,7 +183,7 @@ end
 ---@param conditionalItem string
 ---@param defaultItem string
 ---@param condition fun(): boolean
-function Export.prioirtyCondition(conditionalItem, defaultItem, condition)
+function Export.prioirtyCondition(defaultItem, conditionalItem, condition)
     return function()
         if condition() then
             return conditionalItem;

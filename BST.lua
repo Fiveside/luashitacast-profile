@@ -3,7 +3,7 @@ local HELM = require("helm");
 local Utils = require("util");
 local Shared = require("shared");
 local events = require("events");
-local SetBuilder = require('setbuilder');
+local SetBuilder = require("setbuilder");
 
 ---@type LAC.Profile
 local profile = {
@@ -61,9 +61,9 @@ local JA_sets = {
 profile.OnLoad = function()
     gSettings.AllowAddSet = false;
     events.onProfileLoad();
-    events.mainJobChange:on(function(job, lvl)
+    events.profileUnload:once(events.mainJobChange:on(function(job, lvl)
         gFunc.EvaluateLevels(sets, lvl);
-    end);
+    end));
     gFunc.EvaluateLevels(sets, gData.GetPlayer().MainJobLevel);
 end
 

@@ -68,14 +68,38 @@ local AVATAR_ELEMENT = {
     ["Dark Spirit"] = "Dark",
 };
 
+-- The actual midcast flow for the player without considering the pet.
+local function getMidcastSet()
+    local layers = SetBuilder.new();
+
+    return layers:finalize();
+end
+
+local function onPetActionComplete(actorId, targetId)
+    -- We only care about our pet's action
+    local pet = gData.GetPet();
+    if pet == nil or pet.Id ~= actorId then
+        return;
+    end
+
+    -- The only time we need to take action is if we are mid-cast
+    -- when the action completes to swap to the casting set.
+    local action = gData.GetAction();
+    if action ~= nil then
+        gFunc.ForceEquipSet(getMidcastSet());
+    end
+end
+
 profile.OnLoad = function()
     gSettings.AllowAddSet = false;
 
     events.onProfileLoad();
-    events.mainJobChange:on(function(job, lvl)
+    events.profileUnload:once(events.mainJobChange:on(function(job, lvl)
         gFunc.EvaluateLevels(sets, lvl);
-    end);
+    end));
     gFunc.EvaluateLevels(sets, gData.GetPlayer().MainJobSync);
+
+    events.profileUnload:once(events.petActionComplete:on(onPetActionComplete));
 end
 
 profile.OnUnload = function()
@@ -85,9 +109,26 @@ end
 profile.HandleCommand = function(args)
 end
 
+-- Execution flow here is a bit complicated
+-- If a pet uses an action, it goes
+-- HandleAction -> HandleDefault -> getPetActionSet
+--
+-- if a pet uses an action and we begin casting
+-- HandleAction -> HandleDefault -> HandlePrecast -> HandleMidcast(calls getMidcastSet()) -> getPetActionSet
+-- And then when the pet completes the action if we're still casting
+-- onPetActionComplete -> getMidcastSet -> force equip midcast set
+-- If the pet completes the action after we finished casting then
+-- the pet's gearset takes priority over our cast's gearset.
+
+local function getPetActionSet()
+    local layers = SetBuilder.new();
+
+    return layers:finalize();
+end
+
 profile.HandleDefault = function()
-    local layers = T {};
-    layers:append(sets.Idle);
+    local layers = SetBuilder.new({ replaceUsable = false });
+    layers:add(sets.Idle);
 
     -- Pet state changes the desired gear set significantly.
     -- A general rule of thumb is that no gear augments pets
@@ -130,7 +171,7 @@ profile.HandleDefault = function()
     if (pet ~= nil) then
         local petSet = sets[pet.Name];
         if (petSet ~= nil) then
-            layers:append(petSet);
+            layers:add(petSet);
         end
     end
 

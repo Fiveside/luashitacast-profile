@@ -85,9 +85,9 @@ profile.OnLoad = function()
 
     events.onProfileLoad();
     gFunc.EvaluateLevels(sets, gData.GetPlayer().MainJobLevel)
-    events.mainJobChange:on(function(job, lvl)
+    events.profileUnload:once(events.mainJobChange:on(function(job, lvl)
         gFunc.EvaluateLevels(sets, lvl);
-    end);
+    end));
 end
 
 profile.OnUnload = function()

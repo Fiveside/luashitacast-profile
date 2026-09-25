@@ -29,6 +29,11 @@ end
 
 function EventEmitter:on(callback)
     self.handlers[callback] = callback;
+    return self.off:bindn(self, callback);
+end
+
+function EventEmitter:off(callback)
+    self.handlers[callback] = nil;
 end
 
 function EventEmitter:once(callback)
@@ -168,25 +173,12 @@ end);
 
 local skillchain = EventEmitter.new();
 local skillchainCombatTypes = T { 3, 4, 6, 11, 13 }
-packetIn:on(function(pkt)
-    ---@cast pkt IncommingPacket
-    if pkt.id ~= 0x028 then return; end
-
-    -- https://github.com/LandSandBoat/server/blob/base/src/map/packets/s2c/0x028_battle2.cpp
-
-    -- this packet contains a uint8_t worksize; variable after the common packet header.
-    -- we can safely ignore it.
-    local header = pktHeaderSize + 8;
-
-    -- Need to pull target id, cmd_no, has_proc, and proc_kind
-    local cmdMath = header + 32 + 10
-    local cmd = ashita.bits.unpack_be(pkt.data_raw, cmdMath, 4);
+local function findSkillchain(pkt, cmd, actorId, targetId)
     if not skillchainCombatTypes:contains(cmd) then
         return;
     end
 
-    local targetMath = cmdMath + 4 + 32 + 32;
-    local targetId = ashita.bits.unpack_be(pkt.data_raw, targetMath, 32);
+    local targetMath = pktHeaderSize + 8 + 32 + 10 + 4 + 32 + 32;
 
     local hasProcMath = targetMath + 32 + 4 + 3 + 2 + 12 + 5 + 5 + 17 + 10 + 31;
     local hasProc = ashita.bits.unpack_be(pkt.data_raw, hasProcMath, 1);
@@ -202,6 +194,56 @@ packetIn:on(function(pkt)
 
     local sc = xi.Skillchains[proc];
     skillchain:trigger(targetId, sc)
+end
+
+local petActionComplete = EventEmitter.new();
+local function petActionCompletesPkt(pkt, cmd, actor, target)
+    if cmd ~= 13 then
+        return;
+    end
+    petActionComplete:trigger(actor, target);
+end
+
+packetIn:on(function(pkt)
+    ---@cast pkt IncommingPacket
+    if pkt.id ~= 0x028 then return; end
+
+    -- https://github.com/LandSandBoat/server/blob/base/src/map/packets/s2c/0x028_battle2.cpp
+
+    -- this packet contains a uint8_t worksize; variable after the common packet header.
+    -- we can safely ignore it.
+    local header = pktHeaderSize + 8;
+
+    local actorId = ashita.bits.unpack_be(pkt.data_raw, header, 32);
+
+    -- Need to pull target id, cmd_no, has_proc, and proc_kind
+    local cmdMath = header + 32 + 10
+    local cmd = ashita.bits.unpack_be(pkt.data_raw, cmdMath, 4);
+    -- if not skillchainCombatTypes:contains(cmd) then
+    --     return;
+    -- end
+
+
+    local targetMath = cmdMath + 4 + 32 + 32;
+    local targetId = ashita.bits.unpack_be(pkt.data_raw, targetMath, 32);
+
+    petActionCompletesPkt(pkt, cmd, actorId, targetId);
+    findSkillchain(pkt, cmd, actorId, targetId);
+
+    -- local hasProcMath = targetMath + 32 + 4 + 3 + 2 + 12 + 5 + 5 + 17 + 10 + 31;
+    -- local hasProc = ashita.bits.unpack_be(pkt.data_raw, hasProcMath, 1);
+    -- if hasProc == 0 then
+    --     return;
+    -- end
+
+    -- local procMath = hasProcMath + 1
+    -- local proc = ashita.bits.unpack_be(pkt.data_raw, procMath, 6);
+    -- if proc == 0 then
+    --     return;
+    -- end
+
+    -- local sc = xi.Skillchains[proc];
+    -- skillchain:trigger(targetId, sc)
 end);
 
 
@@ -256,8 +298,13 @@ end);
 -- But this may become an issue that we need to solve later on if/when that assumption changes.
 
 
+local profileLoad = EventEmitter.new();
+local profileUnload = EventEmitter.new();
+
 local Export = {
     packetIn = packetIn,
+    profileLoad = profileLoad,
+    profileUnload = profileUnload,
     mainJobChange = mainJobChange,
     subJobChange = subJobChange,
     zoneChange = zoneChange,
@@ -265,14 +312,17 @@ local Export = {
     -- timer = timer,
     render = render,
     inventoryUpdate = inventoryUpdate,
+    petActionComplete = petActionComplete,
 };
 
 function Export.onProfileLoad()
     installPacketIn()
     installGameTick()
+    profileLoad:trigger();
 end
 
 function Export.onProfileUnload()
+    profileUnload:trigger();
     uninstallGameTick()
     uninstallPacketIn()
 end

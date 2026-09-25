@@ -113,9 +113,9 @@ sets["WS_Evisceration"] = T {
 profile.OnLoad = function()
     gSettings.AllowAddSet = false;
     Events.onProfileLoad();
-    Events.mainJobChange:on(function(job, lvl)
+    Events.profileUnload:once(Events.mainJobChange:on(function(job, lvl)
         gFunc.EvaluateLevels(sets, lvl);
-    end);
+    end));
     gFunc.EvaluateLevels(sets, gData.GetPlayer().MainJobLevel)
 end
 

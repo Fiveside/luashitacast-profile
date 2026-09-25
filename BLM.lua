@@ -23,6 +23,7 @@ sets.AutoRefresh = T {
 
 sets.Resting = T {
     Main = Shared.getElementalStaff:bind1("Dark"),
+    Neck = "Grandiose Chain",
     Body = "Errant Hpl.",
     Waist = "Qiqirn Sash +1",
     Legs = "Baron's slops",
@@ -213,10 +214,10 @@ end
 profile.OnLoad = function()
     gSettings.AllowAddSet = false;
     events.onProfileLoad();
-    events.skillchain:on(onSkillchain);
-    events.mainJobChange:on(function(job, lvl)
+    events.profileUnload:once(events.skillchain:on(onSkillchain));
+    events.profileUnload:once(events.mainJobChange:on(function(job, lvl)
         gFunc.EvaluateLevels(sets, lvl);
-    end);
+    end));
     gFunc.EvaluateLevels(sets, gData.GetPlayer().MainJobLevel);
 
     ui.onProfileLoad()

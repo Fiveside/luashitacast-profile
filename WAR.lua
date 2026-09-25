@@ -43,9 +43,9 @@ profile.OnLoad = function()
     gSettings.AllowAddSet = false;
     util.extend_sets(sets, sets, extendedSets);
     events.onProfileLoad();
-    events.mainJobChange:on(function(job, lvl)
+    events.profileUnload:once(events.mainJobChange:on(function(job, lvl)
         gFunc.EvaluateLevels(sets, lvl)
-    end);
+    end));
     gFunc.EvaluateLevels(sets, gData.GetPlayer().MainJobSync);
 end
 

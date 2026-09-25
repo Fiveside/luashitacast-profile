@@ -232,15 +232,16 @@ profile.HandleCommand = function(args)
 end
 
 profile.HandleDefault = function()
-    local layers = SetBuilder:new();
+    local layers = SetBuilder.new({ replaceUsable = false });
     layers:add(Shared.autoRegen:getSet());
     layers:add(Shared.autoRefresh:getSet(sets.AutoRefresh));
-    layers:add(getZoneSet());
 
     local player = gData.GetPlayer();
     if (player.Status == "Resting") then
         layers:add(sets.Resting);
     end
+
+    layers:add(Shared.movementSpeed:getSet());
 
     gFunc.EquipSet(layers:finalize());
 end
@@ -256,7 +257,7 @@ profile.HandlePrecast = function()
 end
 
 profile.HandleMidcast = function()
-    local layers = SetBuilder:new();
+    local layers = SetBuilder.new();
     local action = gData.GetAction();
     local target = gData.GetActionTarget();
     local me = gData.GetPlayer();

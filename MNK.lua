@@ -185,7 +185,6 @@ profile.HandleDefault = function()
     layers:add(sets.Idle);
     layers:add(Shared.autoRegen:getSet(sets.AutoRegen));
     layers:add(Shared.autoRegain:getSet());
-    layers:add(getZoneSet());
     layers:add(HELM.getSet());
 
     if player.Status == "Engaged" then
@@ -197,6 +196,8 @@ profile.HandleDefault = function()
 
         -- TODO: if incapacitated then equip auto-regain set
     end
+
+    layers:add(Shared.movementSpeed:getSet())
 
     return gFunc.EquipSet(layers:finalize());
 end

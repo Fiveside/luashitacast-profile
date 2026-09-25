@@ -76,11 +76,21 @@ end
 ---@param myJob string
 ---@param myLevel integer
 function EquipConditional:refresh(myJob, myLevel)
-    -- Get the default list of sets, prune sets that we can't equip
+    -- Get the default list of sets, prune sets that we can't equip, and ones that we don't own.
     self.activeSets = T {};
 
+    -- Collect a list of items we already own (to avoid looping the entire inventory for each item.)
+    local wantsItems = self.defaultSets:map(function(x) return x.resource.Id end):flip();
+    local hasItems = T {};
+    for _, entry in XI.listEquippableInventory() do
+        if wantsItems[entry.item.Id] ~= nil then
+            hasItems[entry.item.Id] = entry.item.Id;
+        end
+    end
+
     for _, autoDef in ipairs(self.defaultSets) do
-        if autoDef.jobs:contains(myJob) then
+        local found = hasItems[autoDef.resource.Id] ~= nil;
+        if found and autoDef.jobs:contains(myJob) then
             if autoDef.resource.Level <= myLevel then
                 table.insert(self.activeSets, autoDef);
             end

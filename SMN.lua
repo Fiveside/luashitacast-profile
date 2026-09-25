@@ -1,6 +1,7 @@
 local Util = require("util");
 local Shared = require("shared");
 local events = require("events");
+local SetBuilder = require("setbuilder");
 
 ---@type LAC.Profile
 local profile = {

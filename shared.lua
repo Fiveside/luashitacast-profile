@@ -295,6 +295,12 @@ Events.inventoryUpdate:on(function()
     local player = gData.GetPlayer();
     local job = player.MainJob;
     local lvl = player.MainJobSync;
+
+    -- Bogus job from luashitacast, skip this refresh
+    if job == "NON" then
+        return;
+    end
+
     autoRegen:refresh(job, lvl);
     autoRefresh:refresh(job, lvl);
     autoRegain:refresh(job, lvl);

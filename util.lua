@@ -219,7 +219,7 @@ end
 ---@param time number Seconds to wait between executions of the wrapped fn
 ---@param fn fun(T...) The function being limited
 ---@return fun(T...)
-function Export.speedLimit(time, fn)
+function Export.throttle(time, fn)
     local coro = nil;
     local tombstone = {};
     local nextCall = tombstone;

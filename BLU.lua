@@ -1,6 +1,6 @@
 local Ui = require("ui");
 local Utils = require("util");
-local events = require("events");
+local events = require("events").profile;
 local Xi = require("xi");
 local Magic = require("magic");
 local Common = require("common_sets");
@@ -24,10 +24,10 @@ sets.TP_Priority = {
     Neck = "Peacock Amulet",
     Ear1 = "Morion Earring",
     Ear2 = "Moldavite Earring",
-    Body = { "Scorpion Harness", "Brigandine" },
+    Body = { "Scorpion Harness" },
     Hands = { JSE.BLU.Artifact.Hands, "Savage Gauntlets" },
     Ring1 = "Rajas Ring",
-    Ring2 = "Kshama Ring No.2",
+    Ring2 = { "Toreador's Ring", "Kshama Ring No.2" },
     Back = { "Amemet Mantle +1", "Jaguar Mantle" },
     Waist = "Life Belt",
     Legs = JSE.BLU.Artifact.Legs,
@@ -36,6 +36,8 @@ sets.TP_Priority = {
 
 sets.Resting = T {
     Head = "displaced",
+    Ear1 = "Relaxing Earring",
+    Neck = "Grandiose Chain",
     Body = "Vermillion Cloak",
     Waist = "Qiqirn Sash +1",
     Legs = "Baron's Slops",
@@ -44,7 +46,7 @@ sets.Resting = T {
 sets.PhysicalBlueSpell_Prioirty = T {
     Ammo = "Tiphia Sting",
     Ear1 = "Spike Earring",
-    Ear2 = "Spike Earring",
+    Ear2 = { "Ethereal Earring", "Spike Earring" },
     Body = { JSE.BLU.Artifact.Body, "Scorpion Harness" },
     Hands = "Battle Gloves",
     Feet = "Savage Gaiters",
@@ -53,6 +55,7 @@ sets.PhysicalBlueSpell_Prioirty = T {
 sets.MagicalBlueSpell_Priority = T {
     Head = { JSE.BLU.Artifact.Head },
     Ammo = { "Phtm. Tathlum" },
+    Body = { JSE.BLU.Artifact.Body },
     Ear1 = { "Moldavite Earring" },
     Ear2 = { "Morion Earring" },
 }
@@ -85,9 +88,9 @@ profile.OnLoad = function()
 
     events.onProfileLoad();
     gFunc.EvaluateLevels(sets, gData.GetPlayer().MainJobLevel)
-    events.profileUnload:once(events.mainJobChange:on(function(job, lvl)
+    events.mainJobChange:on(function(job, lvl)
         gFunc.EvaluateLevels(sets, lvl);
-    end));
+    end);
 end
 
 profile.OnUnload = function()
@@ -103,7 +106,6 @@ profile.HandleDefault = function()
     local layers = SetBuilder.new({ replaceUsable = false });
     layers:add(Shared.autoRegen:getSet())
     layers:add(Shared.autoRefresh:getSet());
-    layers:add(Shared.autoRegain:getSet());
 
     local target = gData.GetTarget()
     if target ~= nil and target.Id % 2 > 0 then
@@ -118,6 +120,7 @@ profile.HandleDefault = function()
         layers:add(sets.TP);
     end
 
+    layers:add(Shared.autoRegain:getSet());
     layers:add(Shared.movementSpeed:getSet());
 
     gFunc.EquipSet(layers:finalize());

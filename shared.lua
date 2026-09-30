@@ -278,6 +278,9 @@ local MOVEMENT_SPEED_ITEMS = T {
             return inZone and Conquest.GetCurrentNation() == "Windurst";
         end
     },
+    {
+        name = "Crimson Cuisses"
+    }
 }
 
 local movementSpeed = EquipConditional.new(MOVEMENT_SPEED_ITEMS, function(ctx)

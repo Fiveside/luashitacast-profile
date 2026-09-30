@@ -254,7 +254,7 @@ end);
 local inventoryUpdate = EventEmitter.new();
 
 -- we get loads of packets indicating the inventory has been updated.
-inventoryUpdate.trigger = utils.speedLimit(1, inventoryUpdate.trigger);
+inventoryUpdate.trigger = utils.throttle(1, inventoryUpdate.trigger);
 
 packetIn:on(function(pkt)
     -- Packet governs when the loading indicators at the top of the screen
@@ -270,7 +270,7 @@ packetIn:on(function(pkt)
 end);
 
 
--- FIXME: We export all of these event emitters as singletons.  The expectation is that
+-- ATT: We export all of these event emitters as singletons.  The expectation is that
 -- require('events') will execute this file once and cache the return value as a module.
 -- Then, subsequent require() calls just return the cached module.  However, LuAshitaCast
 -- does not use require() to load profiles.  It uses gFunc.LoadFile() instead.  Internally,
@@ -293,9 +293,12 @@ end);
 -- All this means that when the user changes jobs (for example from from MNK->BLM) new
 -- callbacks are registered (in BLM.lua) and old callbacks are not un-registered (in MNK.lua).
 --
--- This currently doesn't cause too much extraneous code to run as the number of callbacks registered
--- in profile code is small and the number of times those events fire is low.
--- But this may become an issue that we need to solve later on if/when that assumption changes.
+-- The Export.profile table contains an identical separate set of emitters specifically for profile code.
+-- When the profile is unloaded, (via onProfileUnload()), all these emitters will be cleared
+-- allowing users to register event handlers inside of profile code without worrying about
+-- cleanup when the profile is unloaded. Thus your profile file should use this:
+-- local events = require('events').profile;
+-- while everything outside of the profile file can just import events as normal.
 
 
 local profileLoad = EventEmitter.new();
@@ -315,6 +318,36 @@ local Export = {
     petActionComplete = petActionComplete,
 };
 
+-- This assumes that the export contains _only_ event emitters and
+-- that anything that isn't an event emitter has a key on Export.profile
+-- already, ensuring that Export.profile.mt.__index isn't called.
+---@type table<string, {proxy: EventEmitter, off: fun()}>
+local profileEmitterCache = T {};
+local profileIndex = function(table, key)
+    if profileEmitterCache[key] ~= nil then
+        return profileEmitterCache[key].proxy;
+    end
+    -- We can take advantage of the profile unload hook to unregister
+    -- and clear these proxies.  Once an emitter is evicted from the
+    -- cache, all references to it should be gone.
+    local proxy = EventEmitter.new();
+    local off = Export[key]:on(proxy.trigger:bind1(proxy));
+    profileEmitterCache[key] = { proxy = proxy, off = off };
+    profileUnload:once(function()
+        off();
+        profileEmitterCache[key] = nil;
+    end);
+
+    -- Just in-case we're stupid today.
+    proxy.trigger = function()
+        error("This is a proxied emitter, do not directly trigger events on this emitter.");
+    end;
+
+    return proxy;
+end
+
+Export.profile = setmetatable({}, { __index = profileIndex });
+
 function Export.onProfileLoad()
     installPacketIn()
     installGameTick()
@@ -326,5 +359,10 @@ function Export.onProfileUnload()
     uninstallGameTick()
     uninstallPacketIn()
 end
+
+-- Also include the onprofile load and onprofile unload in the
+-- profile proxy for easy usage and to keep the require() logic down to 1 line.
+Export.profile.onProfileLoad = Export.onProfileLoad;
+Export.profile.onProfileUnload = Export.onProfileUnload;
 
 return Export;

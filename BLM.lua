@@ -5,7 +5,7 @@ local getZoneSet = require("town");
 local Shared = require("shared");
 local CommonSets = require("common_sets");
 local Bursts = require("bursts");
-local events = require("events");
+local events = require("events").profile;
 local ui = require("ui");
 local SetBuilder = require("setbuilder")
 local JSE = CommonSets.JSE;
@@ -214,10 +214,10 @@ end
 profile.OnLoad = function()
     gSettings.AllowAddSet = false;
     events.onProfileLoad();
-    events.profileUnload:once(events.skillchain:on(onSkillchain));
-    events.profileUnload:once(events.mainJobChange:on(function(job, lvl)
+    events.skillchain:on(onSkillchain);
+    events.mainJobChange:on(function(job, lvl)
         gFunc.EvaluateLevels(sets, lvl);
-    end));
+    end);
     gFunc.EvaluateLevels(sets, gData.GetPlayer().MainJobLevel);
 
     ui.onProfileLoad()

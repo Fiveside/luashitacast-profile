@@ -2,7 +2,7 @@ local getZoneSet = require("town");
 local HELM = require("helm");
 local Utils = require("util");
 local Shared = require("shared");
-local events = require("events");
+local events = require("events").profile;
 local SetBuilder = require("setbuilder");
 
 ---@type LAC.Profile

@@ -4,7 +4,7 @@ local Shared = require("shared");
 local Xi = require("xi");
 local Ui = require("ui");
 local Utils = require("util");
-local Events = require("events");
+local Events = require("events").profile;
 local SetBuilder = require("setbuilder");
 
 ---@type LAC.Profile
@@ -30,6 +30,7 @@ sets.TP = T {
     Neck = "Faith Torque",
     Ear1 = "Brutal Earring",
     Ear2 = Utils.prioirtyCondition("Ethereal Earring", "Fenrir's Earring", Xi.isDaytime),
+    -- Ear2 = "Pilferer's Earring",
     Body = "Shura Togi",
     Hands = "Mel. Gloves +1",
     Ring1 = "Rajas Ring",
@@ -58,7 +59,8 @@ sets.Evasion = Utils.compress_tables(sets.Tanking, T {
 -- No need for gear haste.
 sets.HundredFists = Utils.compress_tables(sets.TP, T {
     Legs = "Shura Haidate",
-    Feet = "Shura Sune-Ate",
+    -- Feet = "Shura Sune-Ate",
+    Feet = "Dune Boots",
 });
 
 -- The name of the set should be JA_<Jobability>_Priority with appropriate capitalization.
@@ -107,7 +109,8 @@ sets["WS_Dragon Kick"] = T {
     Neck = "Faith Torque",
     Body = "Kirin's Osode",
     Ring1 = "Rajas Ring",
-    Ring2 = "Victory Ring",
+    -- Ring2 = "Victory Ring",
+    Ring2 = "Soil Ring",
     Waist = "Black Belt",
     legs = "Shura Haidate",
     Feet = "Dune Boots",

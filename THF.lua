@@ -3,20 +3,17 @@ local getZoneSet = require("town");
 local Utils = require("util");
 local Xi = require("xi");
 local Shared = require("shared");
-local Events = require("events");
+local Events = require("events").profile;
 local SetBuilder = require("setbuilder");
+local JSE = require("common_sets").JSE;
 
-
+---@type LAC.Profile
 local profile = {
-    sets = {},
-    packer = {},
+    Sets = {},
+    Packer = {},
 };
-local sets = profile.sets;
+local sets = profile.Sets;
 
-local state = T {
-};
-
----@type PriorityGearSet
 sets.TP_Priority = T {
     Main = { "Hoplites Harpe", "Demon's Knife +1", "Beetle Knife +1" },
     Sub = { "Hoplites Harpe", "Demon's Knife +1", "Marauder's Knife" },
@@ -25,7 +22,7 @@ sets.TP_Priority = T {
     Head = { "Optical Hat", "Voyager Sallet", "Emperor Hairpin" },
     Neck = { "Peacock Amulet" },
     Ear1 = { "Spike Earring" },
-    Ear2 = { "Spike Earring" },
+    Ear2 = { "Ethereal Earring", "Spike Earring" },
 
     Body = { "Rapparee Harness" },
     Hands = { "Rogue's armlets" },
@@ -34,14 +31,14 @@ sets.TP_Priority = T {
 
     Back = { "Amemet Mantle +1", "Jaguar Mantle" },
     Waist = { "Swift Belt" },
-    Legs = { "Republic Subligar" },
+    Legs = { JSE.THF.Artifact.Legs, "Republic Subligar" },
     Feet = { "Leaping Boots" },
 }
 
 sets.Evasion_Priority = Utils.compress_tables(sets.TP_Priority, T {
-    Head = { "Emperor Hairpin" },
+    Head = { "Optical Hat", "Emperor Hairpin" },
     Ear1 = { "displaced" },
-    Ear2 = { "empty" },
+    Ear2 = { "Ethereal Earring", "empty" },
     Body = { "Scorpion Harness" },
 });
 
@@ -49,7 +46,6 @@ sets.Evasion_Priority = Utils.compress_tables(sets.TP_Priority, T {
 -- Job Ability specific sets
 -----------------------------
 
----@type GearSet
 sets.JA_Steal = T {
     Head = "Rogue's Bonnet",
     Hands = "Rogue's Armlets",
@@ -73,7 +69,6 @@ sets.JA_Hide = T {
 -- Resonance: Scission
 -- Hits: 2
 -- TP multipliers: 1000: 1.0, 2000: 1.0, 3000: 1.0
----@type GearSet
 sets["WS_Viper Bite"] = T {
     Waist = "Swordbelt +1",
     Body = "Scorpion Harness",
@@ -83,7 +78,6 @@ sets["WS_Viper Bite"] = T {
 -- Resonance: Scission, Detonation
 -- Hits: 5
 -- TP multipliers: 1000: 1.1875, 2000: 1.1875, 3000: 1.1875
----@type GearSet
 sets["WS_Dancing Edge"] = T {
     Waist = "Swordbelt +1",
     Body = "Scorpion Harness",
@@ -93,7 +87,6 @@ sets["WS_Dancing Edge"] = T {
 -- Resonance: Fragmentation
 -- Hits: 2
 -- TP multipliers: 1000: 2, 2000: 2.5, 3000: 3
----@type GearSet
 sets["WS_Shark Bite"] = T {
     Waist = "Swordbelt +1",
     Body = "Scorpion Harness",
@@ -104,7 +97,6 @@ sets["WS_Shark Bite"] = T {
 -- Hits: 5
 -- TP multipliers: 1000: 1.0, 2000: 1.0, 3000: 1.0
 -- TP Crit rates: 1000: 10%, 2000: 30%, 3000: 50%
----@type GearSet
 sets["WS_Evisceration"] = T {
     Waist = "Swordbelt +1",
     Body = "Scorpion Harness",
@@ -134,7 +126,6 @@ profile.HandleDefault = function()
 
     if player.Status == "Engaged" then
         layers:add(sets.TP);
-        -- layers:add(sets.Evasion);
     end
 
     layers:add(Shared.movementSpeed:getSet());

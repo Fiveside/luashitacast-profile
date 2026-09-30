@@ -1,6 +1,6 @@
 local util = require("util");
 local shared = require("shared");
-local events = require("events")
+local events = require("events").profile;
 
 ---@type LAC.Profile
 local profile = {

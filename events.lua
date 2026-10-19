@@ -327,6 +327,10 @@ local profileIndex = function(table, key)
     if profileEmitterCache[key] ~= nil then
         return profileEmitterCache[key].proxy;
     end
+    if Export[key] == nil then
+        print(debug.traceback(string.format("Key error: %s", key)))
+        error(string.format("Cannot create profile proxy for %s: No emitter with that name exists.", key));
+    end
     -- We can take advantage of the profile unload hook to unregister
     -- and clear these proxies.  Once an emitter is evicted from the
     -- cache, all references to it should be gone.

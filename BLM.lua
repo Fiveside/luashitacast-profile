@@ -39,6 +39,7 @@ sets.Precast = T {
 -- This should mainly include haste gear to reduce cooldown timers,
 -- and Conserve MP gear.
 sets.Midcast = T {
+    Head = "Nashira Turban",
     Hands = "Nashira Gages",
     Waist = "Swift Belt",
     Legs = "Nashira Seraweels",

@@ -6,6 +6,7 @@ local Ui = require("ui");
 local Utils = require("util");
 local Events = require("events").profile;
 local SetBuilder = require("setbuilder");
+local JSE = require("common_sets").JSE;
 
 ---@type LAC.Profile
 local profile = {
@@ -46,7 +47,7 @@ sets.Tanking = Utils.compress_tables(sets.TP, T {
     Ammo = "Civet Satchet",
     Head = "Optical Hat",
     Body = "Arhat's Gi +1",
-    Legs = "Temple Hose",
+    Legs = JSE.MNK.ArtifactPlus1.Legs,
     Feet = "Melee Gaiters",
 });
 
@@ -71,23 +72,23 @@ sets.JA_Chakra_Priority = {
     --   Melee gloves - Adds an additional 0.6 multiplier to vit
     Ammo = { "Fortune Egg" },
     Head = { "Genbu's Kabuto" },
-    Body = { "Temple Cyclas" },
+    Body = { JSE.MNK.Artifact.Body },
     Waist = { "Warrior's Belt +1" },
-    Hands = { "Mel. Gloves +1" },
+    Hands = { JSE.MNK.RelicPlus1.Hands },
     Ring1 = { "Soil Ring" },
     Ring2 = { "Soil Ring" },
 };
 sets.JA_Focus_Priority = {
-    Head = { "Temple Crown" },
+    Head = { JSE.MNK.Artifact.Head },
 };
 sets.JA_Boost_Priority = {
-    Hands = { "Temple Gloves" },
+    Hands = { JSE.MNK.Artifact.Hands },
 };
 sets.JA_Dodge_Priority = {
-    Feet = { "Temple Gaiters" },
+    Feet = { JSE.MNK.Artifact.Feet },
 };
 sets.JA_Counterstance_Priority = {
-    Feet = { "Melee Gaiters" }
+    Feet = { JSE.MNK.Relic.Feet }
 };
 
 -- Modifiers: STR 10%, VIT 10%
@@ -118,7 +119,7 @@ sets["WS_Dragon Kick"] = T {
 
 -- Modifiers: STR: 20%, DEX: 20%
 sets["WS_Raging Fists"] = Utils.compress_tables(sets["WS_Asuran Fists"], T {
-    Head = "Melee Crown",
+    Head = JSE.MNK.RelicPlus1.Head,
     Legs = "Byakko's Haidate",
 });
 
@@ -130,7 +131,7 @@ sets["WS_Howling Fist"] = Utils.compress_tables(sets["WS_Dragon Kick"], T {
 sets.WS_Combo = Utils.compress_tables(sets["WS_Asuran Fists"]);
 
 sets.AutoRegen = T {
-    Body = "Melee Cyclas",
+    Body = JSE.MNK.Relic.Body,
 };
 
 -- local function equipFenrirEar(set)

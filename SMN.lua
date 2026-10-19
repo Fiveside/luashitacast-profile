@@ -22,7 +22,7 @@ sets.Idle_Priority = {
 };
 
 sets.Resting_Priority = {
-    Main = { "Pilgrim's Wand" },
+    Main = { Shared.getElementalStaff("Dark"), "Pilgrim's Wand" },
     Body = { "Seer's Tunic" },
     Legs = { "Baron's slops" },
 };
@@ -31,18 +31,22 @@ sets.Carbuncle_Priority = {
     Hands = { "Carbuncle mitts" },
 };
 
--- This is for -bp delay gear.
-sets.BloodPact_Priority = T {
+sets.BloodPactDelay_Priority = T {
     Head = { "Austere Hat" },
     Body = { "Austere Robe" },
+    Hands = { "Austere Cuffs" },
 }
 
 sets.SummoningMagic_Priority = T {
     Head = { "Austere Hat" },
+    Hands = { "Austere Cuffs" },
+    Legs = { "Austere Slops" },
+    Feet = { "Austere Sabots" },
 }
 
 -- Non-specific avatar perpetuation cost gear.
 sets.PerpetuationCost_Priority = T {
+    Body = { "Austere Robe" },
 }
 
 -- Avatar to element map, for use when choosing which staff to use
@@ -123,12 +127,20 @@ end
 local function getPetActionSet()
     local layers = SetBuilder.new();
 
+    local pet = gData.GetPet();
+    local petAction = gData.GetPetAction();
+    if petAction.Type == "Blood Pact: Rage" or petAction.Type == "Blood Pact: Ward" then
+        layers:add(sets.BloodPactDelay);
+    end
+
     return layers:finalize();
 end
 
 profile.HandleDefault = function()
     local layers = SetBuilder.new({ replaceUsable = false });
     layers:add(sets.Idle);
+    layers:add(Shared.autoRegen:getSet());
+    layers:add(Shared.autoRefresh:getSet());
 
     -- Pet state changes the desired gear set significantly.
     -- A general rule of thumb is that no gear augments pets
@@ -160,19 +172,31 @@ profile.HandleDefault = function()
     -- -- not doing anything when the pet is readying or using an ability.
 
     local pet = gData.GetPet()
-    local petAction = gData.GetPetAction();
 
     local player = gData.GetPlayer();
     if (player.Status == "Resting") then
         layers:append(sets.Resting);
     end
 
-    local pet = gData.GetPet()
     if (pet ~= nil) then
+        -- Perpetuation sets have lower priority than pet specific sets
+        -- for cases like carby mitts.
+        layers:add(sets.PerpetuationCost);
+
         local petSet = sets[pet.Name];
         if (petSet ~= nil) then
             layers:add(petSet);
         end
+
+        -- Aligned elemental staffs always have the highest bonuses for every category
+        -- on any given pet.
+        local petElement = AVATAR_ELEMENT[pet.Name];
+        layers:add({ Main = Shared.getElementalStaff(petElement) });
+    end
+
+    -- pet actions need to take priority over any idle set.
+    if gData.GetPetAction() ~= nil then
+        layers:add(getPetActionSet());
     end
 
     gFunc.EquipSet(Util.compress_tables(layers:unpack()));

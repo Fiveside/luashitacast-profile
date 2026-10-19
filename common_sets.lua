@@ -17,7 +17,8 @@ end
 
 -- Collecting AF, AF+1, Relic, and Relic+1 into something easy to reference.
 -- job->category->slot->itemName
----@type table<string, table<string, table<LAC.GearSlot, string>>>
+---@alias JSECategory "Artifact"|"ArtifactPlus1"|"Relic"|"RelicPlus1"
+---@type table<JobShort, table<JSECategory, table<LAC.GearSlot, string>>>
 Export.JSE = T {};
 do
     local slipMap = {
@@ -38,7 +39,7 @@ do
 
             -- Again, JSE gear only goes into one slot.
             -- Artifact weapons can actually fit into multiple slots, but we don't really
-            -- care about those for this collection.  All we care about are head, body, hands, legs, and feet.
+            -- care about those for this collection.  All we care about are head, body, hands, waist, back, legs, and feet.
             local slot = T(Xi.EquipmentSlotMask):find(item.Slots);
 
             if slot ~= nil then

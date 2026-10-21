@@ -112,12 +112,18 @@ packetIn:on(function(pkt)
         -- Therefore we can fire the job change events when pt member 0 (us) receives the update.
         -- This might be private server behavior, have not yet checked retail.
 
-        local partyMemberNoOffset = pktHeaderSize + 128 + 32 + 16;
-        local partyMemberNo = ashita.bits.unpack_be(pkt.data_raw, partyMemberNoOffset, 8);
-
-        if partyMemberNo ~= 0 then
+        local partyMemberId = ashita.bits.unpack_be(pkt.data_raw, pktHeaderSize, 9);
+        if partyMemberId ~= GetPlayerEntity().ServerId then
             return;
         end
+
+        local partyMemberNoOffset = pktHeaderSize + 128 + 32 + 16;
+        -- local partyMemberNo = ashita.bits.unpack_be(pkt.data_raw, partyMemberNoOffset, 8);
+
+        -- print("MJC from 0x0DD pt: " .. tostring(partyMemberNo))
+        -- if partyMemberNo ~= 0 then
+        --     return;
+        -- end
 
         local jobOffset = partyMemberNoOffset + 64;
         mjob = ashita.bits.unpack_be(pkt.data_raw, jobOffset, 8);

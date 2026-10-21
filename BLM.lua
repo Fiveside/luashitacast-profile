@@ -28,6 +28,7 @@ sets.Resting = T {
     Waist = "Qiqirn Sash +1",
     Legs = "Baron's slops",
     Ear1 = "Relaxing Earring",
+    Ear2 = "Antivenom Earring",
 };
 
 sets.Precast = T {

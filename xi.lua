@@ -245,7 +245,8 @@ function Export.getEquipment()
 
             -- Item id can be nil if we are currently zoning.  There is a period during zoning when
             -- the player's equipment has loaded but their inventory has not yet loaded.
-            if item ~= nil and item.Id > 0 then
+            -- containerIndex == 0 is gil, not a real item.
+            if item ~= nil and item.Id > 0 and containerIndex > 0 then
                 ret[slotName] = T {
                     resource = resources:GetItemById(item.Id),
                     item = item,

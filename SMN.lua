@@ -10,12 +10,11 @@ local profile = {
 };
 local sets = profile.Sets;
 
-sets.Idle_Priority = {
+sets.MaxMP_Priority = {
     Main = { "Solid Wand", "Yew wand +1", "Willow wand +1", "Maple Wand" },
     Ammo = { "Fortune egg" },
-    -- Head = {"Silver hairpin"},
-    -- Body = {"Kingdom tunic"},-- {"Ducal Aketon"},
     Hands = { "Savage Gauntlets", "Mycophile cuffs" },
+    Waist = { "Qiqirn Sash +1" },
     Legs = { "Seer's slacks +1" },
     Ring1 = { "Eremite's ring", "San d'Orian Ring" },
     Ring2 = { "Eremite's ring", "Windurstian Ring" }
@@ -31,12 +30,16 @@ sets.Carbuncle_Priority = {
     Hands = { "Carbuncle mitts" },
 };
 
+-- Reduces recast on blood pacts.
 sets.BloodPactDelay_Priority = T {
     Head = { "Austere Hat" },
     Body = { "Austere Robe" },
     Hands = { "Austere Cuffs" },
 }
 
+-- Affects a number of things:
+-- - Blood pact accuracy/damage
+-- - Avatar power on summon
 sets.SummoningMagic_Priority = T {
     Head = { "Austere Hat" },
     Hands = { "Austere Cuffs" },
@@ -138,7 +141,7 @@ end
 
 profile.HandleDefault = function()
     local layers = SetBuilder.new({ replaceUsable = false });
-    layers:add(sets.Idle);
+    layers:add(sets.MaxMP);
     layers:add(Shared.autoRegen:getSet());
     layers:add(Shared.autoRefresh:getSet());
 
@@ -175,7 +178,7 @@ profile.HandleDefault = function()
 
     local player = gData.GetPlayer();
     if (player.Status == "Resting") then
-        layers:append(sets.Resting);
+        layers:add(sets.Resting);
     end
 
     if (pet ~= nil) then
@@ -199,7 +202,9 @@ profile.HandleDefault = function()
         layers:add(getPetActionSet());
     end
 
-    gFunc.EquipSet(Util.compress_tables(layers:unpack()));
+    layers:add(Shared.movementSpeed:getSet());
+
+    gFunc.EquipSet(layers:finalize());
 end
 
 profile.HandleAbility = function()

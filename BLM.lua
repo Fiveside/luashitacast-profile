@@ -17,8 +17,8 @@ local profile = {
 };
 local sets = profile.Sets;
 
-sets.AutoRefresh = T {
-    Body = JSE.BLM.Relic.Body,
+sets.AutoRefresh_Priority = T {
+    Body = { JSE.BLM.Relic.Body },
 };
 
 sets.Resting = T {
@@ -47,28 +47,20 @@ sets.Midcast = T {
 };
 
 -- This set should be considered the default set.
-sets.MagicAttack = T {
-    Ammo = "Phtm. Tathlum",
-    Head = JSE.BLM.RelicPlus1.Head,
-    -- Head = JSE.BLM.Artifact.Head,
-    Neck = "Philomath Stole",
-    Ear1 = "Moldavite Earring",
-    Ear2 = "Morion Earring",
-    Body = "Igqira weskit",
-    -- Body = "Black Cotehardie",
-    -- Hands = "Wizard's gloves",
-    Hands = "Zenith Mitts",
-    Ring1 = "Snow Ring",
-    Ring2 = "Snow Ring",
-    -- Ring1 = "Kshama Ring No.5",
-    -- Ring2 = "Windurstian Ring",
-    Back = "Red Cape +1",
-    Waist = "Sorcerer's Belt",
-    Legs = "Errant slops",
-    -- Legs = "Seer's Slacks +1",
-    -- Legs = "Wizard's Tonban",
-    Feet = "Rostrum Pumps",
-    -- Feet = "Wizard's Sabots",
+sets.MagicAttack_Priority = T {
+    Ammo = { "Phtm. Tathlum" },
+    Head = { JSE.BLM.RelicPlus1.Head, JSE.BLM.Artifact.Head },
+    Neck = { "Philomath Stole" },
+    Ear1 = { "Moldavite Earring" },
+    Ear2 = { "Morion Earring" },
+    Body = { "Igqira weskit", "Black Cotehardie" },
+    Hands = { "Zenith Mitts", "Wizard's gloves" },
+    Ring1 = { "Snow Ring", "Kshama Ring No.5" },
+    Ring2 = { "Snow Ring", "Windurstian Ring" },
+    Back = { "Red Cape +1" },
+    Waist = { "Sorcerer's Belt", "Penitent's Rope" },
+    Legs = { "Errant slops", JSE.BLM.Artifact.Legs, "Seer's Slacks +1" },
+    Feet = { "Rostrum Pumps", JSE.BLM.Artifact.Feet },
 };
 
 -- Maximizes -Enmity
@@ -237,6 +229,7 @@ end
 profile.HandleDefault = function()
     local layers = SetBuilder.new({ replaceUsable = false });
     layers:add(Shared.autoRegen:getSet());
+    -- print(sets.AutoRefresh.Body);
     layers:add(Shared.autoRefresh:getSet(sets.AutoRefresh));
 
     local player = gData.GetPlayer();

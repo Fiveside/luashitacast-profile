@@ -159,9 +159,9 @@ profile.OnLoad = function()
     state.combatSelector:use("TP");
 
     Events.onProfileLoad();
-    Events.profileUnload:once(Events.mainJobChange:on(function(job, lvl)
+    Events.mainJobChange:on(function(job, lvl)
         gFunc.EvaluateLevels(sets, lvl);
-    end));
+    end);
     gFunc.EvaluateLevels(sets, gData.GetPlayer().MainJobLevel);
 
     Ui.onProfileLoad({

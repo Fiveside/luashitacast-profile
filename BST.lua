@@ -75,7 +75,7 @@ profile.HandleCommand = function(args)
 end
 
 profile.HandleDefault = function()
-    local layers = SetBuilder.new();
+    local layers = SetBuilder.new({ replaceUsable = false });
     layers:add(Shared.autoRegen:getSet())
 
     local player = gData.GetPlayer();
@@ -88,7 +88,6 @@ profile.HandleDefault = function()
     -- layers:add(state.idleRegen:getSet());
     layers:add(getZoneSet());
     layers:add(HELM.getSet());
-    -- print(string.format("Heads: %s -> %s", layers:map(function(t) return t.Head; end):join(','), Utils.compress_tables(layers:unpack()).Head));
     gFunc.EquipSet(layers:finalize());
 end
 

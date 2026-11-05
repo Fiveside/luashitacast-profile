@@ -113,7 +113,11 @@ packetIn:on(function(pkt)
         -- This might be private server behavior, have not yet checked retail.
 
         local partyMemberId = ashita.bits.unpack_be(pkt.data_raw, pktHeaderSize, 9);
-        if partyMemberId ~= GetPlayerEntity().ServerId then
+        local playerEntity = GetPlayerEntity();
+        if (playerEntity == nil) then
+            return;
+        end
+        if partyMemberId ~= playerEntity.ServerId then
             return;
         end
 

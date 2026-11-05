@@ -58,22 +58,50 @@ local profileState = {
     selectors = {}
 };
 
-local function pushStyleVars(styles)
-    local numStyles = 0;
-    for k, v in pairs(styles) do
-        numStyles = numStyles + 1
-        imgui.PushStyleVar(k, v);
-    end
-    return function() imgui.PopStyleVar(numStyles) end
+local function imguiStackComponent(pusher, popper)
+    local count = 0;
+    return {
+        push = function(...)
+            count = count + 1;
+            return pusher(...);
+        end,
+        popAll = function()
+            if count > 0 then
+                return popper(count);
+            end
+        end,
+    }
 end
-local function pushStyleColors(styles)
-    local numStyles = 0
-    for k, v in pairs(styles) do
-        numStyles = numStyles + 1
-        imgui.PushStyleColor(k, v);
-    end
-    return function() imgui.PopStyleColor(numStyles) end
+
+local function styleStack()
+    local vars = imguiStackComponent(imgui.PushStyleVar, imgui.PopStyleVar);
+    local colors = imguiStackComponent(imgui.PushStyleColor, imgui.PopStyleColor);
+    return {
+        vars = vars,
+        colors = colors,
+        popall = function()
+            vars.popAll();
+            colors.popAll();
+        end
+    };
 end
+
+-- local function pushStyleVars(styles)
+--     local numStyles = 0;
+--     for k, v in pairs(styles) do
+--         numStyles = numStyles + 1
+--         imgui.PushStyleVar(k, v);
+--     end
+--     return function() imgui.PopStyleVar(numStyles) end
+-- end
+-- local function pushStyleColors(styles)
+--     local numStyles = 0
+--     for k, v in pairs(styles) do
+--         numStyles = numStyles + 1
+--         imgui.PushStyleColor(k, v);
+--     end
+--     return function() imgui.PopStyleColor(numStyles) end
+-- end
 
 ---asf
 ---@param icon {texture: IDirect3DTexture8?, fallback: integer[]}
@@ -93,6 +121,91 @@ local function drawIcon(icon)
         local newWidth = (lineHeight / height) * width;
         imgui.Image(tonumber(ffi.cast("uint32_t", tex)), { newWidth, lineHeight })
     end
+end
+
+local function drawGearlist()
+    if not state.showGearlist[1] then
+        return;
+    end
+    local styles = styleStack();
+
+    styles.vars.push(ImGuiStyleVar_WindowPadding, { 10, 10 })
+    styles.vars.push(ImGuiStyleVar_FramePadding, { 7, 5 })
+    styles.vars.push(ImGuiStyleVar_CellPadding, { 7, 4 })
+    styles.vars.push(ImGuiStyleVar_ItemSpacing, { 7, 6 })
+    styles.vars.push(ImGuiStyleVar_ItemInnerSpacing, { 5, 4 })
+
+    styles.vars.push(ImGuiStyleVar_WindowRounding, 5)
+    styles.vars.push(ImGuiStyleVar_ChildRounding, 4)
+    styles.vars.push(ImGuiStyleVar_FrameRounding, 3)
+    styles.vars.push(ImGuiStyleVar_PopupRounding, 4)
+
+    styles.vars.push(ImGuiStyleVar_WindowBorderSize, 1)
+    styles.vars.push(ImGuiStyleVar_ChildBorderSize, 1)
+    styles.vars.push(ImGuiStyleVar_FrameBorderSize, 0)
+
+    styles.vars.push(ImGuiStyleVar_ScrollbarSize, 12)
+    styles.vars.push(ImGuiStyleVar_ScrollbarRounding, 4)
+
+    styles.colors.push(ImGuiCol_Text, { 0.91, 0.91, 0.91, 1.00 })
+    styles.colors.push(ImGuiCol_TextDisabled, { 0.37, 0.39, 0.42, 1.00 })
+
+    styles.colors.push(ImGuiCol_WindowBg, { 0.086, 0.094, 0.110, 0.97 })
+    styles.colors.push(ImGuiCol_ChildBg, { 0.067, 0.075, 0.090, 0.97 })
+    styles.colors.push(ImGuiCol_PopupBg, { 0.075, 0.082, 0.098, 0.98 })
+
+    styles.colors.push(ImGuiCol_Border, { 0.21, 0.23, 0.26, 1.00 })
+    styles.colors.push(ImGuiCol_BorderShadow, { 0.00, 0.00, 0.00, 0.00 })
+
+    -- Frames
+    styles.colors.push(ImGuiCol_FrameBg, { 0.12, 0.13, 0.15, 1.00 })
+    styles.colors.push(ImGuiCol_FrameBgHovered, { 0.16, 0.18, 0.21, 1.00 })
+    styles.colors.push(ImGuiCol_FrameBgActive, { 0.19, 0.21, 0.24, 1.00 })
+
+    -- Headers
+    styles.colors.push(ImGuiCol_Header, { 0.13, 0.15, 0.18, 1.00 })
+    styles.colors.push(ImGuiCol_HeaderHovered, { 0.17, 0.19, 0.22, 1.00 })
+    styles.colors.push(ImGuiCol_HeaderActive, { 0.20, 0.22, 0.26, 1.00 })
+
+    -- Buttons
+    styles.colors.push(ImGuiCol_Button, { 0.13, 0.15, 0.18, 1.00 })
+    styles.colors.push(ImGuiCol_ButtonHovered, { 0.18, 0.20, 0.24, 1.00 })
+    styles.colors.push(ImGuiCol_ButtonActive, { 0.22, 0.24, 0.28, 1.00 })
+
+    -- Selection
+    styles.colors.push(ImGuiCol_TextSelectedBg, { 0.30, 0.43, 0.58, 0.35 })
+
+    -- Separators
+    styles.colors.push(ImGuiCol_Separator, { 0.21, 0.23, 0.26, 1.00 })
+    styles.colors.push(ImGuiCol_SeparatorHovered, { 0.35, 0.43, 0.52, 1.00 })
+    styles.colors.push(ImGuiCol_SeparatorActive, { 0.40, 0.50, 0.62, 1.00 })
+
+    -- Scrollbar
+    styles.colors.push(ImGuiCol_ScrollbarBg, { 0.06, 0.07, 0.08, 0.70 })
+    styles.colors.push(ImGuiCol_ScrollbarGrab, { 0.22, 0.24, 0.27, 1.00 })
+    styles.colors.push(ImGuiCol_ScrollbarGrabHovered, { 0.29, 0.32, 0.36, 1.00 })
+    styles.colors.push(ImGuiCol_ScrollbarGrabActive, { 0.34, 0.37, 0.42, 1.00 })
+
+    if imgui.Begin("Porter Moogle Tasks##LAC_profile_gearlist", state.showGearlist) then
+        imgui.Text("Hello World");
+        imgui.SeparatorText("Retrieve");
+        if imgui.BeginTable("##LAC_profile_gearlist_retrieve", 2) then
+            imgui.TableSetupColumn("Item")
+            -- imgui.TableSetupColumn("Location");
+            imgui.TableSetupColumn("Porter Slip");
+            imgui.TableHeadersRow();
+
+            imgui.TableNextRow();
+            imgui.TableNextColumn();
+            imgui.Text("Entry 1")
+            imgui.TableNextColumn()
+            imgui.Text("Entry 1 part 2")
+            imgui.EndTable();
+        end
+    end
+
+    imgui.End();
+    styles.popall();
 end
 
 -- Draws a strikethrough across the previous text
@@ -151,17 +264,18 @@ local function drawEnvironment()
 end
 
 local function drawHud()
-    local popStyleVars = pushStyleVars({
-        [ImGuiStyleVar_WindowBorderSize] = 0,
-        [ImGuiStyleVar_WindowPadding] = { 0, 0 },
-        [ImGuiStyleVar_WindowMinSize] = { 0, 0 },
-    });
+    if not state.showHud[1] then
+        return;
+    end
+    local styles = styleStack();
+    styles.vars.push(ImGuiStyleVar_WindowBorderSize, 0);
+    styles.vars.push(ImGuiStyleVar_WindowPadding, { 0, 0 });
+    styles.vars.push(ImGuiStyleVar_WindowMinSize, { 0, 0 });
 
     local spacing = imgui.GetStyle().ItemSpacing;
-    local popStyleColors = pushStyleColors({
-        [ImGuiStyleVar_ItemSpacing] = { spacing.x, 0 },
-        [ImGuiCol_WindowBg] = { 0, 0, 0, 1 },
-    })
+
+    styles.colors.push(ImGuiStyleVar_ItemSpacing, { spacing.x, 0 });
+    styles.colors.push(ImGuiCol_WindowBg, { 0, 0, 0, 1 });
 
     local lineHeight = imgui.GetTextLineHeight();
     -- local windowHeight = /
@@ -210,9 +324,7 @@ local function drawHud()
         end
     end
     imgui.End();
-    popStyleColors();
-    -- imgui.PopStyleColor(1);
-    popStyleVars();
+    styles.popall();
 end
 
 local function drawUi()
@@ -246,7 +358,7 @@ local Export = {};
 function Export.onSlashCommand(args)
     local command = string.lower(args[1])
     if command == "gearlist" then
-        state.showGearlist[1] = true
+        state.showGearlist[1] = not state.showGearlist[1];
     elseif command == "hud" then
         print("showHud: " .. tostring(state.showHud[1]))
         state.showHud[1] = not state.showHud[1]
@@ -287,6 +399,7 @@ function Export.onProfileLoad(options)
     ashita.events.register("d3d_present", "lac_profile_gui", function()
         drawUi();
         drawHud();
+        drawGearlist();
     end);
 
     -- install keybinds for these sets.
@@ -309,6 +422,7 @@ function Export.onProfileUnload()
     for _, selector in ipairs(profileState.selectors) do
         kb:Unbind(kb:S2D(selector.keybind), true, false, false, false, false, false, false, false);
     end
+    profileState.selectors = T {};
 end
 
 return Export;

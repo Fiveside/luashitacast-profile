@@ -2,6 +2,8 @@ local Util = require("util");
 local Shared = require("shared");
 local events = require("events").profile;
 local SetBuilder = require("setbuilder");
+local CommonSets = require("common_sets");
+local JSE = CommonSets.JSE;
 
 ---@type LAC.Profile
 local profile = {
@@ -9,28 +11,40 @@ local profile = {
     Packer = T {},
 };
 local sets = profile.Sets;
+CommonSets.applyCommonMagicSets(sets);
 
 sets.MaxMP_Priority = {
-    Main = { "Solid Wand", "Yew wand +1", "Willow wand +1", "Maple Wand" },
+    -- Main = { Shared.getElementalStaff("Dark") },
     Ammo = { "Fortune egg" },
+    Head = { "Austere Hat" },
+    Ear1 = { "Morion Earring" },
     Hands = { "Savage Gauntlets", "Mycophile cuffs" },
+    Ring1 = { "Kshama Ring No.5", "San d'Orian Ring" },
+    Ring2 = { "Eremite's ring", "Windurstian Ring" },
     Waist = { "Qiqirn Sash +1" },
     Legs = { "Seer's slacks +1" },
-    Ring1 = { "Eremite's ring", "San d'Orian Ring" },
-    Ring2 = { "Eremite's ring", "Windurstian Ring" }
+    Feet = { "Austere Sabots" },
 };
+
+sets.StaffStrap_Prioirty = {
+    Sub = { "Bugard Strap +1" },
+};
+
+-- Haste and conserve mp.
+sets.Midcast_Priority = {}
 
 sets.Resting_Priority = {
     Main = { Shared.getElementalStaff("Dark"), "Pilgrim's Wand" },
+    Neck = { "Beak Necklace +1" },
     Body = { "Seer's Tunic" },
+    Waist = { "Qiqirn Sash +1" },
     Legs = { "Baron's slops" },
-};
-
-sets.Carbuncle_Priority = {
-    Hands = { "Carbuncle mitts" },
+    Ear1 = { "Relaxing Earring" },
+    Ear2 = { "Antivenom Earring" },
 };
 
 -- Reduces recast on blood pacts.
+-- Snapshotted when the summoner orders a blood pact. (HandleAbility)
 sets.BloodPactDelay_Priority = T {
     Head = { "Austere Hat" },
     Body = { "Austere Robe" },
@@ -38,9 +52,11 @@ sets.BloodPactDelay_Priority = T {
 }
 
 -- Affects a number of things:
--- - Blood pact accuracy/damage
--- - Avatar power on summon
-sets.SummoningMagic_Priority = T {
+-- - Blood pact rage accuracy and magic accuracy.  Snapshotted when the skill connects.
+-- - Blood pact ward buff duration.  Snapshotted when the skill connects.
+-- - AI of elemental spirits
+-- - Time between casts from elemental spirits
+sets.Skill_Summoning_Priority = T {
     Head = { "Austere Hat" },
     Hands = { "Austere Cuffs" },
     Legs = { "Austere Slops" },
@@ -51,6 +67,10 @@ sets.SummoningMagic_Priority = T {
 sets.PerpetuationCost_Priority = T {
     Body = { "Austere Robe" },
 }
+
+sets.PerpetuationCost_Carbuncle_Priority = {
+    Hands = { "Carbuncle mitts" },
+};
 
 -- Avatar to element map, for use when choosing which staff to use
 ---@type table<string, LAC.Element>
@@ -78,11 +98,29 @@ local AVATAR_ELEMENT = {
 -- The actual midcast flow for the player without considering the pet.
 local function getMidcastSet()
     local layers = SetBuilder.new();
+    local action = gData.GetAction();
+    ---@cast action -?
+
+    local skillSet = sets["Skill_" .. action.Skill]
+    if skillSet ~= nil then
+        layers:add(skillSet);
+    end
+
+    local staff = Shared.getElementalStaff()
+    if staff ~= nil then
+        layers:add(sets.StaffStrap);
+        layers:add({ Main = staff });
+    end
+
+    local spellSpecificSet = sets["MA_" .. action.Name];
+    if spellSpecificSet ~= nil then
+        layers:add(spellSpecificSet);
+    end
 
     return layers:finalize();
 end
 
-local function onPetActionComplete(actorId, targetId)
+local function onPetActionComplete(actorId, combatAction)
     -- We only care about our pet's action
     local pet = gData.GetPet();
     if pet == nil or pet.Id ~= actorId then
@@ -132,10 +170,9 @@ local function getPetActionSet()
 
     local pet = gData.GetPet();
     local petAction = gData.GetPetAction();
-    if petAction.Type == "Blood Pact: Rage" or petAction.Type == "Blood Pact: Ward" then
-        layers:add(sets.BloodPactDelay);
+    if petAction ~= nil and T({ "Blood Pact: Rage", "Blood Pact: Ward" }):contains(petAction.Type) then
+        layers:add(sets.SummoningMagic);
     end
-
     return layers:finalize();
 end
 
@@ -182,11 +219,8 @@ profile.HandleDefault = function()
     end
 
     if (pet ~= nil) then
-        -- Perpetuation sets have lower priority than pet specific sets
-        -- for cases like carby mitts.
         layers:add(sets.PerpetuationCost);
-
-        local petSet = sets[pet.Name];
+        local petSet = sets["PerpetuationCost_" .. pet.Name];
         if (petSet ~= nil) then
             layers:add(petSet);
         end
@@ -208,15 +242,26 @@ profile.HandleDefault = function()
 end
 
 profile.HandleAbility = function()
+    local layers = SetBuilder.new();
+    local action = gData.GetAction();
+    ---@cast action -?
+
+    if T({ "Blood Pact: Rage", "Blood Pact: Ward" }):contains(action.Type) then
+        layers:add(sets.BloodPactDelay);
+    end
+
+    gFunc.EquipSet(layers:finalize());
 end
 
 profile.HandleItem = function()
 end
 
 profile.HandlePrecast = function()
+    gFunc.EquipSet(Shared.fastCast:getSet())
 end
 
 profile.HandleMidcast = function()
+    gFunc.EquipSet(getMidcastSet());
 end
 
 profile.HandlePreshot = function()

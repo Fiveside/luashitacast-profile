@@ -70,7 +70,7 @@ sets.JA_Chakra_Priority = {
     -- Special gear:
     --   Temple Cyclas - changes the vit multiplier from 1x to 2x
     --   Melee gloves - Adds an additional 0.6 multiplier to vit
-    Ammo = { "Fortune Egg" },
+    Ammo = { "Bibiki Seashell" },
     Head = { "Genbu's Kabuto" },
     Body = { JSE.MNK.Artifact.Body },
     Waist = { "Warrior's Belt +1" },

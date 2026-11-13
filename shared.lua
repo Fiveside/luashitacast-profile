@@ -4,6 +4,117 @@ local bit = require("bit");
 local XI = require("xi");
 local Events = require("events");
 
+----------------------------
+-- Movement speed
+----------------------------
+
+local CITY_ZONES = T {
+    Bastok = T { "Bastok Markets", "Bastok Mines", "Metalworks", "Port Bastok" },
+    Windurst = T { "Windurst Woods", "Windurst Walls", "Windurst Waters", "Port Windurst" },
+    ["San d'Oria"] = T { "Southern San d'Oria", "Northern San d'Oria", "Port San d'Oria", "Chateau d'Oraguille" },
+    Jeuno = T { "Ru'Lude Gardens", "Upper Jeuno", "Lower Jeuno", "Port Jeuno", },
+}
+
+do
+    local all = T {}
+    for city, zones in pairs(CITY_ZONES) do
+        all:extend(zones);
+    end
+    CITY_ZONES.All = all;
+end
+
+local MOVEMENT_SPEED_ITEMS = T {
+    {
+        name = "Ducal Aketon",
+        condition = function()
+            local zoneName = gData.GetEnvironment().Area;
+            return CITY_ZONES.All:contains(zoneName);
+        end
+    },
+    {
+        name = "Republic Aketon",
+        condition = function()
+            local inZone = CITY_ZONES.Bastok:contains(gData.GetEnvironment().Area);
+            return inZone and Conquest.GetCurrentNation() == "Bastok";
+        end
+    },
+    {
+        name = "Kingdom Aketon",
+        condition = function()
+            local inZone = CITY_ZONES["San d'Oria"]:contains(gData.GetEnvironment().Area);
+            return inZone and Conquest.GetCurrentNation() == "San d'Oria";
+        end
+    },
+    {
+        name = "Federation Aketon",
+        condition = function()
+            local inZone = CITY_ZONES.Windurst:contains(gData.GetEnvironment().Area);
+            return inZone and Conquest.GetCurrentNation() == "Windurst";
+        end
+    },
+    {
+        name = "Crimson Cuisses"
+    }
+}
+
+----------------------------
+-- Auto-Regen, Auto-Refresh, and Auto-Regain
+----------------------------
+
+local AUTO_REGEN_ITEMS = T {
+    {
+        name = "President. Hairpin",
+        condition = function()
+            -- Hairpin should be enabled if we are in a zone considered
+            -- "outside own nation's control".
+
+            -- Note that XI considers "not inside control" and "outside control" to be
+            -- two different conditions.
+            local isValidZone = not Conquest.GetInsideControl();
+
+            -- The auto-regen on the hairpin only procs if we have signet.
+            local hasSignet = gData.GetBuffCount("Signet") > 0;
+
+            return isValidZone and hasSignet;
+        end,
+    },
+    {
+        name = "Garden Bangles",
+        condition = function()
+            -- Regen on garden bangles only works during the daytime.
+            local gameTime = gData.GetEnvironment().Time;
+            return gameTime > 8.0 and gameTime < 18.0;
+        end,
+    },
+};
+
+local AUTO_REFRESH_ITEMS = T {
+    {
+        name = "Vermillion Cloak",
+        displaces = T { "Head" },
+    }
+};
+
+local AUTO_REGAIN_ITEMS = T {
+    {
+        name = "Opo-opo Necklace",
+        condition = function()
+            -- Only recovers TP while we're asleep.
+            return gData.GetBuffCount("sleep") > 0;
+        end,
+    }
+};
+
+----------------------------
+-- Fast cast
+----------------------------
+
+local FAST_CAST_ITEMS = T {
+    { name = "Rostrum Pumps" },
+    { name = "Loquac. Earring" },
+}
+
+
 ---@class AutoGearItemPartialDefinition
 ---@field name string
 ---@field condition (fun(): boolean)?
@@ -135,35 +246,8 @@ function EquipConditional:getSet(additionalSet)
 end
 
 ----------------------------
--- Auto-Regen, Auto-Refresh, and Auto-Regain
+-- Specific types of conditions
 ----------------------------
-
-local AUTO_REGEN_ITEMS = T {
-    {
-        name = "President. Hairpin",
-        condition = function()
-            -- Hairpin should be enabled if we are in a zone considered
-            -- "outside own nation's control".
-
-            -- Note that XI considers "not inside control" and "outside control" to be
-            -- two different conditions.
-            local isValidZone = not Conquest.GetInsideControl();
-
-            -- The auto-regen on the hairpin only procs if we have signet.
-            local hasSignet = gData.GetBuffCount("Signet") > 0;
-
-            return isValidZone and hasSignet;
-        end,
-    },
-    {
-        name = "Garden Bangles",
-        condition = function()
-            -- Regen on garden bangles only works during the daytime.
-            local gameTime = gData.GetEnvironment().Time;
-            return gameTime > 8.0 and gameTime < 18.0;
-        end,
-    },
-};
 
 local autoRegen = EquipConditional.new(AUTO_REGEN_ITEMS, function(ctx)
     -- Enable the regen set if
@@ -187,12 +271,6 @@ local autoRegen = EquipConditional.new(AUTO_REGEN_ITEMS, function(ctx)
     return false;
 end);
 
-local AUTO_REFRESH_ITEMS = T {
-    {
-        name = "Vermillion Cloak",
-        displaces = T { "Head" },
-    }
-};
 
 local autoRefresh = EquipConditional.new(AUTO_REFRESH_ITEMS, function(ctx)
     -- Identical rules to the auto-regen set, just for mp now.
@@ -214,15 +292,6 @@ local autoRefresh = EquipConditional.new(AUTO_REFRESH_ITEMS, function(ctx)
     return false;
 end);
 
-local AUTO_REGAIN_ITEMS = T {
-    {
-        name = "Opo-opo Necklace",
-        condition = function()
-            -- Only recovers TP while we're asleep.
-            return gData.GetBuffCount("sleep") > 0;
-        end,
-    }
-};
 
 local autoRegain = EquipConditional.new(AUTO_REGAIN_ITEMS, function(ctx)
     -- There's no reason not to recover TP until we hit 3k.  No gear flashing
@@ -230,68 +299,32 @@ local autoRegain = EquipConditional.new(AUTO_REGAIN_ITEMS, function(ctx)
     return gData.GetPlayer().TP < 3000;
 end);
 
-----------------------------
--- Movement speed
-----------------------------
-
-local CITY_ZONES = T {
-    Bastok = T { "Bastok Markets", "Bastok Mines", "Metalworks", "Port Bastok" },
-    Windurst = T { "Windurst Woods", "Windurst Walls", "Windurst Waters", "Port Windurst" },
-    ["San d'Oria"] = T { "Southern San d'Oria", "Northern San d'Oria", "Port San d'Oria", "Chateau d'Oraguille" },
-    Jeuno = T { "Ru'Lude Gardens", "Upper Jeuno", "Lower Jeuno", "Port Jeuno", },
-}
-
-do
-    local all = T {}
-    for city, zones in pairs(CITY_ZONES) do
-        all:extend(zones);
-    end
-    CITY_ZONES.All = all;
-end
-
-local MOVEMENT_SPEED_ITEMS = T {
-    {
-        name = "Ducal Aketon",
-        condition = function()
-            local zoneName = gData.GetEnvironment().Area;
-            return CITY_ZONES.All:contains(zoneName);
-        end
-    },
-    {
-        name = "Republic Aketon",
-        condition = function()
-            local inZone = CITY_ZONES.Bastok:contains(gData.GetEnvironment().Area);
-            return inZone and Conquest.GetCurrentNation() == "Bastok";
-        end
-    },
-    {
-        name = "Kingdom Aketon",
-        condition = function()
-            local inZone = CITY_ZONES["San d'Oria"]:contains(gData.GetEnvironment().Area);
-            return inZone and Conquest.GetCurrentNation() == "San d'Oria";
-        end
-    },
-    {
-        name = "Federation Aketon",
-        condition = function()
-            local inZone = CITY_ZONES.Windurst:contains(gData.GetEnvironment().Area);
-            return inZone and Conquest.GetCurrentNation() == "Windurst";
-        end
-    },
-    {
-        name = "Crimson Cuisses"
-    }
-}
 
 local movementSpeed = EquipConditional.new(MOVEMENT_SPEED_ITEMS, function(ctx)
     return gData.GetPlayer().IsMoving;
 end)
 
+local fastCast = EquipConditional.new(FAST_CAST_ITEMS, function(ctx)
+    return true; -- HandlePrecast already handles all condition checks.
+end);
+
+---@type EquipConditional[]
+local REFRESHABLES = T {
+    autoRegen,
+    autoRefresh,
+    autoRegain,
+    movementSpeed,
+    fastCast,
+}
+
+local function refreshAll(job, lvl)
+    for _, x in ipairs(REFRESHABLES) do
+        x:refresh(job, lvl);
+    end
+end
+
 Events.mainJobChange:on(function(job, lvl)
-    autoRegen:refresh(job, lvl);
-    autoRefresh:refresh(job, lvl);
-    autoRegain:refresh(job, lvl);
-    movementSpeed:refresh(job, lvl);
+    refreshAll(job, lvl);
 end);
 
 Events.inventoryUpdate:on(function()
@@ -304,16 +337,11 @@ Events.inventoryUpdate:on(function()
         return;
     end
 
-    autoRegen:refresh(job, lvl);
-    autoRefresh:refresh(job, lvl);
-    autoRegain:refresh(job, lvl);
-    movementSpeed:refresh(job, lvl);
+    refreshAll(job, lvl);
 end)
 
 -- Events.zoneChange:on(function()
---     autoRegen:reset();
---     autoRefresh:reset();
---     autoRegain:reset();
+--     refreshAll(job, lvl);
 -- end);
 
 local Export = {
@@ -322,6 +350,7 @@ local Export = {
     autoRefresh = autoRefresh,
     autoRegain = autoRegain,
     movementSpeed = movementSpeed,
+    fastCast = fastCast,
 };
 
 ----------------------------

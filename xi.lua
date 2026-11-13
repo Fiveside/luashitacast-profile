@@ -165,6 +165,12 @@ Export.EquipmentSlotMask = {
 
 Export.EquipmentSlotMask = T(Export.EquipmentSlotMask);
 
+---@class SkillchainDefinition
+---@field Name string
+---@field Elements LAC.Element[]
+
+-- Mapping game IDs to their skillchains
+---@type table<integer, SkillchainDefinition>
 Export.Skillchains = T {
     [1] = T { Name = "Light", Elements = T { "Light", "Thunder", "Fire", "Wind" } },
     [2] = T { Name = "Darkness", Elements = T { "Dark", "Ice", "Water", "Earth" } },

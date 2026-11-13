@@ -16,17 +16,19 @@ local profile = {
     Packer = T {},
 };
 local sets = profile.Sets;
+CommonSets.applyCommonMagicSets(sets);
 
 sets.AutoRefresh_Priority = T {
-    Body = { JSE.BLM.Relic.Body },
+    Body = { JSE.BLM.RelicPlus1.Body },
 };
 
 sets.Resting = T {
     Main = Shared.getElementalStaff:bind1("Dark"),
-    Neck = "Grandiose Chain",
+    Head = "Hydra Beret",
+    Neck = "Beak Necklace +1",
     Body = "Errant Hpl.",
     Waist = "Qiqirn Sash +1",
-    Legs = "Baron's slops",
+    Legs = "Hydra Brais",
     Ear1 = "Relaxing Earring",
     Ear2 = "Antivenom Earring",
 };
@@ -131,9 +133,6 @@ sets.MA_Stoneskin = T {
     Feet = "Rostrum Pumps",
 }
 
--- Specific gear for job actions, spells, and weapon skills
-CommonSets.applyCommonMagicSets(sets);
-
 ---Specific gear along with functions that return true when they it should be equipped
 ---Equip happens during midcast
 local CONDITIONAL_GEAR = T {
@@ -229,7 +228,6 @@ end
 profile.HandleDefault = function()
     local layers = SetBuilder.new({ replaceUsable = false });
     layers:add(Shared.autoRegen:getSet());
-    -- print(sets.AutoRefresh.Body);
     layers:add(Shared.autoRefresh:getSet(sets.AutoRefresh));
 
     local player = gData.GetPlayer();

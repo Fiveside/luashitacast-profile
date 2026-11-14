@@ -4,7 +4,7 @@ local Utils = require("util");
 local getZoneSet = require("town");
 local Shared = require("shared");
 local CommonSets = require("common_sets");
-local Bursts = require("bursts");
+local Tracking = require("tracking");
 local events = require("events").profile;
 local ui = require("ui");
 local SetBuilder = require("setbuilder")
@@ -297,7 +297,7 @@ profile.HandleMidcast = function()
     end
 
     -- If a burst window is open, equip that set too.
-    local chain = Bursts.getSkillchain(gData.GetActionTarget().Id);
+    local chain = Tracking.getSkillchain(gData.GetActionTarget().Id);
     if chain ~= nil and chain.Elements:contains(action.Element) then
         layers:add(sets.MagicBurst);
     end

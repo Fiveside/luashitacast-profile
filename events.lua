@@ -290,7 +290,7 @@ packetIn:on(function(pkt)
 
     skip(8); -- info_size
     local actorId = read(32);
-    local trg_sum = read(4);
+    local trg_sum = read(6);
     skip(4); -- res_sum
     local cmd_no = read(4);
     local cmd_arg = read(32);
@@ -417,7 +417,6 @@ end);
 ---------------------
 
 local death = EventEmitter.new();
-
 packetIn:on(function(pkt)
     if pkt.id ~= 0x029 then return; end
 

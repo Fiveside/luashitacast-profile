@@ -5,7 +5,8 @@ local Xi = require("xi");
 local Shared = require("shared");
 local Events = require("events").profile;
 local SetBuilder = require("setbuilder");
-local JSE = require("common_sets").JSE;
+local JSE = require("common_sets").JSE.THF;
+local Tracking = require("tracking")
 
 ---@type LAC.Profile
 local profile = {
@@ -31,7 +32,7 @@ sets.TP_Priority = T {
 
     Back = { "Amemet Mantle +1", "Jaguar Mantle" },
     Waist = { "Swift Belt" },
-    Legs = { JSE.THF.Artifact.Legs, "Republic Subligar" },
+    Legs = { JSE.Artifact.Legs, "Republic Subligar" },
     Feet = { "Leaping Boots" },
 }
 
@@ -41,6 +42,11 @@ sets.Evasion_Priority = Utils.compress_tables(sets.TP_Priority, T {
     Ear2 = { "Ethereal Earring", "empty" },
     Body = { "Scorpion Harness" },
 });
+
+sets.TreasureHunter_Priority = {
+    Neck = { "Nanaa's Charm" },
+    Hands = { JSE.RelicPlus1.Hands },
+}
 
 -----------------------------
 -- Job Ability specific sets
@@ -128,17 +134,34 @@ profile.HandleDefault = function()
         layers:add(sets.TP);
     end
 
+    local target = gData.GetTarget();
+    if target ~= nil and not Tracking.isTreasureHunterApplied(target.Id) then
+        layers:add(sets.TreasureHunter);
+    end
+
     layers:add(Shared.movementSpeed:getSet());
 
     gFunc.EquipSet(layers:finalize());
 end
 
 profile.HandleAbility = function()
+    local layers = SetBuilder.new();
     local action = gData.GetAction();
+    local target = gData.GetActionTarget();
+    ---@cast action -?
+    ---@cast target -?
+
     local set = sets["JA_" .. action.Name];
     if action.ActionType == "Ability" and set ~= nil then
-        gFunc.EquipSet(set);
+        layers:add(set);
     end
+
+    -- Treasure hunter takes priority over other abilities.
+    if not Tracking.isTreasureHunterApplied(target.Id) then
+        layers:add(sets.TreasureHunter);
+    end
+
+    gFunc.EquipSet(layers:finalize());
 end
 
 profile.HandleItem = function()
@@ -148,12 +171,30 @@ profile.HandlePrecast = function()
 end
 
 profile.HandleMidcast = function()
+    local layers = SetBuilder.new();
+    local target = gData.GetTarget();
+    ---@cast target -?
+
+    if not Tracking.isTreasureHunterApplied(target.Id) then
+        layers:add(sets.TreasureHunter);
+    end
+
+    gFunc.EquipSet(layers:finalize())
 end
 
 profile.HandlePreshot = function()
 end
 
 profile.HandleMidshot = function()
+    local layers = SetBuilder.new();
+    local target = gData.GetActionTarget();
+    ---@cast target -?
+
+    if not Tracking.isTreasureHunterApplied(target.Id) then
+        layers:add(sets.TreasureHunter);
+    end
+
+    gFunc.EquipSet(layers:finalize())
 end
 
 profile.HandleWeaponskill = function()

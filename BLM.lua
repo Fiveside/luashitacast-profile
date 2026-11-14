@@ -8,7 +8,7 @@ local Bursts = require("bursts");
 local events = require("events").profile;
 local ui = require("ui");
 local SetBuilder = require("setbuilder")
-local JSE = CommonSets.JSE;
+local JSE = CommonSets.JSE.BLM;
 
 ---@type LAC.Profile
 local profile = {
@@ -19,7 +19,7 @@ local sets = profile.Sets;
 CommonSets.applyCommonMagicSets(sets);
 
 sets.AutoRefresh_Priority = T {
-    Body = { JSE.BLM.RelicPlus1.Body },
+    Body = { JSE.RelicPlus1.Body },
 };
 
 sets.Resting = T {
@@ -51,7 +51,7 @@ sets.Midcast = T {
 -- This set should be considered the default set.
 sets.MagicAttack_Priority = T {
     Ammo = { "Phtm. Tathlum" },
-    Head = { JSE.BLM.RelicPlus1.Head, JSE.BLM.Artifact.Head },
+    Head = { JSE.RelicPlus1.Head, JSE.Artifact.Head },
     Neck = { "Philomath Stole" },
     Ear1 = { "Moldavite Earring" },
     Ear2 = { "Morion Earring" },
@@ -61,18 +61,18 @@ sets.MagicAttack_Priority = T {
     Ring2 = { "Snow Ring", "Windurstian Ring" },
     Back = { "Red Cape +1" },
     Waist = { "Sorcerer's Belt", "Penitent's Rope" },
-    Legs = { "Errant slops", JSE.BLM.Artifact.Legs, "Seer's Slacks +1" },
-    Feet = { "Rostrum Pumps", JSE.BLM.Artifact.Feet },
+    Legs = { "Errant slops", JSE.Artifact.Legs, "Seer's Slacks +1" },
+    Feet = { "Rostrum Pumps", JSE.Artifact.Feet },
 };
 
 -- Maximizes -Enmity
 sets.MinusEnmity = T {
-    Head = JSE.BLM.Artifact.Head,
+    Head = JSE.Artifact.Head,
     Body = "Hydra Doublet",
-    Hands = JSE.BLM.RelicPlus1.Hands,
+    Hands = JSE.RelicPlus1.Hands,
     Waist = "Penitent's Rope",
-    Legs = JSE.BLM.Relic.Legs,
-    Feet = JSE.BLM.Artifact.Feet,
+    Legs = JSE.Relic.Legs,
+    Feet = JSE.Artifact.Feet,
 };
 
 -- Equipped when we find and equip an elemental staff.
@@ -82,16 +82,16 @@ sets.StaffStrap = T {
 
 -- Maximizes +Elemental Magic Skill
 sets.ElementalMagic = T {
-    Head = JSE.BLM.RelicPlus1.Head,
-    Body = JSE.BLM.Relic.Body,
-    Hands = JSE.BLM.Artifact.Hands,
+    Head = JSE.RelicPlus1.Head,
+    Body = JSE.Relic.Body,
+    Hands = JSE.Artifact.Hands,
     Back = "Merciful Cape",
 };
 
 -- Maximizes +Enfeebling Magic Skill
 sets.EnfeeblingMagic = T {
-    Head = JSE.BLM.RelicPlus1.Head,
-    Body = JSE.BLM.Artifact.Body,
+    Head = JSE.RelicPlus1.Head,
+    Body = JSE.Artifact.Body,
     Back = "Altruistic Cape",
     Legs = "Nashira Seraweels",
 };
@@ -99,7 +99,7 @@ sets.EnfeeblingMagic = T {
 -- Maximizes +Dark Magic Skill
 sets.DarkMagic = T {
     Main = Shared.getElementalStaff:bind1("Dark"),
-    Hands = JSE.BLM.RelicPlus1.Hands,
+    Hands = JSE.RelicPlus1.Hands,
     Legs = "Wizard's Tonban",
     Back = "Merciful Cape",
 };
@@ -111,7 +111,7 @@ sets.EnhancingMagic = T {
 
 -- A list of gear that only gets equipped while the magic burst window is open on the target
 sets.MagicBurst = T {
-    Hands = JSE.BLM.RelicPlus1.Hands,
+    Hands = JSE.RelicPlus1.Hands,
 };
 
 

@@ -420,4 +420,35 @@ function Export.listContainer(containerId)
     return containerIterator, containerId, 1
 end
 
+---Retrieve an IEntity by its server id
+---@param serverId integer
+---@return entity_t?
+function Export.getEntityByServerId(serverId)
+    local manager = AshitaCore:GetMemoryManager():GetEntity();
+
+    -- FFXI's client implementation uses the lower 12 bits of the server id as the entity index
+    -- for mobs and NPCs.  TH tracking on players doesn't make sense, so we can use this shortcut.
+    if (bit.band(serverId, 0x1000000) ~= 0) then
+        local index = bit.band(serverId, 0xFFF);
+        if (index >= 0x900) then
+            index = index - 0x100;
+        end
+
+        if index < 0x900 then
+            local entity = GetEntity(index);
+            if entity ~= nil and entity.ServerId == serverId then
+                return entity;
+            end
+        end
+    end
+
+    -- Fallback if we can't do fast lookup
+    for i = 0, 0x8FF do
+        local entity = GetEntity(i);
+        if entity ~= nil and entity.ServerId == serverId then
+            return entity;
+        end
+    end
+end
+
 return Export;

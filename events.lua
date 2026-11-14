@@ -286,13 +286,10 @@ packetIn:on(function(pkt)
     -- https://github.com/LandSandBoat/server/blob/base/src/map/packets/s2c/0x028_battle2.cpp
     -- https://github.com/LandSandBoat/server/issues/4152#issuecomment-1646781138
     -- https://github.com/AshitaXI/Ashita-v4beta/blob/main/addons/actionparse/parser.lua
+    -- https://github.com/sruon/captain/blob/main/libs/packets/definitions.lua
 
-    -- this packet contains a uint8_t worksize; variable after the common packet header.
-    -- we can safely ignore it.
-    skip(8);
-
+    skip(8); -- info_size
     local actorId = read(32);
-
     local trg_sum = read(4);
     skip(4); -- res_sum
     local cmd_no = read(4);
@@ -415,6 +412,57 @@ packetIn:on(function(pkt)
     end
 end);
 
+---------------------
+-- Death
+---------------------
+
+local death = EventEmitter.new();
+
+packetIn:on(function(pkt)
+    if pkt.id ~= 0x029 then return; end
+
+    local read, skip = createBitreader(pkt, pktHeaderSize);
+
+    skip(32); -- UniqueNoCas
+    local UniqueNoTar = read(32);
+    skip(32); -- Data
+    skip(32); -- Data2
+    skip(16); -- ActIndexCas
+    local ActIndexTar = read(16);
+    local MessageNum = read(16);
+    skip(8); -- Type
+    skip(8); -- padding00
+
+    -- 6: x defeats y
+    -- 20: y falls to the ground
+    if MessageNum == 6 or MessageNum == 20 then
+        death:trigger(UniqueNoTar, ActIndexTar);
+    end
+end);
+
+---------------------
+-- Despawn
+---------------------
+
+local despawn = EventEmitter.new();
+packetIn:on(function(pkt)
+    if pkt.id ~= 0x038 then return; end
+
+    local read, skip = createBitreader(pkt, pktHeaderSize);
+
+    skip(32);            -- UniqueNoCas
+    local UniqueNoTar = read(32);
+    local id = read(32); -- FourCC
+    skip(16);            -- ActIndexCast
+    local ActIndexTar = read(16);
+
+    -- kesu byteswapped
+    -- https://github.com/LandSandBoat/server/blob/base/src/map/enums/four_cc.h
+    if id == 0x7573656B then
+        despawn:trigger(UniqueNoTar, ActIndexTar);
+    end
+end);
+
 
 -- ATT: We export all of these event emitters as singletons.  The expectation is that
 -- require('events') will execute this file once and cache the return value as a module.
@@ -450,6 +498,35 @@ end);
 local profileLoad = EventEmitter.new();
 local profileUnload = EventEmitter.new();
 
+---------------------
+-- Clock based timers
+---------------------
+
+local eachSecond = EventEmitter.new();
+local eachSecondCoro = nil;
+
+-- Must be registered on first render because first profile load happens during addon load
+render:once(function()
+    local function eventCallback()
+        local function timerLoop()
+            eachSecond:trigger();
+            eachSecondCoro = ashita.tasks.once(1, timerLoop);
+        end
+        if eachSecondCoro == nil then
+            timerLoop();
+        end
+    end;
+    profileLoad:on(eventCallback);
+    eventCallback();
+end)
+
+profileUnload:on(function()
+    if eachSecondCoro ~= nil then
+        coroutine.kill(eachSecondCoro);
+        eachSecondCoro = nil;
+    end
+end)
+
 local Export = {
     packetIn = packetIn,
     profileLoad = profileLoad,
@@ -459,10 +536,12 @@ local Export = {
     zoneChange = zoneChange,
     combatAction = combatAction,
     skillchain = skillchain,
-    -- timer = timer,
     render = render,
     inventoryUpdate = inventoryUpdate,
     petActionComplete = petActionComplete,
+    eachSecond = eachSecond,
+    death = death,
+    despawn = despawn,
 };
 
 -- This assumes that the export contains _only_ event emitters and

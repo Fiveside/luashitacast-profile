@@ -3,7 +3,7 @@ local Shared = require("shared");
 local events = require("events").profile;
 local SetBuilder = require("setbuilder");
 local CommonSets = require("common_sets");
-local JSE = CommonSets.JSE;
+local JSE = CommonSets.JSE.SMN;
 
 ---@type LAC.Profile
 local profile = {
@@ -14,15 +14,16 @@ local sets = profile.Sets;
 CommonSets.applyCommonMagicSets(sets);
 
 sets.MaxMP_Priority = {
-    -- Main = { Shared.getElementalStaff("Dark") },
+    Main = { "Kukulcan's Staff" },
     Ammo = { "Fortune egg" },
     Head = { "Austere Hat" },
     Ear1 = { "Morion Earring" },
+    Ear2 = { "Antivenom Earring" },
     Hands = { "Savage Gauntlets", "Mycophile cuffs" },
     Ring1 = { "Kshama Ring No.5", "San d'Orian Ring" },
     Ring2 = { "Eremite's ring", "Windurstian Ring" },
     Waist = { "Qiqirn Sash +1" },
-    Legs = { "Seer's slacks +1" },
+    Legs = { JSE.Artifact.Legs, "Seer's slacks +1" },
     Feet = { "Austere Sabots" },
 };
 
@@ -34,7 +35,7 @@ sets.StaffStrap_Prioirty = {
 sets.Midcast_Priority = {}
 
 sets.Resting_Priority = {
-    Main = { Shared.getElementalStaff("Dark"), "Pilgrim's Wand" },
+    Main = { Shared.getElementalStaff("Dark"), "Kukulcan's Staff", "Pilgrim's Wand" },
     Neck = { "Beak Necklace +1" },
     Body = { "Seer's Tunic" },
     Waist = { "Qiqirn Sash +1" },

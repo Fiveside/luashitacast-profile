@@ -132,12 +132,13 @@ profile.HandleDefault = function()
 
     if player.Status == "Engaged" then
         layers:add(sets.TP);
+
+        local target = gData.GetTarget();
+        if target ~= nil and not Tracking.isTreasureHunterApplied(target.Id) then
+            layers:add(sets.TreasureHunter);
+        end
     end
 
-    local target = gData.GetTarget();
-    if target ~= nil and not Tracking.isTreasureHunterApplied(target.Id) then
-        layers:add(sets.TreasureHunter);
-    end
 
     layers:add(Shared.movementSpeed:getSet());
 

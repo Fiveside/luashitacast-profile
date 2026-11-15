@@ -316,7 +316,9 @@ packetIn:on(function(pkt)
         -- Result parsing.  This section has variable size, so we need
         -- to read the whole thing to find all targets.
         for _j = 1, result_sum do
-            local result = T {};
+            local result = T {
+                has_proc = false,
+            };
             table.insert(target.results, result)
 
             skip(3);  -- miss
@@ -328,9 +330,9 @@ packetIn:on(function(pkt)
             result.message = read(10);
             skip(31); -- bit
 
-            local has_proc = read(1) > 0;
-            local proc = T { kind = 0 };
-            if has_proc then
+            result.has_proc = read(1) > 0;
+            if result.has_proc then
+                local proc = T { kind = 0 };
                 result.proc = proc;
                 proc.kind = read(6); -- kind
                 skip(4);             -- info
@@ -367,8 +369,11 @@ combatAction:on(function(action)
     -- in LSB where a blue aoe chain affinity spell says it triggers a chain on every target it hits
     -- if the designated target did trigger a chain.  This isn't true, and the other targets aren't actually
     -- being chained on.  So we purposefully ignore every target aside from the first.
+    if #action.targets == 0 or #action.targets[1].results == 0 then
+        return;
+    end
     local result = action.targets[1].results[1];
-    if result == nil or result.proc == nil then
+    if not result.has_proc then
         return;
     end
 

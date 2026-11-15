@@ -8,7 +8,7 @@ local ffi = require("ffi");
 
 local Slips = require("slips/slips");
 local XI = require("xi");
-local Bursts = require("bursts");
+local Tracking = require("tracking");
 
 local state = {
     showGearlist = { true },
@@ -314,7 +314,7 @@ local function drawHud()
 
         local target = gData.GetTarget();
         if target ~= nil then
-            local sc = Bursts.getSkillchain(target.Id);
+            local sc = Tracking.getSkillchain(target.Id);
             if sc ~= nil then
                 imgui.SameLine();
                 imgui.Text("| SC:");

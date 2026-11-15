@@ -121,8 +121,7 @@ sets.MagicBurst = T {
 
 -- Maximizes MND.
 sets.MA_Stoneskin = T {
-    --TODO: find room for kirin's pole in wardrobes
-    Main = Shared.getElementalStaff:bind1("Water"),
+    Main = "Kirin's Pole",
     Sub = "Bugard Strap +1",
     Body = "Kirin's Osode",
     Neck = "Faith Torque",

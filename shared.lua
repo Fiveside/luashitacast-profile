@@ -160,8 +160,10 @@ end
 
 
 ---@class EquipConditional
----@field activeSets AutoGearItemDefinition[]
----@field defaultSets AutoGearItemDefinition[]
+---@field private activeSets AutoGearItemDefinition[]
+---@field private defaultSets AutoGearItemDefinition[]
+---@field private condition fun(table): boolean
+---@field private conditionContext table
 local EquipConditional = T {};
 
 ---Creates a new special equipment manager.
@@ -214,6 +216,15 @@ function EquipConditional:reset()
     self.conditionContext = {};
 end
 
+---Runs a cycle of the activation condition and returns it
+---@return boolean
+function EquipConditional:isActive()
+    return self.condition(self.conditionContext);
+end
+
+---Returns an active set for this condition or an empty set if its not active
+---@param additionalSet LAC.GearSet? An optional set to consider as well
+---@return LAC.GearSet
 function EquipConditional:getSet(additionalSet)
     if not self.condition(self.conditionContext) then
         return T {};

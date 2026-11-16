@@ -11,6 +11,7 @@ local defaultSetbuilderOptions = {
 ---@class SetBuilder
 ---@field private options SetBuilderOptions
 ---@field private layers LAC.GearSet[]
+---@field private exclusions LAC.GearSet[]
 local SetBuilder = T {};
 
 ---Create a new setbuilder
@@ -22,6 +23,7 @@ function SetBuilder.new(options)
 
     local this = {
         layers = T {},
+        exclusions = T {},
         options = options,
     };
     return setmetatable(this, { __index = SetBuilder });
@@ -37,13 +39,30 @@ function SetBuilder:add(...)
     return self;
 end
 
+---Exclude one or more gearsets, preventing any items in those sets from being considered
+---@param ... LAC.GearSet[]
+---@return self
+function SetBuilder:exclude(...)
+    for _, set in ipairs({ ... }) do
+        for slot, item in pairs(set) do
+            local spread = self.exclusions[slot] or T {};
+            self.exclusions[slot] = spread;
+            spread:append(item);
+        end
+    end
+    return self;
+end
+
 ---Return the built set without doing any lazy resolution.
 ---@return LAC.GearSet
 function SetBuilder:getCurrentSet()
     local compressed = T {};
     for _, layer in ipairs(self.layers) do
-        for k, v in pairs(layer) do
-            compressed[k] = v;
+        for slot, item in pairs(layer) do
+            local spread = self.exclusions[slot];
+            if spread == nil or not spread:contains(item) then
+                compressed[slot] = item;
+            end
         end
     end
 

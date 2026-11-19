@@ -7,6 +7,7 @@ local Events = require("events").profile;
 local SetBuilder = require("setbuilder");
 local JSE = require("common_sets").JSE.THF;
 local Tracking = require("tracking")
+local ui = require("ui");
 
 ---@type LAC.Profile
 local profile = {
@@ -16,36 +17,41 @@ local profile = {
 local sets = profile.Sets;
 
 sets.TP_Priority = T {
-    Main = { "Hoplites Harpe", "Demon's Knife +1", "Beetle Knife +1" },
-    Sub = { "Hoplites Harpe", "Demon's Knife +1", "Marauder's Knife" },
+    Main = { "Heart Snatcher", "Demon's Knife +1", "Beetle Knife +1" },
+    Sub = { "Hoplites Harpe" },
     Range = { "Thug's Zamburak" },
 
     Head = { "Optical Hat", "Voyager Sallet", "Emperor Hairpin" },
     Neck = { "Peacock Amulet" },
-    Ear1 = { "Spike Earring" },
+    Ear1 = { "Brutal Earring" },
     Ear2 = { "Ethereal Earring", "Spike Earring" },
 
     Body = { "Rapparee Harness" },
-    Hands = { "Rogue's armlets" },
+    Hands = { "Dusk Gloves" },
     Ring1 = { "Rajas Ring" },
     Ring2 = { "Toreador's Ring", "Kshama Ring No.2" },
 
     Back = { "Amemet Mantle +1", "Jaguar Mantle" },
     Waist = { "Swift Belt" },
-    Legs = { JSE.Artifact.Legs, "Republic Subligar" },
-    Feet = { "Leaping Boots" },
+    Legs = { "Homam Cosciales", JSE.Artifact.Legs, "Republic Subligar" },
+    Feet = { "Homam Gambieras", "Leaping Boots" },
 }
 
 sets.Evasion_Priority = Utils.compress_tables(sets.TP_Priority, T {
     Head = { "Optical Hat", "Emperor Hairpin" },
-    Ear1 = { "displaced" },
-    Ear2 = { "Ethereal Earring", "empty" },
+    Ear1 = { "Brutal Earring" },
+    Ear2 = { "Ethereal Earring" },
     Body = { "Scorpion Harness" },
 });
 
 sets.TreasureHunter_Priority = {
     Neck = { "Nanaa's Charm" },
     Hands = { JSE.RelicPlus1.Hands },
+}
+
+-- Stuff that slows down movement speed.  Only matters if the gear is in one of our sets.
+sets.AntiMovementSpeed = {
+    Hands = "Dusk Gloves",
 }
 
 -----------------------------
@@ -55,7 +61,7 @@ sets.TreasureHunter_Priority = {
 sets.JA_Steal = T {
     Head = "Rogue's Bonnet",
     Hands = "Rogue's Armlets",
-    Legs = "Rogue's Culottes",
+    Legs = "Assassin's Culottes",
     Feet = "Rogue's Poulaines",
 };
 
@@ -94,8 +100,10 @@ sets["WS_Dancing Edge"] = T {
 -- Hits: 2
 -- TP multipliers: 1000: 2, 2000: 2.5, 3000: 3
 sets["WS_Shark Bite"] = T {
+    Hands = "Dusk Gloves",
+    Body = "Assault Jerkin",
     Waist = "Swordbelt +1",
-    Body = "Scorpion Harness",
+    Feet = JSE.Relic.Feet,
 }
 
 -- Modifiers: DEX: 30%, CHR: 30%
@@ -104,8 +112,9 @@ sets["WS_Shark Bite"] = T {
 -- TP multipliers: 1000: 1.0, 2000: 1.0, 3000: 1.0
 -- TP Crit rates: 1000: 10%, 2000: 30%, 3000: 50%
 sets["WS_Evisceration"] = T {
+    Hands = "Dusk Gloves",
+    Body = "Assault Jerkin",
     Waist = "Swordbelt +1",
-    Body = "Scorpion Harness",
 }
 
 profile.OnLoad = function()
@@ -115,10 +124,14 @@ profile.OnLoad = function()
         gFunc.EvaluateLevels(sets, lvl);
     end));
     gFunc.EvaluateLevels(sets, gData.GetPlayer().MainJobLevel)
+
+    ui.onProfileLoad();
 end
 
 profile.OnUnload = function()
     Events.onProfileUnload()
+
+    ui.onProfileUnload();
 end
 
 profile.HandleCommand = function(args)
@@ -141,6 +154,9 @@ profile.HandleDefault = function()
 
 
     layers:add(Shared.movementSpeed:getSet());
+    if Shared.movementSpeed:isActive() then
+        layers:exclude(sets.AntiMovementSpeed);
+    end
 
     gFunc.EquipSet(layers:finalize());
 end
@@ -174,9 +190,8 @@ end
 profile.HandleMidcast = function()
     local layers = SetBuilder.new();
     local target = gData.GetTarget();
-    ---@cast target -?
 
-    if not Tracking.isTreasureHunterApplied(target.Id) then
+    if target ~= nil and not Tracking.isTreasureHunterApplied(target.Id) then
         layers:add(sets.TreasureHunter);
     end
 

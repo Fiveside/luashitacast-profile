@@ -93,7 +93,13 @@ end
 ---Resolve any lazy entries and return the built set.
 ---@return LAC.GearSet
 function SetBuilder:finalize()
-    return self.resolveLazy(self:getCurrentSet());
+    local set = self.resolveLazy(self:getCurrentSet());
+    for slot, spread in pairs(self.exclusions) do
+        if #spread > 0 and set[slot] == nil then
+            set[slot] = "remove";
+        end
+    end
+    return set;
 end
 
 return SetBuilder;
